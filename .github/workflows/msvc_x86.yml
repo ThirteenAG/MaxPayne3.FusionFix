@@ -1,0 +1,57 @@
+name: Build
+
+on:
+  pull_request:
+  push:
+  release:
+    types: published
+
+jobs:
+  build:
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        platform: [Win32]
+        buildtype: [Release]
+
+    steps:
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'true'
+    - name: Configure build
+      run: |
+        ./premake5 vs2019
+    - name: Build
+      run: |
+        msbuild -m build/MaxPayne3.FusionFix.sln /property:Configuration=${{matrix.buildtype}} /property:Platform=${{matrix.platform}}
+    - name: Move binaries to data
+      run: |
+        cp "./bin/MaxPayne3.FusionFix.asi" "./data/plugins/MaxPayne3.FusionFix.asi"
+        7z a MaxPayne3.FusionFix.zip ./data/*
+    - name: Upload artifact to actions
+      uses: actions/upload-artifact@v2
+      with:
+        name: MaxPayne3.FusionFix.zip
+        path: ./data/*
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v1.${{ github.run_number }}
+        release_name: MaxPayne3.FusionFix v1.${{ github.run_number }}
+        draft: false
+        prerelease: false
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./MaxPayne3.FusionFix.zip
+        asset_name: MaxPayne3.FusionFix.zip
+        asset_content_type: application/zip
