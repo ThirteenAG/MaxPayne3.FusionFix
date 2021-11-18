@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2019
+    runs-on: windows-2022
     strategy:
       matrix:
         platform: [Win32]
@@ -22,7 +22,7 @@ jobs:
         submodules: 'true'
     - name: Configure build
       run: |
-        ./premake5 vs2019
+        ./premake5 vs2022
     - name: Build
       run: |
         msbuild -m build/MaxPayne3.FusionFix.sln /property:Configuration=${{matrix.buildtype}} /property:Platform=${{matrix.platform}}
