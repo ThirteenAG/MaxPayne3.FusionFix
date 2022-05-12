@@ -52,8 +52,14 @@ void Init()
 
     if (bDisableGlobalLeaderboards)
     {
-        auto pattern = hook::pattern("6A 00 68 ? ? ? ? E8 ? ? ? ? 8B 0F");
-        injector::WriteMemory<uint8_t>(pattern.get_first(1), 0x01, true);
+        //auto pattern = hook::pattern("6A 00 68 ? ? ? ? E8 ? ? ? ? 8B 0F");
+        //injector::WriteMemory<uint8_t>(pattern.get_first(1), 0x01, true);
+        //pattern = hook::pattern("6A 02 68 ? ? ? ? E8 ? ? ? ? 8B 0D");
+        //injector::WriteMemory<uint8_t>(pattern.get_first(1), 0x00, true);
+        //pattern = hook::pattern("83 F8 01 B8 ? ? ? ? 74 05 B8 ? ? ? ? C3");
+        //injector::MakeNOP(pattern.get_first(8), 7, true);
+        auto pattern = hook::pattern("8B 81 ? ? ? ? 83 F8 06");
+        injector::MakeRET(pattern.get_first(0));
     }
 }
 
