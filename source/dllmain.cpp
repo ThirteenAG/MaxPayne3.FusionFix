@@ -22,6 +22,7 @@ void Init()
 {
     CIniReader iniReader("");
     bool bHideSkipButton = iniReader.ReadInteger("MAIN", "HideSkipButton", 1) != 0;
+    bool bDisableGlobalLeaderboards = iniReader.ReadInteger("MAIN", "DisableGlobalLeaderboards", 1) != 0;
     fOutlinesSizeMultiplier = iniReader.ReadFloat("MAIN", "OutlinesSizeMultiplier", 0.0f);
 
     if (bHideSkipButton)
@@ -47,6 +48,12 @@ void Init()
 
         pattern = hook::pattern("E8 ? ? ? ? F3 0F 10 44 24 ? 8D 4C 24 30 F3 0F 11 05 ? ? ? ? F3 0F 10 44 24 ? 51 B9 ? ? ? ? F3 0F 11 05 ? ? ? ? E8 ? ? ? ? 8A 5C 24 0F 80 FB FF 75 0C");
         injector::MakeCALL(pattern.get_first(0), sub_010AFD30, true);
+    }
+
+    if (bDisableGlobalLeaderboards)
+    {
+        auto pattern = hook::pattern("6A 00 68 ? ? ? ? E8 ? ? ? ? 8B 0F");
+        injector::WriteMemory<uint8_t>(pattern.get_first(1), 0x01, true);
     }
 }
 

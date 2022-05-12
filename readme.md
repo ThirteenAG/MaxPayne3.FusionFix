@@ -7,7 +7,7 @@
 # MaxPayne3.FusionFix
 
 This is a small project intended to add ability to hide  ![skip](https://i.imgur.com/vwELI93.png)  button in Max Payne 3.
-Additionally, added an option to increase the size of subtitle text outlines.
+Additionally, added an option to increase the size of subtitle text outlines and prevent Hoboken Alleys coop map from crashing the game.
 
 ## Installation:
 
