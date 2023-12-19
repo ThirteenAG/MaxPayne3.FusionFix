@@ -329,3 +329,9 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+
+data/**/*.img
+data/update/common/shaders/**/*.fxc
+
+data/plugins/MaxPayne3.FusionFix.asi
+MaxPayne3.FusionFix.zip

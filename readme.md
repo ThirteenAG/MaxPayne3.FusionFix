@@ -1,4 +1,4 @@
-[![Actions Status: Release](https://github.com/ThirteenAG/MaxPayne3.FusionFix/actions/workflows/msvc_x86.yml/badge.svg)](https://github.com/ThirteenAG/MaxPayne3.FusionFix/actions) [![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg?logo=discord)](https://discord.gg/RaZXpKExNj)
+[![Actions Status: Release](https://github.com/ThirteenAG/MaxPayne3.FusionFix/actions/workflows/msvc_x86.yml/badge.svg)](https://github.com/ThirteenAG/MaxPayne3.FusionFix/actions)
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/4904157/108633054-2ed23d00-7483-11eb-8b6a-2d04e1ac138d.png">

@@ -1,57 +1,97 @@
-name: Build
+name: GitHub Actions Build
 
 on:
-  pull_request:
   push:
-  release:
-    types: published
+    paths-ignore:
+      - "**/*.md"
+      - '**/*.txt'
+    branches:
+      - '**'
+  pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - '**/*.txt'
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Create a release"
+        type: choice
+        required: false
+        default: 'false'
+        options:
+          - 'true'
+          - 'false'
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    runs-on: windows-2022
-    strategy:
-      matrix:
-        platform: [Win32]
-        buildtype: [Release]
+    runs-on: windows-latest
 
     steps:
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-    - uses: actions/checkout@v2
+    - name: Checkout Repository
+      uses: actions/checkout@v4
       with:
-        submodules: 'true'
+        submodules: recursive
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@main
+
+    - name: Auto Increment Version
+      uses: MCKanpolat/auto-semver-action@v1
+      id: versioning
+      with:
+        releaseType: minor 
+        incrementPerCommit: false
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Configure build
-      run: |
-        ./premake5 vs2022
+      run: ./premake5 vs2022 --with-version=${{ steps.versioning.outputs.version }}
+
     - name: Build
       run: |
-        msbuild -m build/MaxPayne3.FusionFix.sln /property:Configuration=${{matrix.buildtype}} /property:Platform=${{matrix.platform}}
-    - name: Move binaries to data
+        msbuild -m build/MaxPayne3.FusionFix.sln /property:Configuration=Release /property:Platform=Win32
+
+    - name: Download Ultimate ASI Loader x86
+      uses: robinraju/release-downloader@v1.8
+      with:
+        repository: "ThirteenAG/Ultimate-ASI-Loader"
+        tag: "Win32-latest"
+        fileName: "dinput8-Win32.zip"
+
+    - name: Unpack dependencies
       run: |
-        cp "./bin/MaxPayne3.FusionFix.asi" "./data/plugins/MaxPayne3.FusionFix.asi"
-        7z a MaxPayne3.FusionFix.zip ./data/*
-    - name: Upload artifact to actions
-      uses: actions/upload-artifact@v2
+          7z x dinput8-Win32.zip -odata/ -y
+          del dinput8-Win32.zip
+          del data\dinput8-Win32.SHA512
+
+    - name: Pack binaries
+      run: |
+        ./release.bat
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
       with:
         name: MaxPayne3.FusionFix.zip
-        path: ./data/*
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        path: data/*
+
+    - name: Upload Release
+      if: |
+        github.event.inputs.release == 'true' &&
+        github.ref_name == 'main' &&
+        (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+        github.repository == 'ThirteenAG/MaxPayne3.FusionFix'
+      uses: ncipollo/release-action@main
       with:
-        tag_name: v1.${{ github.run_number }}
-        release_name: MaxPayne3.FusionFix v1.${{ github.run_number }}
-        draft: false
-        prerelease: false
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./MaxPayne3.FusionFix.zip
-        asset_name: MaxPayne3.FusionFix.zip
-        asset_content_type: application/zip
+        token: ${{ secrets.GITHUB_TOKEN }}
+        allowUpdates: false
+        name: MaxPayne3.FusionFix v${{ steps.versioning.outputs.version }}
+        bodyFile: "release.md"
+        tag: v${{ steps.versioning.outputs.version }}
+        artifacts: MaxPayne3.FusionFix.zip
+
