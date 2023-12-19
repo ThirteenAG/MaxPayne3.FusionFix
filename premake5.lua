@@ -1,23 +1,60 @@
+newoption {
+    trigger     = "with-version",
+    value       = "STRING",
+    description = "Current version",
+    default     = "1.0",
+}
+
 workspace "MaxPayne3.FusionFix"
    configurations { "Release", "Debug" }
    architecture "x86"
    location "build"
-   buildoptions {"-std:c++latest"}
+   cppdialect "C++latest"
    kind "SharedLib"
    language "C++"
    targetdir "bin/%{cfg.buildcfg}"
    targetextension ".asi"
+   buildoptions { "/dxifcInlineFunctions-" }
    
    defines { "rsc_CompanyName=\"MaxPayne3.FusionFix\"" }
    defines { "rsc_LegalCopyright=\"MaxPayne3.FusionFix\""} 
-   defines { "rsc_FileVersion=\"1.0.0.0\"", "rsc_ProductVersion=\"1.0.0.0\"" }
    defines { "rsc_InternalName=\"%{prj.name}\"", "rsc_ProductName=\"%{prj.name}\"", "rsc_OriginalFilename=\"%{prj.name}.dll\"" }
    defines { "rsc_FileDescription=\"MaxPayne3.FusionFix\"" }
    defines { "rsc_UpdateUrl=\"https://github.com/ThirteenAG/MaxPayne3.FusionFix\"" }
 
+   local major = 1
+   local minor = 0
+   local build = 0
+   local revision = 0
+   if(_OPTIONS["with-version"]) then
+     local t = {}
+     for i in _OPTIONS["with-version"]:gmatch("([^.]+)") do
+       t[#t + 1], _ = i:gsub("%D+", "")
+     end
+     while #t < 4 do t[#t + 1] = 0 end
+     major = math.min(tonumber(t[1]), 255)
+     minor = math.min(tonumber(t[2]), 255)
+     build = math.min(tonumber(t[3]), 65535)
+     revision = math.min(tonumber(t[4]), 65535)
+   end
+   defines { "rsc_FileVersion_MAJOR=" .. major }
+   defines { "rsc_FileVersion_MINOR=" .. minor }
+   defines { "rsc_FileVersion_BUILD=" .. build }
+   defines { "rsc_FileVersion_REVISION=" .. revision }
+   defines { "rsc_FileVersion=\"" .. major .. "." .. minor .. "." .. build .. "\"" }
+   defines { "rsc_ProductVersion=\"" .. major .. "." .. minor .. "." .. build .. "\"" }
+
+   defines { "_CRT_SECURE_NO_WARNINGS" }
+
    includedirs { "source" }
-   files { "source/dllmain.cpp" }
+   includedirs { "source/includes" }
+   includedirs { "source/ledsdk" }
+   includedirs { "source/dxsdk" }
+   libdirs { "source/ledsdk" }
+   libdirs { "source/dxsdk" }
+   files { "source/*.h", "source/*.hpp", "source/*.cpp", "source/*.hxx", "source/*.ixx" }
    files { "source/resources/Versioninfo.rc" }
+   links { "LogitechLEDLib.lib" }
    
    includedirs { "external/hooking" }
    includedirs { "external/injector/include" }
@@ -61,6 +98,6 @@ workspace "MaxPayne3.FusionFix"
       defines { "NDEBUG" }
       optimize "On"
       staticruntime "On"
-	  
+      
 project "MaxPayne3.FusionFix"
-   setpaths("E:/Games/Steam/steamapps/common/Max Payne 3/Max Payne 3/", "MaxPayne3.exe", "plugins/")
+   setpaths("Z:/WFP/Games/Max Payne/Max Payne 3/", "MaxPayne3.exe", "plugins/")
