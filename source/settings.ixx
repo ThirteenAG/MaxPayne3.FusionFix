@@ -31,7 +31,7 @@ public:
         {
             if (std::filesystem::exists(iniReader.GetIniPath()))
             {
-                static filewatch::FileWatch<std::string> watch(iniReader.GetIniPath(), [&](const std::string& path, const filewatch::Event change_type)
+                static filewatch::FileWatch<std::string> watch(iniReader.GetIniPath().string(), [&](const std::string& path, const filewatch::Event change_type)
                 {
                     if (change_type == filewatch::Event::modified)
                     {
