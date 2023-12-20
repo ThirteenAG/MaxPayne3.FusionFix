@@ -8,48 +8,49 @@ import common;
 import comvars;
 import settings;
 
-//injector::hook_back<void(__cdecl*)(int)> hbCGameProcess;
-//void __cdecl CGameProcessHook(int a1)
-//{
-//    static std::once_flag of;
-//    std::call_once(of, []()
-//    {
-//        FusionFix::onGameInitEvent().executeAll();
-//    });
-//
-//    if (CTimer__m_UserPause && CTimer__m_CodePause)
-//    {
-//        static auto oldMenuState = 0;
-//
-//        if (!*CTimer__m_UserPause && !*CTimer__m_CodePause)
-//        {
-//            uint32_t curMenuState = false;
-//            if (curMenuState != oldMenuState) {
-//                FusionFix::onMenuExitEvent().executeAll();
-//            }
-//            oldMenuState = curMenuState;
-//            FusionFix::onGameProcessEvent().executeAll();
-//        }
-//        else
-//        {
-//            uint32_t curMenuState = true;
-//            if (curMenuState != oldMenuState) {
-//                FusionFix::onMenuEnterEvent().executeAll();
-//            }
-//            oldMenuState = curMenuState;
-//            FusionFix::onMenuDrawingEvent().executeAll();
-//        }
-//    }
-//
-//    return hbCGameProcess.fun(a1);
-//}
+injector::hook_back<void(__cdecl*)()> hbCGameProcess;
+void __cdecl CGameProcessHook()
+{
+    static std::once_flag of;
+    std::call_once(of, []()
+    {
+        FusionFix::onGameInitEvent().executeAll();
+    });
+
+    //if (CTimer__m_UserPause && CTimer__m_CodePause)
+    //{
+        static auto oldMenuState = 0;
+
+        //if (!*CTimer__m_UserPause && !*CTimer__m_CodePause)
+        //{
+            uint32_t curMenuState = false;
+            if (curMenuState != oldMenuState)
+            {
+                FusionFix::onMenuExitEvent().executeAll();
+            }
+            oldMenuState = curMenuState;
+            FusionFix::onGameProcessEvent().executeAll();
+        //}
+        //else
+        //{
+        //    uint32_t curMenuState = true;
+        //    if (curMenuState != oldMenuState) {
+        //        FusionFix::onMenuEnterEvent().executeAll();
+        //    }
+        //    oldMenuState = curMenuState;
+        //    FusionFix::onMenuDrawingEvent().executeAll();
+        //}
+    //}
+
+    return hbCGameProcess.fun();
+}
 
 void Init()
 {
     FusionFixSettings.ReadIniSettings();
 
-    //auto pattern = hook::pattern("E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? B9");
-    //hbCGameProcess.fun = injector::MakeCALL(pattern.get_first(0), CGameProcessHook, true).get();
+    auto pattern = hook::pattern("E8 ? ? ? ? E8 ? ? ? ? 8B 0D ? ? ? ? 8B 15 ? ? ? ? 89 0D");
+    hbCGameProcess.fun = injector::MakeCALL(pattern.get_first(0), CGameProcessHook, true).get();
 
     //static auto futures = FusionFix::onInitEventAsync().executeAllAsync();
 
