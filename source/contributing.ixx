@@ -21,8 +21,9 @@ public:
 
         FusionFix::onGameProcessEvent() += []() 
         {
-            auto fps = Natives::GET_CURRENT_FPS();
-            std::cout << fps << std::endl;
+            Player playa = Natives::GET_PLAYER_PED(0);
+            int32_t health = Natives::GET_PED_HEALTH(playa);
+            std::cout << health << std::endl;
         };
     }
 } Contributing;
