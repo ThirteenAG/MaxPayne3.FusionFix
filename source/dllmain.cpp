@@ -7,6 +7,7 @@
 import common;
 import comvars;
 import settings;
+import natives;
 
 injector::hook_back<void(__cdecl*)()> hbCGameProcess;
 void __cdecl CGameProcessHook()
@@ -17,30 +18,26 @@ void __cdecl CGameProcessHook()
         FusionFix::onGameInitEvent().executeAll();
     });
 
-    //if (CTimer__m_UserPause && CTimer__m_CodePause)
-    //{
-        static auto oldMenuState = 0;
-
-        //if (!*CTimer__m_UserPause && !*CTimer__m_CodePause)
-        //{
-            uint32_t curMenuState = false;
-            if (curMenuState != oldMenuState)
-            {
-                FusionFix::onMenuExitEvent().executeAll();
-            }
-            oldMenuState = curMenuState;
-            FusionFix::onGameProcessEvent().executeAll();
-        //}
-        //else
-        //{
-        //    uint32_t curMenuState = true;
-        //    if (curMenuState != oldMenuState) {
-        //        FusionFix::onMenuEnterEvent().executeAll();
-        //    }
-        //    oldMenuState = curMenuState;
-        //    FusionFix::onMenuDrawingEvent().executeAll();
-        //}
-    //}
+    static auto oldMenuState = 0;
+    if (!Natives::IsPauseMenuActive())
+    {
+        auto curMenuState = false;
+        if (curMenuState != oldMenuState)
+        {
+            FusionFix::onMenuExitEvent().executeAll();
+        }
+        oldMenuState = curMenuState;
+        FusionFix::onGameProcessEvent().executeAll();
+    }
+    else
+    {
+        auto curMenuState = true;
+        if (curMenuState != oldMenuState) {
+            FusionFix::onMenuEnterEvent().executeAll();
+        }
+        oldMenuState = curMenuState;
+        FusionFix::onMenuDrawingEvent().executeAll();
+    }
 
     return hbCGameProcess.fun();
 }
@@ -52,14 +49,14 @@ void Init()
     auto pattern = hook::pattern("E8 ? ? ? ? E8 ? ? ? ? 8B 0D ? ? ? ? 8B 15 ? ? ? ? 89 0D");
     hbCGameProcess.fun = injector::MakeCALL(pattern.get_first(0), CGameProcessHook, true).get();
 
-    //static auto futures = FusionFix::onInitEventAsync().executeAllAsync();
+    static auto futures = FusionFix::onInitEventAsync().executeAllAsync();
 
-    //FusionFix::onGameInitEvent() += []()
-    //{
-    //    for (auto& f : futures.get())
-    //        f.wait();
-    //    futures.get().clear();
-    //};
+    FusionFix::onGameInitEvent() += []()
+    {
+        for (auto& f : futures.get())
+            f.wait();
+        futures.get().clear();
+    };
 
     FusionFix::onInitEvent().executeAll();
 }

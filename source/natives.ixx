@@ -197,21 +197,18 @@ public:
         NativeContext cxt;
         (cxt.Push(args), ...);
 
-        //if (CTimer__m_CodePause && !*CTimer__m_CodePause)
-        //{
-            if (!m_IndexTable[Hash])
-            {
-                auto fn = GetNativeHandler(Hash);
-                if (fn) {
-                    m_IndexTable[Hash] = fn;
-                    fn->fun(&cxt);
-                }
+        if (!m_IndexTable[Hash])
+        {
+            auto fn = GetNativeHandler(Hash);
+            if (fn) {
+                m_IndexTable[Hash] = fn;
+                fn->fun(&cxt);
             }
-            else
-            {
-                m_IndexTable[Hash]->fun(&cxt);
-            }
-        //}
+        }
+        else
+        {
+            m_IndexTable[Hash]->fun(&cxt);
+        }
 
         if constexpr (!std::is_void_v<R>)
         {
