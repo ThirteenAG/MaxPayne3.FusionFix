@@ -332,6 +332,7 @@ ASALocalRun/
 
 data/**/*.img
 data/update/common/shaders/**/*.fxc
+data/update/platform/textures/*.wtd
 
 data/plugins/MaxPayne3.FusionFix.asi
 MaxPayne3.FusionFix.zip

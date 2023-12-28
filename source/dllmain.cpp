@@ -18,7 +18,7 @@ void __cdecl CGameProcessHook()
         FusionFix::onGameInitEvent().executeAll();
     });
 
-    static auto oldMenuState = 0;
+    static auto oldMenuState = false;
     if (!Natives::IsPauseMenuActive())
     {
         auto curMenuState = false;
