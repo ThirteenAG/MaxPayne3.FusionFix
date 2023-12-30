@@ -24,7 +24,7 @@ public:
         mFusionPrefs["PREF_OUTLINESIZE"] = std::clamp(iniReader.ReadFloat("MAIN", "OutlinesSizeMultiplier", 1.0f), 0.0f, 10.0f);
         mFusionPrefs["PREF_BORDERLESS"] = std::clamp(iniReader.ReadInteger("MAIN", "BorderlessWindowed", 1), 0, 1);
         mFusionPrefs["PREF_LEDILLUMINATION"] = std::clamp(iniReader.ReadInteger("MAIN", "LightSyncRGB", 1), 0, 1);
-        mFusionPrefs["PREF_BUTTONS"] = std::clamp(iniReader.ReadInteger("MAIN", "GamepadIcons", 0), 0, 6);
+        mFusionPrefs["PREF_BUTTONS"] = std::clamp(iniReader.ReadInteger("MAIN", "GamepadIcons", 0), 0, gLastControllerTextureIndex);
 
         static std::once_flag flag;
         std::call_once(flag, [&]()

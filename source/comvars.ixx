@@ -10,6 +10,7 @@ export HWND gWnd;
 export RECT gRect;
 export void* (__fastcall* getNativeAddress)(uintptr_t*, uint32_t, uint32_t);
 export uintptr_t* nativeHandlerPtrAddress;
+export constexpr auto gLastControllerTextureIndex = 7;
 
 class Common
 {
