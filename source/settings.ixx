@@ -25,6 +25,7 @@ public:
         mFusionPrefs["PREF_BORDERLESS"] = std::clamp(iniReader.ReadInteger("MAIN", "BorderlessWindowed", 1), 0, 1);
         mFusionPrefs["PREF_LEDILLUMINATION"] = std::clamp(iniReader.ReadInteger("MAIN", "LightSyncRGB", 1), 0, 1);
         mFusionPrefs["PREF_BUTTONS"] = std::clamp(iniReader.ReadInteger("MAIN", "GamepadIcons", 0), 0, gLastControllerTextureIndex);
+        mFusionPrefs["PREF_DEVICECHANGE"] = std::clamp(iniReader.ReadInteger("MAIN", "DisableDeviceChangeEvent", 1), 0, 1);
 
         static std::once_flag flag;
         std::call_once(flag, [&]()

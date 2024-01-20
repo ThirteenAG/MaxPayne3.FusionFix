@@ -35,8 +35,8 @@ env:
   VERINC: ${{ github.event.inputs.version_increment || 'patch' }}
 
 concurrency:
-  group: ${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 permissions:
   contents: write
@@ -55,7 +55,7 @@ jobs:
       uses: microsoft/setup-msbuild@main
 
     - name: Auto Increment Version
-      uses: MCKanpolat/auto-semver-action@v1
+      uses: MCKanpolat/auto-semver-action@v2
       id: versioning
       with:
         releaseType: ${{ env.VERINC }}

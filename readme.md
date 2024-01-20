@@ -32,7 +32,7 @@ This projects aims to add new features and fix some issues in Max Payne 3. Also 
 ### New menu options
 
 - **BorderlessWindowed**, scroll through **SETTINGS -> GRAPHICS -> FULLSCREEN** to switch between windowed and borderless modes
-- **GamepadIcons**, scroll through **SETTINGS -> CONTROLS -> GAMEPAD -> CONFIGURATION** to select various controller icon styles (Xbox 360, Xbox One, PS3, PS4, PS5, Nintendo Switch, Steam Deck)
+- **GamepadIcons**, scroll through **SETTINGS -> CONTROLS -> GAMEPAD -> CONFIGURATION** to select various controller icon styles (Xbox 360, Xbox One, PS3, PS4, PS5, Nintendo Switch, Steam Deck, Steam Controller)
 
 ### New options
 
