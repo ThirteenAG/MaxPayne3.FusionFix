@@ -58,9 +58,12 @@ workspace "MaxPayne3.FusionFix"
    
    includedirs { "external/hooking" }
    includedirs { "external/injector/include" }
+   includedirs { "external/injector/safetyhook" }
    includedirs { "external/inireader" }
    files { "external/hooking/Hooking.Patterns.h", "external/hooking/Hooking.Patterns.cpp" }
-   
+   files { "external/injector/safetyhook/*.h", "external/injector/safetyhook/*.hpp" }
+   files { "external/injector/safetyhook/*.c", "external/injector/safetyhook/*.cpp" }
+
    characterset ("Unicode")
    
    pbcommands = { 
