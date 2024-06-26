@@ -58,11 +58,12 @@ workspace "MaxPayne3.FusionFix"
    
    includedirs { "external/hooking" }
    includedirs { "external/injector/include" }
-   includedirs { "external/injector/safetyhook" }
+   includedirs { "external/injector/safetyhook/include" }
+   includedirs { "external/injector/zydis" }
    includedirs { "external/inireader" }
    files { "external/hooking/Hooking.Patterns.h", "external/hooking/Hooking.Patterns.cpp" }
-   files { "external/injector/safetyhook/*.h", "external/injector/safetyhook/*.hpp" }
-   files { "external/injector/safetyhook/*.c", "external/injector/safetyhook/*.cpp" }
+   files { "external/injector/safetyhook/include/**.hpp", "external/injector/safetyhook/src/**.cpp" }
+   files { "external/injector/zydis/**.h", "external/injector/zydis/**.c" }
 
    characterset ("Unicode")
    
