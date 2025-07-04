@@ -1,7 +1,7 @@
 [![Actions Status: Release](https://github.com/ThirteenAG/MaxPayne3.FusionFix/actions/workflows/msvc_x86.yml/badge.svg)](https://github.com/ThirteenAG/MaxPayne3.FusionFix/actions)
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/4904157/108633054-2ed23d00-7483-11eb-8b6a-2d04e1ac138d.png">
+  <img src="https://github.com/user-attachments/assets/6b150869-9e5c-4463-aeb8-18a1d19076b0">
 </p>
 
 # MaxPayne3.FusionFix
