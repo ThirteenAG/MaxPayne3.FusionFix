@@ -331,7 +331,7 @@ ASALocalRun/
 .mfractor/
 
 data/**/*.img
-data/update/common/shaders/**/*.fxc
+#data/update/common/shaders/**/*.fxc
 data/update/platform/textures/*.wtd
 
 data/plugins/MaxPayne3.FusionFix.asi
