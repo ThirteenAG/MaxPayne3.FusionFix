@@ -87,7 +87,7 @@ jobs:
         ./release.bat
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: MaxPayne3.FusionFix
         path: |
