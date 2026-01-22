@@ -50,97 +50,121 @@ public:
     };
 
 public:
-    static Event<>& onInitEvent() {
+    static Event<>& onInitEvent()
+    {
         static Event<> InitEvent;
         return InitEvent;
     }
-    static Event<>& onInitEventAsync() {
+    static Event<>& onInitEventAsync()
+    {
         static Event<> InitEventAsync;
         return InitEventAsync;
     }
-    static Event<>& onAfterUALRestoredIATEvent() {
+    static Event<>& onAfterUALRestoredIATEvent()
+    {
         static Event<> AfterUALRestoredIATEvent;
         return AfterUALRestoredIATEvent;
     }
-    static Event<>& onShutdownEvent() {
+    static Event<>& onShutdownEvent()
+    {
         static Event<> ShutdownEvent;
         return ShutdownEvent;
     }
-    static Event<>& onGameInitEvent() {
+    static Event<>& onGameInitEvent()
+    {
         static Event<> GameInitEvent;
         return GameInitEvent;
     }
-    static Event<>& onGameProcessEvent() {
+    static Event<>& onGameProcessEvent()
+    {
         static Event<> GameProcessEvent;
         return GameProcessEvent;
     }
-    static Event<>& onMenuDrawingEvent() {
+    static Event<>& onMenuDrawingEvent()
+    {
         static Event<> MenuDrawingEvent;
         return MenuDrawingEvent;
     }
-    static Event<>& onMenuEnterEvent() {
+    static Event<>& onMenuEnterEvent()
+    {
         static Event<> MenuEnterEvent;
         return MenuEnterEvent;
     }
-    static Event<>& onMenuExitEvent() {
+    static Event<>& onMenuExitEvent()
+    {
         static Event<> MenuExitEvent;
         return MenuExitEvent;
     }
-    static Event<>& onBeforeReset() {
+    static Event<>& onBeforeReset()
+    {
         static Event<> BeforeReset;
         return BeforeReset;
     }
-    static Event<>& onIniFileChange() {
+    static Event<>& onIniFileChange()
+    {
         static Event<> IniFileChange;
         return IniFileChange;
     }
-    static Event<std::string_view, int32_t, int32_t>& onMenuOptionChange() {
+    static Event<std::string_view, int32_t, int32_t>& onMenuOptionChange()
+    {
         static Event<std::string_view, int32_t, int32_t> MenuOptionChange;
         return MenuOptionChange;
     }
 
-    struct D3D9 {
-        static Event<LPDIRECT3D9&, UINT&, D3DDEVTYPE&, HWND&, DWORD&, D3DPRESENT_PARAMETERS*&, IDirect3DDevice9**&>& onBeforeCreateDevice() {
+    struct D3D9
+    {
+        static Event<LPDIRECT3D9&, UINT&, D3DDEVTYPE&, HWND&, DWORD&, D3DPRESENT_PARAMETERS*&, IDirect3DDevice9**&>& onBeforeCreateDevice()
+        {
             static Event<LPDIRECT3D9&, UINT&, D3DDEVTYPE&, HWND&, DWORD&, D3DPRESENT_PARAMETERS*&, IDirect3DDevice9**&> BeforeCreateDevice;
             return BeforeCreateDevice;
         }
-        static Event<LPDIRECT3D9&, UINT&, D3DDEVTYPE&, HWND&, DWORD&, D3DPRESENT_PARAMETERS*&, IDirect3DDevice9**&>& onAfterCreateDevice() {
+        static Event<LPDIRECT3D9&, UINT&, D3DDEVTYPE&, HWND&, DWORD&, D3DPRESENT_PARAMETERS*&, IDirect3DDevice9**&>& onAfterCreateDevice()
+        {
             static Event<LPDIRECT3D9&, UINT&, D3DDEVTYPE&, HWND&, DWORD&, D3DPRESENT_PARAMETERS*&, IDirect3DDevice9**&> AfterCreateDevice;
             return AfterCreateDevice;
         }
-        static Event<LPDIRECT3DDEVICE9&>& onBeginScene() {
+        static Event<LPDIRECT3DDEVICE9&>& onBeginScene()
+        {
             static Event<LPDIRECT3DDEVICE9&> BeginScene;
             return BeginScene;
         }
-        static Event<LPDIRECT3DDEVICE9&>& onEndScene() {
+        static Event<LPDIRECT3DDEVICE9&>& onEndScene()
+        {
             static Event<LPDIRECT3DDEVICE9&> EndScene;
             return EndScene;
         }
-        static Event<LPDIRECT3DDEVICE9&, D3DPRESENT_PARAMETERS*&>& onBeforeReset() {
+        static Event<LPDIRECT3DDEVICE9&, D3DPRESENT_PARAMETERS*&>& onBeforeReset()
+        {
             static Event<LPDIRECT3DDEVICE9&, D3DPRESENT_PARAMETERS*&> BeforeReset;
             return BeforeReset;
         }
-        static Event<LPDIRECT3DDEVICE9&, D3DPRESENT_PARAMETERS*&>& onAfterReset() {
+        static Event<LPDIRECT3DDEVICE9&, D3DPRESENT_PARAMETERS*&>& onAfterReset()
+        {
             static Event<LPDIRECT3DDEVICE9&, D3DPRESENT_PARAMETERS*&> AfterReset;
             return AfterReset;
         }
-        static Event<LPDIRECT3DDEVICE9&, UINT&, float*&, UINT&>& onSetVertexShaderConstantF() {
+        static Event<LPDIRECT3DDEVICE9&, UINT&, float*&, UINT&>& onSetVertexShaderConstantF()
+        {
             static Event<LPDIRECT3DDEVICE9&, UINT&, float*&, UINT&> SetVertexShaderConstantF;
             return SetVertexShaderConstantF;
         }
-        static Event<LPDIRECT3DDEVICE9&, UINT&, float*&, UINT&>& onSetPixelShaderConstantF() {
+        static Event<LPDIRECT3DDEVICE9&, UINT&, float*&, UINT&>& onSetPixelShaderConstantF()
+        {
             static Event<LPDIRECT3DDEVICE9&, UINT&, float*&, UINT&> SetPixelShaderConstantF;
             return SetPixelShaderConstantF;
         }
-        static Event<LPDIRECT3DDEVICE9&, UINT&, UINT&, UINT&, DWORD&, D3DFORMAT&, D3DPOOL&, IDirect3DTexture9**&, HANDLE*&>& onBeforeCreateTexture() {
+        static Event<LPDIRECT3DDEVICE9&, UINT&, UINT&, UINT&, DWORD&, D3DFORMAT&, D3DPOOL&, IDirect3DTexture9**&, HANDLE*&>& onBeforeCreateTexture()
+        {
             static Event<LPDIRECT3DDEVICE9&, UINT&, UINT&, UINT&, DWORD&, D3DFORMAT&, D3DPOOL&, IDirect3DTexture9**&, HANDLE*&> BeforeCreateTexture;
             return BeforeCreateTexture;
         }
-        static Event<LPDIRECT3DDEVICE9&, UINT&, UINT&, UINT&, DWORD&, D3DFORMAT&, D3DPOOL&, IDirect3DTexture9**&, HANDLE*&>& onAfterCreateTexture() {
+        static Event<LPDIRECT3DDEVICE9&, UINT&, UINT&, UINT&, DWORD&, D3DFORMAT&, D3DPOOL&, IDirect3DTexture9**&, HANDLE*&>& onAfterCreateTexture()
+        {
             static Event<LPDIRECT3DDEVICE9&, UINT&, UINT&, UINT&, DWORD&, D3DFORMAT&, D3DPOOL&, IDirect3DTexture9**&, HANDLE*&> AfterCreateTexture;
             return AfterCreateTexture;
         }
-        static Event<LPDIRECT3DDEVICE9&, DWORD&, IDirect3DBaseTexture9*&>& onSetTexture() {
+        static Event<LPDIRECT3DDEVICE9&, DWORD&, IDirect3DBaseTexture9*&>& onSetTexture()
+        {
             static Event<LPDIRECT3DDEVICE9&, DWORD&, IDirect3DBaseTexture9*&> SetTexture;
             return SetTexture;
         }
@@ -278,10 +302,13 @@ export inline bool IsModuleUAL(HMODULE mod)
     return false;
 }
 
-export bool IsUALPresent() {
-    for (const auto& entry : std::stacktrace::current()) {
+export bool IsUALPresent()
+{
+    for (const auto& entry : std::stacktrace::current())
+    {
         HMODULE hModule = NULL;
-        if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)entry.native_handle(), &hModule)) {
+        if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)entry.native_handle(), &hModule))
+        {
             if (IsModuleUAL(hModule))
                 return true;
         }
@@ -332,12 +359,12 @@ public:
             if (ptr == nullptr)
                 ptr = (uint32_t*)((DWORD)mh + ntHeader->OptionalHeader.BaseOfCode + ntHeader->OptionalHeader.SizeOfCode - offset);
             std::thread([](std::function<void()>&& fn, uint32_t* ptr, uint32_t val)
-                {
-                    while (*ptr == val)
-                        std::this_thread::yield();
+            {
+                while (*ptr == val)
+                    std::this_thread::yield();
 
-                    fn();
-                }, fn, ptr, *ptr).detach();
+                fn();
+            }, fn, ptr, *ptr).detach();
         }
     }
 
@@ -686,9 +713,11 @@ std::string pattern_str(T t, Rest... rest)
     return std::string((std::is_same<T, char>::value ? format("%c ", t) : format("%02X ", t)) + pattern_str(rest...));
 }
 
-export std::string pattern_str(std::string_view str) {
+export std::string pattern_str(std::string_view str)
+{
     std::stringstream str_stream;
-    for (const auto& item : str) {
+    for (const auto& item : str)
+    {
         str_stream << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << +uint8_t(item) << " ";
     }
     return str_stream.str();
@@ -698,78 +727,213 @@ export class IATHook
 {
 public:
     template <class... Ts>
-    static void Replace(HMODULE target_module, std::string_view dll_name, Ts&& ... inputs)
+    static auto Replace(HMODULE target_module, std::string_view dll_name, Ts&& ... inputs)
     {
-        auto hExecutableInstance = (size_t)target_module;
-        IMAGE_NT_HEADERS* ntHeader = (IMAGE_NT_HEADERS*)(hExecutableInstance + ((IMAGE_DOS_HEADER*)hExecutableInstance)->e_lfanew);
-        IMAGE_IMPORT_DESCRIPTOR* pImports = (IMAGE_IMPORT_DESCRIPTOR*)(hExecutableInstance + ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
-        size_t nNumImports = ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size / sizeof(IMAGE_IMPORT_DESCRIPTOR) - 1;
-    
-        auto PatchIAT = [&](size_t start, size_t end, size_t exe_end)
-        {
-            for (size_t i = 0; i < nNumImports; i++)
-            {
-                if (hExecutableInstance + (pImports + i)->FirstThunk > start && !(end && hExecutableInstance + (pImports + i)->FirstThunk > end))
-                    end = hExecutableInstance + (pImports + i)->FirstThunk;
-            }
-    
-            if (!end) { end = start + 0x100; }
-            if (end > exe_end)
-            {
-                start = hExecutableInstance;
-                end = exe_end;
-            }
-    
-            for (auto i = start; i < end; i += sizeof(size_t))
-            {
-                DWORD dwProtect[2];
-                VirtualProtect((size_t*)i, sizeof(size_t), PAGE_EXECUTE_READWRITE, &dwProtect[0]);
-    
-                auto ptr = *(size_t*)i;
-                if (!ptr)
-                    continue;
-    
-                ([&]
-                {
-                    auto func_name = std::get<0>(inputs);
-                    auto func_hook = std::get<1>(inputs);
-                    if (func_hook && ptr == (size_t)GetProcAddress(GetModuleHandleA(dll_name.data()), func_name))
-                        *(size_t*)i = (size_t)func_hook;
-                } (), ...);
+        std::map<std::string, std::future<void*>> originalPtrs;
 
-                VirtualProtect((size_t*)i, sizeof(size_t), dwProtect[0], &dwProtect[1]);
-            }
-        };
-    
-        static auto getSection = [](const PIMAGE_NT_HEADERS nt_headers, unsigned section) -> PIMAGE_SECTION_HEADER
+        const DWORD_PTR instance = reinterpret_cast<DWORD_PTR>(target_module);
+        const PIMAGE_NT_HEADERS ntHeader = reinterpret_cast<PIMAGE_NT_HEADERS>(instance + reinterpret_cast<PIMAGE_DOS_HEADER>(instance)->e_lfanew);
+        PIMAGE_IMPORT_DESCRIPTOR pImports = reinterpret_cast<PIMAGE_IMPORT_DESCRIPTOR>(instance + ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+        DWORD dwProtect[2];
+
+        // Regular imports
+        for (; pImports->Name != 0; pImports++)
         {
-            return reinterpret_cast<PIMAGE_SECTION_HEADER>(
-                (UCHAR*)nt_headers->OptionalHeader.DataDirectory +
-                nt_headers->OptionalHeader.NumberOfRvaAndSizes * sizeof(IMAGE_DATA_DIRECTORY) +
-                section * sizeof(IMAGE_SECTION_HEADER));
-        };
-    
-        static auto getSectionEnd = [](IMAGE_NT_HEADERS* ntHeader, size_t inst) -> auto
-        {
-            auto sec = getSection(ntHeader, ntHeader->FileHeader.NumberOfSections - 1);
-            while (sec->Misc.VirtualSize == 0) sec--;
-    
-            auto secSize = max(sec->SizeOfRawData, sec->Misc.VirtualSize);
-            auto end = inst + max(sec->PointerToRawData, sec->VirtualAddress) + secSize;
-            return end;
-        };
-    
-        auto hExecutableInstance_end = getSectionEnd(ntHeader, hExecutableInstance);
-    
-        // Find DLL
-        for (size_t i = 0; i < nNumImports; i++)
-        {
-            if ((size_t)(hExecutableInstance + (pImports + i)->Name) < hExecutableInstance_end)
+            if (_stricmp(reinterpret_cast<const char*>(instance + pImports->Name), dll_name.data()) == 0)
             {
-                if (!_stricmp((const char*)(hExecutableInstance + (pImports + i)->Name), dll_name.data()))
-                    PatchIAT(hExecutableInstance + (pImports + i)->FirstThunk, 0, hExecutableInstance_end);
+                if (pImports->OriginalFirstThunk != 0)
+                {
+                    const PIMAGE_THUNK_DATA pThunk = reinterpret_cast<PIMAGE_THUNK_DATA>(instance + pImports->OriginalFirstThunk);
+
+                    for (ptrdiff_t j = 0; pThunk[j].u1.AddressOfData != 0; j++)
+                    {
+                        auto pAddress = reinterpret_cast<void**>(instance + pImports->FirstThunk) + j;
+                        if (!pAddress) continue;
+                        VirtualProtect(pAddress, sizeof(void*), PAGE_EXECUTE_READWRITE, &dwProtect[0]);
+                        ([&]
+                        {
+                            auto name = std::string_view(std::get<0>(inputs));
+                            auto num = std::string("-1");
+                            if (name.contains("@"))
+                            {
+                                num = name.substr(name.find_last_of("@") + 1);
+                                name = name.substr(0, name.find_last_of("@"));
+                            }
+
+                            if (pThunk[j].u1.Ordinal & IMAGE_ORDINAL_FLAG)
+                            {
+                                try
+                                {
+                                    if (IMAGE_ORDINAL(pThunk[j].u1.Ordinal) == std::stoi(num.data()))
+                                    {
+                                        originalPtrs[std::get<0>(inputs)] = std::async(std::launch::deferred, [&]() -> void* { return *pAddress; });
+                                        originalPtrs[std::get<0>(inputs)].wait();
+                                        *pAddress = std::get<1>(inputs);
+                                    }
+                                } catch (...) {}
+                            }
+                            else if ((*pAddress && *pAddress == (void*)GetProcAddress(GetModuleHandleA(dll_name.data()), name.data())) ||
+                            (strcmp(reinterpret_cast<PIMAGE_IMPORT_BY_NAME>(instance + pThunk[j].u1.AddressOfData)->Name, name.data()) == 0))
+                            {
+                                originalPtrs[std::get<0>(inputs)] = std::async(std::launch::deferred, [&]() -> void* { return *pAddress; });
+                                originalPtrs[std::get<0>(inputs)].wait();
+                                *pAddress = std::get<1>(inputs);
+                            }
+                        } (), ...);
+                        VirtualProtect(pAddress, sizeof(void*), dwProtect[0], &dwProtect[1]);
+                    }
+                }
+                else
+                {
+                    auto pFunctions = reinterpret_cast<void**>(instance + pImports->FirstThunk);
+
+                    for (ptrdiff_t j = 0; pFunctions[j] != nullptr; j++)
+                    {
+                        auto pAddress = &pFunctions[j];
+                        VirtualProtect(pAddress, sizeof(void*), PAGE_EXECUTE_READWRITE, &dwProtect[0]);
+                        ([&]
+                        {
+                            if (*pAddress && *pAddress == (void*)GetProcAddress(GetModuleHandleA(dll_name.data()), std::get<0>(inputs)))
+                            {
+                                originalPtrs[std::get<0>(inputs)] = std::async(std::launch::deferred, [&]() -> void* { return *pAddress; });
+                                originalPtrs[std::get<0>(inputs)].wait();
+                                *pAddress = std::get<1>(inputs);
+                            }
+                        } (), ...);
+                        VirtualProtect(pAddress, sizeof(void*), dwProtect[0], &dwProtect[1]);
+                    }
+                }
             }
         }
+
+        // Delay imports
+        PIMAGE_DELAYLOAD_DESCRIPTOR pDelayed = reinterpret_cast<PIMAGE_DELAYLOAD_DESCRIPTOR>(instance + ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].VirtualAddress);
+        if (pDelayed && ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].VirtualAddress != 0 && ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].Size != 0)
+        {
+            for (; pDelayed->DllNameRVA != 0; pDelayed++)
+            {
+                if (_stricmp(reinterpret_cast<const char*>(instance + pDelayed->DllNameRVA), dll_name.data()) == 0)
+                {
+                    if (pDelayed->ImportAddressTableRVA != 0)
+                    {
+                        const PIMAGE_THUNK_DATA pThunk = reinterpret_cast<PIMAGE_THUNK_DATA>(instance + pDelayed->ImportNameTableRVA);
+                        const PIMAGE_THUNK_DATA pFThunk = reinterpret_cast<PIMAGE_THUNK_DATA>(instance + pDelayed->ImportAddressTableRVA);
+
+                        for (ptrdiff_t j = 0; pThunk[j].u1.AddressOfData != 0; j++)
+                        {
+                            auto pAddress = reinterpret_cast<void**>(&pFThunk[j].u1.Function);
+                            if (!pAddress) continue;
+                            VirtualProtect(pAddress, sizeof(void*), PAGE_EXECUTE_READWRITE, &dwProtect[0]);
+                            ([&]
+                            {
+                                auto name = std::string_view(std::get<0>(inputs));
+                                auto num = std::string("-1");
+                                if (name.contains("@"))
+                                {
+                                    num = name.substr(name.find_last_of("@") + 1);
+                                    name = name.substr(0, name.find_last_of("@"));
+                                }
+
+                                if (pThunk[j].u1.Ordinal & IMAGE_ORDINAL_FLAG)
+                                {
+                                    try
+                                    {
+                                        if (IMAGE_ORDINAL(pThunk[j].u1.Ordinal) == std::stoi(num.data()))
+                                        {
+                                            originalPtrs[std::get<0>(inputs)] = std::async(std::launch::async,
+                                            [](void** pAddress, void* value, PVOID instance) -> void*
+                                            {
+                                                DWORD dwProtect[2];
+                                                VirtualProtect(pAddress, sizeof(void*), PAGE_EXECUTE_READWRITE, &dwProtect[0]);
+                                                MEMORY_BASIC_INFORMATION mbi;
+                                                mbi.AllocationBase = instance;
+                                                do
+                                                {
+                                                    VirtualQuery(*pAddress, &mbi, sizeof(MEMORY_BASIC_INFORMATION));
+                                                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                                                } while (mbi.AllocationBase == instance);
+                                                auto r = *pAddress;
+                                                *pAddress = value;
+                                                VirtualProtect(pAddress, sizeof(void*), dwProtect[0], &dwProtect[1]);
+                                                return r;
+                                            }, pAddress, std::get<1>(inputs), (PVOID)instance);
+                                        }
+                                    } catch (...) {}
+                                }
+                                else if (strcmp(reinterpret_cast<PIMAGE_IMPORT_BY_NAME>(instance + pThunk[j].u1.AddressOfData)->Name, name.data()) == 0)
+                                {
+                                    originalPtrs[std::get<0>(inputs)] = std::async(std::launch::async,
+                                    [](void** pAddress, void* value, PVOID instance) -> void*
+                                    {
+                                        DWORD dwProtect[2];
+                                        VirtualProtect(pAddress, sizeof(void*), PAGE_EXECUTE_READWRITE, &dwProtect[0]);
+                                        MEMORY_BASIC_INFORMATION mbi;
+                                        mbi.AllocationBase = instance;
+                                        do
+                                        {
+                                            VirtualQuery(*pAddress, &mbi, sizeof(MEMORY_BASIC_INFORMATION));
+                                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                                        } while (mbi.AllocationBase == instance);
+                                        auto r = *pAddress;
+                                        *pAddress = value;
+                                        VirtualProtect(pAddress, sizeof(void*), dwProtect[0], &dwProtect[1]);
+                                        return r;
+                                    }, pAddress, std::get<1>(inputs), (PVOID)instance);
+                                }
+                            } (), ...);
+                            VirtualProtect(pAddress, sizeof(void*), dwProtect[0], &dwProtect[1]);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fallback section scan (e.g. re5dx9.exe steam)
+        if (originalPtrs.empty())
+        {
+            static auto getSection = [](const PIMAGE_NT_HEADERS nt_headers, unsigned section) -> PIMAGE_SECTION_HEADER
+            {
+                return reinterpret_cast<PIMAGE_SECTION_HEADER>(
+                    (UCHAR*)nt_headers->OptionalHeader.DataDirectory +
+                    nt_headers->OptionalHeader.NumberOfRvaAndSizes * sizeof(IMAGE_DATA_DIRECTORY) +
+                    section * sizeof(IMAGE_SECTION_HEADER));
+            };
+
+            for (auto i = 0; i < ntHeader->FileHeader.NumberOfSections; i++)
+            {
+                auto sec = getSection(ntHeader, i);
+                auto pFunctions = reinterpret_cast<void**>(instance + max(sec->PointerToRawData, sec->VirtualAddress));
+
+                for (ptrdiff_t j = 0; j < 300; j++)
+                {
+                    auto pAddress = &pFunctions[j];
+                    VirtualProtect(pAddress, sizeof(void*), PAGE_EXECUTE_READWRITE, &dwProtect[0]);
+                    ([&]
+                    {
+                        auto name = std::string_view(std::get<0>(inputs));
+                        auto num = std::string("-1");
+                        if (name.contains("@"))
+                        {
+                            num = name.substr(name.find_last_of("@") + 1);
+                            name = name.substr(0, name.find_last_of("@"));
+                        }
+
+                        if (*pAddress && *pAddress == (void*)GetProcAddress(GetModuleHandleA(dll_name.data()), name.data()))
+                        {
+                            originalPtrs[std::get<0>(inputs)] = std::async(std::launch::deferred, [&]() -> void* { return *pAddress; });
+                            originalPtrs[std::get<0>(inputs)].wait();
+                            *pAddress = std::get<1>(inputs);
+                        }
+                    } (), ...);
+                    VirtualProtect(pAddress, sizeof(void*), dwProtect[0], &dwProtect[1]);
+                }
+
+                if (!originalPtrs.empty())
+                    return originalPtrs;
+            }
+        }
+
+        return originalPtrs;
     }
 };
 
