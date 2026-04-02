@@ -7,11 +7,10 @@ export module outlines;
 import common;
 import settings;
 
-float fOutlinesSizeMultiplier;
 float* dword_1FCA9A8;
 void __fastcall sub_010AFD30(float* _this, void* edx, float a2)
 {
-    a2 *= FusionFixSettings.GetFloat("PREF_OUTLINESIZE");
+    a2 *= FusionFixSettings.GetFloat(PREF_OUTLINESIZE);
 
     if (a2 <= 0.0)
     {
@@ -33,18 +32,41 @@ public:
         FusionFix::onInitEvent() += []()
         {
             dword_1FCA9A8 = *hook::get_pattern<float*>("F3 0F 10 86 ? ? ? ? F3 0F 59 05 ? ? ? ? 51 8D 8C 24", 12);
-            
+
             auto pattern = hook::pattern("E8 ? ? ? ? 68 ? ? ? ? 8D 94 24 ? ? ? ? 6A 02");
             injector::MakeCALL(pattern.get_first(0), sub_010AFD30, true);
-            
+
             pattern = hook::pattern("D9 1C 24 E8 ? ? ? ? 68 ? ? ? ? 68");
             injector::MakeCALL(pattern.get_first(3), sub_010AFD30, true);
-            
+
             pattern = hook::pattern("E8 ? ? ? ? 68 ? ? ? ? 8D 44 24 20 6A 03 50 88 1D ? ? ? ? C6 05 ? ? ? ? ? 88 1D ? ? ? ? E8 ? ? ? ? 8B 08");
             injector::MakeCALL(pattern.get_first(0), sub_010AFD30, true);
-            
+
             pattern = hook::pattern("E8 ? ? ? ? F3 0F 10 44 24 ? 8D 4C 24 30 F3 0F 11 05 ? ? ? ? F3 0F 10 44 24 ? 51 B9 ? ? ? ? F3 0F 11 05 ? ? ? ? E8 ? ? ? ? 8A 5C 24 0F 80 FB FF 75 0C");
             injector::MakeCALL(pattern.get_first(0), sub_010AFD30, true);
+
+            pattern = hook::pattern("C6 44 24 ? ? F3 0F 11 44 24 ? F3 0F 11 44 24 ? 89 4C 24 54");
+            struct SubtitlesHook1
+            {
+                void operator()(injector::reg_pack& regs)
+                {
+                    auto f = FusionFixSettings.GetFloat(PREF_SUBTITLESIZE);
+                    *(uint8_t*)(regs.esp + 0x7A) = 1;
+                    *(float*)(regs.esp + 0x24) *= f;
+                    *(float*)(regs.esp + 0x28) *= f;
+                }
+            }; injector::MakeInline<SubtitlesHook1>(pattern.get_first(5));
+
+            pattern = hook::pattern("F3 0F 11 44 24 ? 39 58 30 75 08 F3 0F 10 44 24 ? EB 03 0F 28 C1 8B 40 08");
+            struct SubtitlesHook2
+            {
+                void operator()(injector::reg_pack& regs)
+                {
+                    auto f = FusionFixSettings.GetFloat(PREF_SUBTITLESIZE);
+                    *(float*)(regs.esp + 0x30) = *(float*)(regs.eax + 0x20) * f;
+                    *(float*)(regs.esp + 0x34) = *(float*)(regs.eax + 0x24) * f;
+                }
+            }; injector::MakeInline<SubtitlesHook2>(pattern.get_first(0), pattern.get_first(6));
         };
     }
 } Outlines;

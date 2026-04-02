@@ -9,23 +9,43 @@ export module settings;
 import common;
 import comvars;
 
+export enum Pref
+{
+    PREF_SKIPINTRO,
+    PREF_HIDESKIP,
+    PREF_DISABLELEADERBOARDS,
+    PREF_SUBTITLESIZE,
+    PREF_OUTLINESIZE,
+    PREF_BORDERLESS,
+    PREF_LEDILLUMINATION,
+    PREF_BUTTONS,
+    PREF_DEVICECHANGE,
+    PREF_HUDASPECTRATIOCONSTRAINT,
+    PREF_CUSTOMFOV,
+
+    COUNT,
+};
+
 export class CSettings
 {
 private:
-    static inline std::map<std::string_view, std::variant<int32_t, float, std::string>> mFusionPrefs;
+    static inline std::array<std::variant<int32_t, float, std::string>, static_cast<size_t>(Pref::COUNT)> mFusionPrefs;
 
 public:
     static inline void ReadIniSettings()
     {
         CIniReader iniReader("");
-        mFusionPrefs["PREF_SKIPINTRO"] = std::clamp(iniReader.ReadInteger("MAIN", "SkipIntro", 1), 0, 1);
-        mFusionPrefs["PREF_HIDESKIP"] = std::clamp(iniReader.ReadInteger("MAIN", "HideSkipButton", 1), 0, 1);
-        mFusionPrefs["PREF_DISABLELEADERBOARDS"] = std::clamp(iniReader.ReadInteger("MAIN", "DisableGlobalLeaderboards", 1), 0, 1);
-        mFusionPrefs["PREF_OUTLINESIZE"] = std::clamp(iniReader.ReadFloat("MAIN", "OutlinesSizeMultiplier", 1.0f), 0.0f, 10.0f);
-        mFusionPrefs["PREF_BORDERLESS"] = std::clamp(iniReader.ReadInteger("MAIN", "BorderlessWindowed", 1), 0, 1);
-        mFusionPrefs["PREF_LEDILLUMINATION"] = std::clamp(iniReader.ReadInteger("MAIN", "LightSyncRGB", 1), 0, 1);
-        mFusionPrefs["PREF_BUTTONS"] = std::clamp(iniReader.ReadInteger("MAIN", "GamepadIcons", 0), 0, gLastControllerTextureIndex);
-        mFusionPrefs["PREF_DEVICECHANGE"] = std::clamp(iniReader.ReadInteger("MAIN", "DisableDeviceChangeEvent", 1), 0, 1);
+        mFusionPrefs[PREF_SKIPINTRO] = std::clamp(iniReader.ReadInteger("MAIN", "SkipIntro", 1), 0, 1);
+        mFusionPrefs[PREF_HIDESKIP] = std::clamp(iniReader.ReadInteger("MAIN", "HideSkipButton", 1), 0, 1);
+        mFusionPrefs[PREF_DISABLELEADERBOARDS] = std::clamp(iniReader.ReadInteger("MAIN", "DisableGlobalLeaderboards", 1), 0, 1);
+        mFusionPrefs[PREF_SUBTITLESIZE] = std::clamp(iniReader.ReadFloat("MAIN", "SubtitlesSizeMultiplier", 1.0f), 0.0f, 10.0f);
+        mFusionPrefs[PREF_OUTLINESIZE] = std::clamp(iniReader.ReadFloat("MAIN", "OutlinesSizeMultiplier", 1.0f), 0.0f, 10.0f);
+        mFusionPrefs[PREF_BORDERLESS] = std::clamp(iniReader.ReadInteger("MAIN", "BorderlessWindowed", 1), 0, 1);
+        mFusionPrefs[PREF_LEDILLUMINATION] = std::clamp(iniReader.ReadInteger("MAIN", "LightSyncRGB", 1), 0, 1);
+        mFusionPrefs[PREF_BUTTONS] = std::clamp(iniReader.ReadInteger("MAIN", "GamepadIcons", 0), 0, gLastControllerTextureIndex);
+        mFusionPrefs[PREF_DEVICECHANGE] = std::clamp(iniReader.ReadInteger("MAIN", "DisableDeviceChangeEvent", 1), 0, 1);
+        mFusionPrefs[PREF_HUDASPECTRATIOCONSTRAINT] = ParseWidescreenHudOffset(iniReader.ReadString("MAIN", "HudAspectRatioConstraint", "")).value_or(-1.0f);
+        mFusionPrefs[PREF_CUSTOMFOV] = std::clamp(iniReader.ReadFloat("MAIN", "CustomFOV", 45.0f), 45.0f, 90.0f);
 
         static std::once_flag flag;
         std::call_once(flag, [&]()
@@ -84,8 +104,10 @@ public:
     }
 
 public:
-    int32_t GetInt(std::string_view name) { return std::get<int32_t>(mFusionPrefs[name]); }
-    float GetFloat(std::string_view name) { return std::get<float>(mFusionPrefs[name]); }
-    std::string GetString(std::string_view name) { return std::get<std::string>(mFusionPrefs[name]); }
-    void SetInt(std::string_view name, int32_t value) { mFusionPrefs[name] = value;  }
+    int32_t GetInt(Pref name) { return std::get<int32_t>(mFusionPrefs[name]); }
+    float GetFloat(Pref name) { return std::get<float>(mFusionPrefs[name]); }
+    std::string GetString(Pref name) { return std::get<std::string>(mFusionPrefs[name]); }
+    void SetInt(Pref name, int32_t value) { mFusionPrefs[name] = value; }
+    void SetFloat(Pref name, float value) { mFusionPrefs[name] = value; }
+    void SetString(Pref name, std::string value) { mFusionPrefs[name] = value; }
 } FusionFixSettings;

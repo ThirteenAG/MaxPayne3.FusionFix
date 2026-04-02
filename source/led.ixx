@@ -165,7 +165,7 @@ public:
     {
         FusionFix::onInitEvent() += []()
         {
-            if (FusionFixSettings.GetInt("PREF_LEDILLUMINATION"))
+            if (FusionFixSettings.GetInt(PREF_LEDILLUMINATION))
             {
                 bLogiLedInitialized = LogiLedInit();
                 if (bLogiLedInitialized)
@@ -174,15 +174,17 @@ public:
 
             FusionFix::onIniFileChange() += []()
             {
-                if (FusionFixSettings.GetInt("PREF_LEDILLUMINATION"))
+                if (FusionFixSettings.GetInt(PREF_LEDILLUMINATION))
                 {
-                    if (!bLogiLedInitialized) {
+                    if (!bLogiLedInitialized)
+                    {
                         bLogiLedInitialized = LogiLedInit();
                         if (bLogiLedInitialized)
                             AmbientLighting();
                     }
                 }
-                else if (bLogiLedInitialized) {
+                else if (bLogiLedInitialized)
+                {
                     LogiLedShutdown();
                     bLogiLedInitialized = false;
                 }
@@ -212,20 +214,23 @@ public:
 
         FusionFix::onShutdownEvent() += []()
         {
-            if (bLogiLedInitialized) {
+            if (bLogiLedInitialized)
+            {
                 LogiLedShutdown();
                 bLogiLedInitialized = false;
             }
         };
 
         IATHook::Replace(GetModuleHandleA(NULL), "KERNEL32.DLL",
-            std::forward_as_tuple("ExitProcess", static_cast<void(__stdcall*)(UINT)>([](UINT uExitCode) {
-                if (bLogiLedInitialized) {
-                    LogiLedShutdown();
-                    bLogiLedInitialized = false;
-                }
-                ExitProcess(uExitCode);
-            }))
+            std::forward_as_tuple("ExitProcess", static_cast<void(__stdcall*)(UINT)>([](UINT uExitCode)
+        {
+            if (bLogiLedInitialized)
+            {
+                LogiLedShutdown();
+                bLogiLedInitialized = false;
+            }
+            ExitProcess(uExitCode);
+        }))
         );
     }
 } LED;

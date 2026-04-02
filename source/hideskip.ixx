@@ -21,20 +21,20 @@ public:
 
             static auto HideSkipCB = []()
             {
-              if (FusionFixSettings.GetInt("PREF_HIDESKIP"))
-              {
-                  fnHideSkip1.Write();
-                  fnHideSkip2.Write();
-              }
-              else
-              {
-                  fnHideSkip1.Restore();
-                  fnHideSkip2.Restore();
-              }
+                if (FusionFixSettings.GetInt(PREF_HIDESKIP))
+                {
+                    fnHideSkip1.Write();
+                    fnHideSkip2.Write();
+                }
+                else
+                {
+                    fnHideSkip1.Restore();
+                    fnHideSkip2.Restore();
+                }
             };
 
             HideSkipCB();
-            
+
             FusionFix::onIniFileChange() += []()
             {
                 HideSkipCB();

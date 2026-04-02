@@ -42,7 +42,7 @@ private:
     static inline void** controllerDstTexPtr = nullptr;
     static void ButtonsCallback()
     {
-        auto prefvalueindex = FusionFixSettings.GetInt("PREF_BUTTONS");
+        auto prefvalueindex = FusionFixSettings.GetInt(PREF_BUTTONS);
         if (gameButtonPtrs)
         {
             for (auto b = buttons.begin(); b < buttons.end(); b++)
@@ -148,7 +148,7 @@ public:
                     if (bIsController)
                     {
                         controllerDstTexPtr = (void**)(regs.esi + 0x104);
-                        auto v = FusionFixSettings.GetInt("PREF_BUTTONS");
+                        auto v = FusionFixSettings.GetInt(PREF_BUTTONS);
                         if (v > gLastControllerTextureIndex) v = 0; else if (v < 0) v = gLastControllerTextureIndex;
                         if (controllerTexPtrs[v])
                             *controllerDstTexPtr = controllerTexPtrs[v];
@@ -168,7 +168,7 @@ public:
                 {
                     if (oldVal == 3 && curVal == 4)
                     {
-                        auto v = FusionFixSettings.GetInt("PREF_BUTTONS") + 1;
+                        auto v = FusionFixSettings.GetInt(PREF_BUTTONS) + 1;
                         if (v > gLastControllerTextureIndex) v = 0; else if (v < 0) v = gLastControllerTextureIndex;
 
                         CIniReader iniWriter("");
@@ -178,7 +178,7 @@ public:
                     }
                     else if (oldVal == 4 && curVal == 3)
                     {
-                        auto v = FusionFixSettings.GetInt("PREF_BUTTONS") - 1;
+                        auto v = FusionFixSettings.GetInt(PREF_BUTTONS) - 1;
                         if (v > gLastControllerTextureIndex) v = 0; else if (v < 0) v = gLastControllerTextureIndex;
 
                         CIniReader iniWriter("");

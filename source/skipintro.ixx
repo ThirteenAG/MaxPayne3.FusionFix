@@ -14,7 +14,7 @@ public:
     {
         FusionFix::onInitEvent() += []()
         {
-            if (FusionFixSettings.GetInt("PREF_SKIPINTRO"))
+            if (FusionFixSettings.GetInt(PREF_SKIPINTRO))
             {
                 // legal screens
                 auto pattern = hook::pattern("81 FF ? ? ? ? 0F 86 ? ? ? ? E8 ? ? ? ? 89 86 ? ? ? ? 05 ? ? ? ? 89 86 ? ? ? ? C6 86 ? ? ? ? ? E9 ? ? ? ? 3C 01");

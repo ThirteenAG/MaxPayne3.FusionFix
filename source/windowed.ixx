@@ -36,7 +36,7 @@ void SwitchWindowStyle()
     {
         RECT rect = gRect;
         LONG lStyle = GetWindowLong(gWnd, GWL_STYLE);
-        if (FusionFixSettings.GetInt("PREF_BORDERLESS"))
+        if (FusionFixSettings.GetInt(PREF_BORDERLESS))
         {
             lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
         }
@@ -88,7 +88,7 @@ BOOL WINAPI CenterWindowPosition(int nWidth, int nHeight)
 
 BOOL WINAPI AdjustWindowRect_Hook(LPRECT lpRect, DWORD dwStyle, BOOL bMenu)
 {
-    if (FusionFixSettings.GetInt("PREF_BORDERLESS"))
+    if (FusionFixSettings.GetInt(PREF_BORDERLESS))
         dwStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
     else
         dwStyle |= (WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
@@ -100,7 +100,7 @@ static void afterCreateWindow()
 {
     LONG lStyle = GetWindowLong(gWnd, GWL_STYLE);
 
-    if (FusionFixSettings.GetInt("PREF_BORDERLESS"))
+    if (FusionFixSettings.GetInt(PREF_BORDERLESS))
         lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
     else
     {
@@ -114,7 +114,7 @@ static void afterCreateWindow()
 BOOL WINAPI SetWindowPos_Hook(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
 {
     BOOL res = SetWindowPos(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);
-    if (FusionFixSettings.GetInt("PREF_BORDERLESS"))
+    if (FusionFixSettings.GetInt(PREF_BORDERLESS))
     {
         afterCreateWindow();
         RECT rect;
@@ -127,7 +127,7 @@ BOOL WINAPI SetWindowPos_Hook(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int
 
 LONG WINAPI SetWindowLongA_Hook(HWND hWnd, int nIndex, LONG dwNewLong)
 {
-    if (FusionFixSettings.GetInt("PREF_BORDERLESS"))
+    if (FusionFixSettings.GetInt(PREF_BORDERLESS))
     {
         afterCreateWindow();
         RECT rect;
@@ -150,7 +150,7 @@ public:
     {
         FusionFix::onInitEvent() += []()
         {
-            IATHook::Replace(GetModuleHandleA(NULL), "USER32.DLL", 
+            IATHook::Replace(GetModuleHandleA(NULL), "USER32.DLL",
                 std::forward_as_tuple("CreateWindowExA", CreateWindowExA_Hook),
                 std::forward_as_tuple("CreateWindowExW", CreateWindowExW_Hook),
                 std::forward_as_tuple("MoveWindow", MoveWindow_Hook),

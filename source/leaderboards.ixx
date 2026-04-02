@@ -19,7 +19,7 @@ public:
 
             static auto LeaderboardsCB = []()
             {
-                if (FusionFixSettings.GetInt("PREF_DISABLELEADERBOARDS"))
+                if (FusionFixSettings.GetInt(PREF_DISABLELEADERBOARDS))
                     fnLeaderboards.Write();
                 else
                     fnLeaderboards.Restore();
