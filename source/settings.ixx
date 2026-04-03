@@ -45,7 +45,7 @@ public:
         mFusionPrefs[PREF_BUTTONS] = std::clamp(iniReader.ReadInteger("MAIN", "GamepadIcons", 0), 0, gLastControllerTextureIndex);
         mFusionPrefs[PREF_DEVICECHANGE] = std::clamp(iniReader.ReadInteger("MAIN", "DisableDeviceChangeEvent", 1), 0, 1);
         mFusionPrefs[PREF_HUDASPECTRATIOCONSTRAINT] = ParseWidescreenHudOffset(iniReader.ReadString("MAIN", "HudAspectRatioConstraint", "")).value_or(-1.0f);
-        mFusionPrefs[PREF_CUSTOMFOV] = std::clamp(iniReader.ReadFloat("MAIN", "CustomFOV", 45.0f), 45.0f, 90.0f);
+        mFusionPrefs[PREF_CUSTOMFOV] = std::clamp(iniReader.ReadFloat("MAIN", "CustomFOV", 0.0f), 0.0f, 45.0f);
 
         static std::once_flag flag;
         std::call_once(flag, [&]()
