@@ -22,6 +22,7 @@ export enum Pref
     PREF_DEVICECHANGE,
     PREF_HUDASPECTRATIOCONSTRAINT,
     PREF_CUSTOMFOV,
+    PREF_CONSOLEGAMMA,
 
     COUNT,
 };
@@ -46,6 +47,7 @@ public:
         mFusionPrefs[PREF_DEVICECHANGE] = std::clamp(iniReader.ReadInteger("MAIN", "DisableDeviceChangeEvent", 1), 0, 1);
         mFusionPrefs[PREF_HUDASPECTRATIOCONSTRAINT] = ParseWidescreenHudOffset(iniReader.ReadString("MAIN", "HudAspectRatioConstraint", "")).value_or(-1.0f);
         mFusionPrefs[PREF_CUSTOMFOV] = std::clamp(iniReader.ReadFloat("MAIN", "CustomFOV", 0.0f), 0.0f, 45.0f);
+        mFusionPrefs[PREF_CONSOLEGAMMA] = std::clamp(iniReader.ReadInteger("MAIN", "ConsoleGamma", 0), 0, 1);
 
         static std::once_flag flag;
         std::call_once(flag, [&]()

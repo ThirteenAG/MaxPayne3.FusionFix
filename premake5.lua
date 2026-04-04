@@ -79,6 +79,7 @@ workspace "MaxPayne3.FusionFix"
    files { "external/hooking/Hooking.Patterns.h", "external/hooking/Hooking.Patterns.cpp" }
    files { "external/injector/safetyhook/include/**.hpp", "external/injector/safetyhook/src/**.cpp" }
    files { "external/injector/zydis/**.h", "external/injector/zydis/**.c" }
+   files { "data/plugins/*.ini" }
 
    characterset ("Unicode")
    
