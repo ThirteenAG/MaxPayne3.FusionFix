@@ -317,13 +317,20 @@ public:
     {
         FusionFix::onInitEventAsync() += []()
         {
-            auto pattern = hook::pattern("8B 39 8B 16 8B 82 ? ? ? ? 53");
-            static auto DX11PresentHook = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& regs)
+            auto pattern = hook::pattern("0F B6 C8 ? ? F7 D9 1B C9 F7 D1 23 0D ? ? ? ? 51 52 FF D0 8B F8 81 FF ? ? ? ? 75");
+            static auto DX11PresentHook1 = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& regs)
             {
-                IDXGISwapChain* pSwapChain = (IDXGISwapChain*)regs.ecx;
+                IDXGISwapChain* pSwapChain = (IDXGISwapChain*)regs.edx;
                 ConsoleGammaDX11::Render(pSwapChain);
             });
-            
+
+            pattern = hook::pattern("8B 07 F7 D9 1B C9 F7 D1 23 0D ? ? ? ? 51 52 FF D0 8B F8 81 FF 0A 00 7A 88 74");
+            static auto DX11PresentHook2 = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& regs)
+            {
+                IDXGISwapChain* pSwapChain = (IDXGISwapChain*)regs.edx;
+                ConsoleGammaDX11::Render(pSwapChain);
+            });
+
             pattern = hook::pattern("6A ? 51 55 53 52");
             static auto DX11ResizeBuffersHook = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& regs)
             {
