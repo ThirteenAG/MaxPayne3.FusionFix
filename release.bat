@@ -8,7 +8,7 @@ for /f "tokens=1,* delims=:" %%A in ('curl -ks https://api.github.com/repos/elis
 
 call tools\EmbedPDB\EmbedPDB.exe bin\MaxPayne3.FusionFix.asi
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "Sign.ps1" -SearchPaths ".\bin\MaxPayne3.FusionFix.asi"
+powershell -NoProfile -ExecutionPolicy Bypass -File "sign.ps1" -SearchPaths ".\bin\MaxPayne3.FusionFix.asi"
 
 copy bin\MaxPayne3.FusionFix.asi data\plugins\MaxPayne3.FusionFix.asi
 
