@@ -18,8 +18,6 @@
   &nbsp;&nbsp;&nbsp;
   <a href="https://x.com/fusionfix10" target="_blank"><img width="200" src="https://raw.githubusercontent.com/ThirteenAG/GTAIV.EFLC.FusionFix/refs/heads/master/installer/x.svg"></a>
   &nbsp;&nbsp;&nbsp;
-  <a href="https://fusionfix.io/iv" target="_blank"><img width="200" src="https://raw.githubusercontent.com/ThirteenAG/GTAIV.EFLC.FusionFix/refs/heads/master/installer/website.svg"></a>
-  &nbsp;&nbsp;&nbsp;
 </p>
 
 This projects aims to add new features and fix some issues in Max Payne 3. Also available for [GTA IV: The Complete Edition](https://github.com/ThirteenAG/GTAIV.EFLC.FusionFix#readme).
