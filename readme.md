@@ -9,7 +9,7 @@
   <a href="https://ko-fi.com/thirteenag"><img src="https://raw.githubusercontent.com/ThirteenAG/thirteenag.github.io/refs/heads/master/img/buttons/kofi.svg" width="250"></a>
   <a href="https://paypal.me/SergeyP13"><img src="https://raw.githubusercontent.com/ThirteenAG/thirteenag.github.io/refs/heads/master/img/buttons/paypal.svg" width="250"></a>
   <a href="https://www.patreon.com/ThirteenAG"><img src="https://raw.githubusercontent.com/ThirteenAG/thirteenag.github.io/refs/heads/master/img/buttons/patreon.svg" width="250"></a>
-  <a href="https://boosty.to/thirteenag/donate"><img src="https://raw.githubusercontent.com/ThirteenAG/thirteenag.github.io/refs/heads/master/img/buttons/boosty.svg" width="250"></a><br><br>
+  <a href="https://boosty.to/thirteenag"><img src="https://raw.githubusercontent.com/ThirteenAG/thirteenag.github.io/refs/heads/master/img/buttons/boosty.svg" width="250"></a><br><br>
   <a href="https://discord.gg/2ckFCS572Z" target="_blank"><img width="200" src="https://raw.githubusercontent.com/ThirteenAG/GTAIV.EFLC.FusionFix/refs/heads/master/installer/discord.svg"></a>
   &nbsp;&nbsp;&nbsp;
   <a href="https://t.me/fusionfix" target="_blank"><img width="200" src="https://raw.githubusercontent.com/ThirteenAG/GTAIV.EFLC.FusionFix/refs/heads/master/installer/telegram.svg"></a>
