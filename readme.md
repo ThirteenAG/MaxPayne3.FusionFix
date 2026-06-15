@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://github.com/ThirteenAG/MaxPayne3.FusionFix" target="_blank"><img width="600" src="https://github.com/user-attachments/assets/6b150869-9e5c-4463-aeb8-18a1d19076b0"></a>
   <br />
-  <a href="https://patreon.fusionfix.io/" target="_blank"><img width="100%" src="https://fusionlegacyinitiative.com/wp-content/uploads/sc-sponsors/sponsors-progress-ffmp3.svg"></a>
+  <a href="https://patreon.fusionfix.io/" target="_blank"><img width="100%" src="https://fusionlegacyinitiative.com/sponsors-progress/sponsors-progress-ffmp3.svg"></a>
   <br />
   <a href="https://github.com/sponsors/ThirteenAG"><img src="https://raw.githubusercontent.com/ThirteenAG/thirteenag.github.io/refs/heads/master/img/buttons/github.svg" width="250"></a>
   <a href="https://ko-fi.com/thirteenag"><img src="https://raw.githubusercontent.com/ThirteenAG/thirteenag.github.io/refs/heads/master/img/buttons/kofi.svg" width="250"></a>
