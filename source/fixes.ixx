@@ -58,10 +58,10 @@ public:
                 };
             }
 
-            // Cutscene panels animation fix
-            // For the renderer command 0xB6 both PC version 22 and console sample around the center.
-            // Whereas version 28 and above on PC calculate the sampling center from the coords which breaks the panels' movement.
+            // Cutscene panels animation fixes
             {
+                // For the renderer command 0xB6 both PC version 22 and console sample around the center.
+                // Whereas version 28 and above on PC calculate the sampling center from the coords which breaks the panels' movement.
                 auto pattern = hook::pattern("F3 0F 59 CC F3 0F 59 C4 F3 0F 59 DC");
                 injector::MakeNOP(pattern.get_first(0), 8, true);
                 static auto CutscenePanelsAnimationFix = safetyhook::create_mid(pattern.get_first(0), [](SafetyHookContext& regs)
@@ -69,6 +69,19 @@ public:
                     regs.xmm1 = regs.xmm4;
                     regs.xmm0 = regs.xmm4;
                 });
+
+                // On PC the position deltas for LockSlide are missing fabs, adding them back fixes some panels
+                pattern = hook::pattern("F3 0F 5C DA ? ? ? ? F3 0F 11 4C 24 ? ? ? ? ? F3 0F 59 D8");
+
+                static auto CutscenePanelsLockSlideYFix = safetyhook::create_mid(pattern.get_first(0x12), [](SafetyHookContext& regs)
+                    {
+                        regs.xmm3.f32[0] = fabs(regs.xmm3.f32[0]);
+                    });
+
+                static auto CutscenePanelsLockSlideXFix = safetyhook::create_mid(pattern.get_first(0x27), [](SafetyHookContext& regs)
+                    {
+                        regs.xmm2.f32[0] = fabs(regs.xmm2.f32[0]);
+                    });
             }
         };
 
