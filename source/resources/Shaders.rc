@@ -1,0 +1,55 @@
+// DX9 (Shader Model 3.0)
+#define IDR_VS_BlitXenonGammaDX9    101
+#define IDR_PS_BlitXenonGammaDX9    102
+
+#define IDR_VS_BlitCellGammaDX9     103
+#define IDR_PS_BlitCellGammaDX9     104
+
+// DX10 (Shader Model 4.0)
+#define IDR_VS_BlitXenonGammaDX10   111
+#define IDR_PS_BlitXenonGammaDX10   112
+
+#define IDR_VS_BlitCellGammaDX10    113
+#define IDR_PS_BlitCellGammaDX10    114
+
+// DX10.1 (Shader Model 4.1)
+#define IDR_VS_BlitXenonGammaDX10_1 121
+#define IDR_PS_BlitXenonGammaDX10_1 122
+
+#define IDR_VS_BlitCellGammaDX10_1  123
+#define IDR_PS_BlitCellGammaDX10_1  124
+
+// DX11 (Shader Model 5.0)
+#define IDR_VS_BlitXenonGammaDX11   131
+#define IDR_PS_BlitXenonGammaDX11   132
+
+#define IDR_VS_BlitCellGammaDX11    133
+#define IDR_PS_BlitCellGammaDX11    134
+
+// DX9 (Shader Model 3.0)
+IDR_VS_BlitXenonGammaDX9    RCDATA "shaders/win32_30/VS_BlitXenonGammaDX9.cso"
+IDR_PS_BlitXenonGammaDX9    RCDATA "shaders/win32_30/PS_BlitXenonGammaDX9.cso"
+
+IDR_VS_BlitCellGammaDX9     RCDATA "shaders/win32_30/VS_BlitCellGammaDX9.cso"
+IDR_PS_BlitCellGammaDX9     RCDATA "shaders/win32_30/PS_BlitCellGammaDX9.cso"
+
+// DX10 (Shader Model 4.0)
+IDR_VS_BlitXenonGammaDX10   RCDATA "shaders/win32_40/VS_BlitXenonGammaDX10.cso"
+IDR_PS_BlitXenonGammaDX10   RCDATA "shaders/win32_40/PS_BlitXenonGammaDX10.cso"
+
+IDR_VS_BlitCellGammaDX10    RCDATA "shaders/win32_40/VS_BlitCellGammaDX10.cso"
+IDR_PS_BlitCellGammaDX10    RCDATA "shaders/win32_40/PS_BlitCellGammaDX10.cso"
+
+// DX10.1 (Shader Model 4.1)
+IDR_VS_BlitXenonGammaDX10_1 RCDATA "shaders/win32_41/VS_BlitXenonGammaDX10_1.cso"
+IDR_PS_BlitXenonGammaDX10_1 RCDATA "shaders/win32_41/PS_BlitXenonGammaDX10_1.cso"
+
+IDR_VS_BlitCellGammaDX10_1  RCDATA "shaders/win32_41/VS_BlitCellGammaDX10_1.cso"
+IDR_PS_BlitCellGammaDX10_1  RCDATA "shaders/win32_41/PS_BlitCellGammaDX10_1.cso"
+
+// DX11 (Shader Model 5.0)
+IDR_VS_BlitXenonGammaDX11   RCDATA "shaders/win32_50/VS_BlitXenonGammaDX11.cso"
+IDR_PS_BlitXenonGammaDX11   RCDATA "shaders/win32_50/PS_BlitXenonGammaDX11.cso"
+
+IDR_VS_BlitCellGammaDX11    RCDATA "shaders/win32_50/VS_BlitCellGammaDX11.cso"
+IDR_PS_BlitCellGammaDX11    RCDATA "shaders/win32_50/PS_BlitCellGammaDX11.cso"

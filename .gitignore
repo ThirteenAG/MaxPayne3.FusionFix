@@ -331,8 +331,11 @@ ASALocalRun/
 .mfractor/
 
 data/**/*.img
+shaders/external/**/*.asm
+source/**/*.cso
 #data/update/common/shaders/**/*.fxc
 data/update/platform/textures/*.wtd
+!source/dxsdk/**
 
 data/plugins/MaxPayne3.FusionFix.asi
 MaxPayne3.FusionFix.zip
