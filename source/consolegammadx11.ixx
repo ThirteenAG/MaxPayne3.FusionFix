@@ -2,9 +2,6 @@ module;
 
 #include <common.hxx>
 #include <d3d11.h>
-#include <d3dcompiler.h>
-
-#pragma comment(lib, "d3dcompiler.lib")
 
 export module consolegammadx11;
 
@@ -39,83 +36,360 @@ import settings;
 class ConsoleGammaDX11
 {
 private:
-    static inline bool s_initialized = false;
-    static inline UINT s_width = 0;
-    static inline UINT s_height = 0;
+    struct VertexFormat
+    {
+        float Pos[4];
+        float TexCoord[2];
+    };
 
-    static inline ID3D11Device* s_device = nullptr;
-    static inline ID3D11DeviceContext* s_context = nullptr;
-    static inline ID3D11VertexShader* s_vs = nullptr;
-    static inline ID3D11PixelShader* s_ps = nullptr;
-    static inline ID3D11SamplerState* s_sampler = nullptr;
-    static inline ID3D11BlendState* s_blendState = nullptr;
-    static inline ID3D11DepthStencilState* s_dsState = nullptr;
-    static inline ID3D11RasterizerState* s_rsState = nullptr;
-    static inline ID3D11Texture2D* s_copyTex = nullptr;
-    static inline ID3D11ShaderResourceView* s_copySRV = nullptr;
-    static inline ID3D11RenderTargetView* s_rtv = nullptr;
+    struct ShaderProgram
+    {
+        int vsResourceId;
+        int psResourceId;
+        ID3D11VertexShader** vs;
+        ID3D11PixelShader** ps;
+    };
 
     struct PipelineState
     {
-        ID3D11RenderTargetView* rtv = nullptr;
-        ID3D11DepthStencilView* dsv = nullptr;
+        ID3D11RenderTargetView* renderTargetView = nullptr;
+        ID3D11DepthStencilView* depthStencilView = nullptr;
+
         ID3D11BlendState* blendState = nullptr;
-        FLOAT blendFactor[4] = {};
-        UINT sampleMask = 0;
-        ID3D11DepthStencilState* dsState = nullptr;
+        FLOAT blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        UINT sampleMask = 0xFFFFFFFF;
+
+        ID3D11DepthStencilState* depthStencilState = nullptr;
         UINT stencilRef = 0;
-        ID3D11RasterizerState* rsState = nullptr;
-        ID3D11VertexShader* vs = nullptr;
-        ID3D11PixelShader* ps = nullptr;
+
+        ID3D11RasterizerState* rasterizerState = nullptr;
+
+        ID3D11VertexShader* vertexShader = nullptr;
+        ID3D11PixelShader* pixelShader = nullptr;
+
+        ID3D11Buffer* vertexBuffer = nullptr;
+        UINT vertexStride = 0;
+        UINT vertexOffset = 0;
+
         ID3D11InputLayout* inputLayout = nullptr;
-        D3D11_PRIMITIVE_TOPOLOGY topology = {};
-        ID3D11ShaderResourceView* psrv = nullptr;
-        ID3D11SamplerState* psampler = nullptr;
+        D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+        ID3D11ShaderResourceView* pixelSRV = nullptr;
+        ID3D11SamplerState* pixelSampler = nullptr;
+
         UINT numViewports = 0;
         D3D11_VIEWPORT viewports[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE] = {};
+
+        UINT numScissors = 0;
+        D3D11_RECT scissors[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE] = {};
     };
+
+    static inline bool g_initialized = false;
+    static inline UINT g_width = 0;
+    static inline UINT g_height = 0;
+
+    static inline ID3D11Device* g_device = nullptr;
+    static inline ID3D11DeviceContext* g_immediateContext = nullptr;
+
+    static inline ID3D11VertexShader* g_vertexShader = nullptr;
+    static inline ID3D11PixelShader* g_pixelShader = nullptr;
+
+    static inline ID3D11Buffer* g_vertexBuffer = nullptr;
+    static inline ID3D11InputLayout* g_inputLayout = nullptr;
+    static inline ID3D11SamplerState* g_samplerState = nullptr;
+
+    static inline ID3D11BlendState* g_blendState = nullptr;
+    static inline ID3D11DepthStencilState* g_depthStencilState = nullptr;
+    static inline ID3D11RasterizerState* g_rasterizerState = nullptr;
+
+    static inline ID3D11Texture2D* g_copyTexture = nullptr;
+    static inline ID3D11ShaderResourceView* g_copySRV = nullptr;
+    static inline ID3D11RenderTargetView* g_renderTargetView = nullptr;
 
     static void SaveState(PipelineState& st)
     {
-        s_context->OMGetRenderTargets(1, &st.rtv, &st.dsv);
-        s_context->OMGetBlendState(&st.blendState, st.blendFactor, &st.sampleMask);
-        s_context->OMGetDepthStencilState(&st.dsState, &st.stencilRef);
-        s_context->RSGetState(&st.rsState);
-        s_context->VSGetShader(&st.vs, nullptr, nullptr);
-        s_context->PSGetShader(&st.ps, nullptr, nullptr);
-        s_context->IAGetInputLayout(&st.inputLayout);
-        s_context->IAGetPrimitiveTopology(&st.topology);
-        s_context->PSGetShaderResources(0, 1, &st.psrv);
-        s_context->PSGetSamplers(0, 1, &st.psampler);
+        g_immediateContext->OMGetRenderTargets(1, &st.renderTargetView, &st.depthStencilView);
+        g_immediateContext->OMGetBlendState(&st.blendState, st.blendFactor, &st.sampleMask);
+        g_immediateContext->OMGetDepthStencilState(&st.depthStencilState, &st.stencilRef);
+        g_immediateContext->RSGetState(&st.rasterizerState);
+
+        g_immediateContext->VSGetShader(&st.vertexShader, nullptr, nullptr);
+        g_immediateContext->PSGetShader(&st.pixelShader, nullptr, nullptr);
+
+        g_immediateContext->IAGetVertexBuffers(0, 1, &st.vertexBuffer, &st.vertexStride, &st.vertexOffset);
+        g_immediateContext->IAGetInputLayout(&st.inputLayout);
+        g_immediateContext->IAGetPrimitiveTopology(&st.topology);
+
+        g_immediateContext->PSGetShaderResources(0, 1, &st.pixelSRV);
+        g_immediateContext->PSGetSamplers(0, 1, &st.pixelSampler);
+
         st.numViewports = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
-        s_context->RSGetViewports(&st.numViewports, st.viewports);
+        g_immediateContext->RSGetViewports(&st.numViewports, st.viewports);
+
+        st.numScissors = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
+        g_immediateContext->RSGetScissorRects(&st.numScissors, st.scissors);
     }
 
     static void RestoreState(PipelineState& st)
     {
-        s_context->OMSetRenderTargets(1, &st.rtv, st.dsv);
-        s_context->OMSetBlendState(st.blendState, st.blendFactor, st.sampleMask);
-        s_context->OMSetDepthStencilState(st.dsState, st.stencilRef);
-        s_context->RSSetState(st.rsState);
-        s_context->VSSetShader(st.vs, nullptr, 0);
-        s_context->PSSetShader(st.ps, nullptr, 0);
-        s_context->IASetInputLayout(st.inputLayout);
-        s_context->IASetPrimitiveTopology(st.topology);
-        s_context->PSSetShaderResources(0, 1, &st.psrv);
-        s_context->PSSetSamplers(0, 1, &st.psampler);
-        s_context->RSSetViewports(st.numViewports, st.viewports);
+        g_immediateContext->OMSetRenderTargets(1, &st.renderTargetView, st.depthStencilView);
+        g_immediateContext->OMSetBlendState(st.blendState, st.blendFactor, st.sampleMask);
+        g_immediateContext->OMSetDepthStencilState(st.depthStencilState, st.stencilRef);
+        g_immediateContext->RSSetState(st.rasterizerState);
 
-        // The OMGet/RSGet/etc. calls AddRef, so release after restoring
-        SAFE_RELEASE(st.rtv);
-        SAFE_RELEASE(st.dsv);
+        g_immediateContext->VSSetShader(st.vertexShader, nullptr, 0);
+        g_immediateContext->PSSetShader(st.pixelShader, nullptr, 0);
+
+        g_immediateContext->IASetVertexBuffers(0, 1, &st.vertexBuffer, &st.vertexStride, &st.vertexOffset);
+        g_immediateContext->IASetInputLayout(st.inputLayout);
+        g_immediateContext->IASetPrimitiveTopology(st.topology);
+
+        g_immediateContext->PSSetShaderResources(0, 1, &st.pixelSRV);
+        g_immediateContext->PSSetSamplers(0, 1, &st.pixelSampler);
+
+        g_immediateContext->RSSetViewports(st.numViewports, st.viewports);
+        g_immediateContext->RSSetScissorRects(st.numScissors, st.scissors);
+
+        // Release the references we got from Get* calls
+        SAFE_RELEASE(st.renderTargetView);
+        SAFE_RELEASE(st.depthStencilView);
         SAFE_RELEASE(st.blendState);
-        SAFE_RELEASE(st.dsState);
-        SAFE_RELEASE(st.rsState);
-        SAFE_RELEASE(st.vs);
-        SAFE_RELEASE(st.ps);
+        SAFE_RELEASE(st.depthStencilState);
+        SAFE_RELEASE(st.rasterizerState);
+        SAFE_RELEASE(st.vertexShader);
+        SAFE_RELEASE(st.pixelShader);
+        SAFE_RELEASE(st.vertexBuffer);
         SAFE_RELEASE(st.inputLayout);
-        SAFE_RELEASE(st.psrv);
-        SAFE_RELEASE(st.psampler);
+        SAFE_RELEASE(st.pixelSRV);
+        SAFE_RELEASE(st.pixelSampler);
+    }
+
+    // Shader identifiers
+    static inline ID3D11VertexShader* VS_BlitXenonGammaDX10 = nullptr;
+    static inline ID3D11PixelShader* PS_BlitXenonGammaDX10 = nullptr;
+
+    static inline ID3D11VertexShader* VS_BlitCellGammaDX10 = nullptr;
+    static inline ID3D11PixelShader* PS_BlitCellGammaDX10 = nullptr;
+
+    static inline ID3D11VertexShader* VS_BlitXenonGammaDX10_1 = nullptr;
+    static inline ID3D11PixelShader* PS_BlitXenonGammaDX10_1 = nullptr;
+
+    static inline ID3D11VertexShader* VS_BlitCellGammaDX10_1 = nullptr;
+    static inline ID3D11PixelShader* PS_BlitCellGammaDX10_1 = nullptr;
+
+    static inline ID3D11VertexShader* VS_BlitXenonGammaDX11 = nullptr;
+    static inline ID3D11PixelShader* PS_BlitXenonGammaDX11 = nullptr;
+
+    static inline ID3D11VertexShader* VS_BlitCellGammaDX11 = nullptr;
+    static inline ID3D11PixelShader* PS_BlitCellGammaDX11 = nullptr;
+
+    static bool LoadCompiledShaderResource(HMODULE hModule, int resourceId, const void** data, UINT* size)
+    {
+        HRSRC hRes = FindResourceW(hModule, MAKEINTRESOURCEW(resourceId), RT_RCDATA);
+        if (!hRes)
+            return false;
+
+        HGLOBAL hGlob = LoadResource(hModule, hRes);
+        if (!hGlob)
+            return false;
+
+        *data = LockResource(hGlob);
+        if (!*data)
+            return false;
+
+        *size = SizeofResource(hModule, hRes);
+        return *size != 0;
+    }
+
+    static ShaderProgram GetShaderProgram(D3D_FEATURE_LEVEL featureLevel, int ConsoleGamma)
+    {
+        if (ConsoleGamma == 1) // Xenon gamma
+        {
+            if (featureLevel == D3D_FEATURE_LEVEL_10_0) return { IDR_VS_BlitXenonGammaDX10,   IDR_PS_BlitXenonGammaDX10,   &VS_BlitXenonGammaDX10,   &PS_BlitXenonGammaDX10   };
+            if (featureLevel == D3D_FEATURE_LEVEL_10_1) return { IDR_VS_BlitXenonGammaDX10_1, IDR_PS_BlitXenonGammaDX10_1, &VS_BlitXenonGammaDX10_1, &PS_BlitXenonGammaDX10_1 };
+            if (featureLevel == D3D_FEATURE_LEVEL_11_0) return { IDR_VS_BlitXenonGammaDX11,   IDR_PS_BlitXenonGammaDX11,   &VS_BlitXenonGammaDX11,   &PS_BlitXenonGammaDX11   };
+        }
+        else if (ConsoleGamma == 2) // Cell gamma
+        {
+            if (featureLevel == D3D_FEATURE_LEVEL_10_0) return { IDR_VS_BlitCellGammaDX10,   IDR_PS_BlitCellGammaDX10,   &VS_BlitCellGammaDX10,   &PS_BlitCellGammaDX10   };
+            if (featureLevel == D3D_FEATURE_LEVEL_10_1) return { IDR_VS_BlitCellGammaDX10_1, IDR_PS_BlitCellGammaDX10_1, &VS_BlitCellGammaDX10_1, &PS_BlitCellGammaDX10_1 };
+            if (featureLevel == D3D_FEATURE_LEVEL_11_0) return { IDR_VS_BlitCellGammaDX11,   IDR_PS_BlitCellGammaDX11,   &VS_BlitCellGammaDX11,   &PS_BlitCellGammaDX11   };
+        }
+
+        return { 0, 0, nullptr, nullptr };
+    };
+
+    static void ReloadShaders()
+    {
+        // Force reinitialization
+        g_initialized = false;
+
+        // Release current shaders and vertex stuff (Is this needed?)
+        SAFE_RELEASE(g_vertexShader);
+        SAFE_RELEASE(g_pixelShader);
+        SAFE_RELEASE(g_inputLayout);
+        SAFE_RELEASE(g_vertexBuffer);
+
+        // Release all cached shaders so they get recreated
+        SAFE_RELEASE(VS_BlitXenonGammaDX10);
+        SAFE_RELEASE(PS_BlitXenonGammaDX10);
+        SAFE_RELEASE(VS_BlitCellGammaDX10);
+        SAFE_RELEASE(PS_BlitCellGammaDX10);
+        SAFE_RELEASE(VS_BlitXenonGammaDX10_1);
+        SAFE_RELEASE(PS_BlitXenonGammaDX10_1);
+        SAFE_RELEASE(VS_BlitCellGammaDX10_1);
+        SAFE_RELEASE(PS_BlitCellGammaDX10_1);
+        SAFE_RELEASE(VS_BlitXenonGammaDX11);
+        SAFE_RELEASE(PS_BlitXenonGammaDX11);
+        SAFE_RELEASE(VS_BlitCellGammaDX11);
+        SAFE_RELEASE(PS_BlitCellGammaDX11);
+    }
+
+    static void OnResize()
+    {
+        SAFE_RELEASE(g_renderTargetView);
+        SAFE_RELEASE(g_copySRV);
+        SAFE_RELEASE(g_copyTexture);
+        g_width = 0;
+        g_height = 0;
+    }
+
+    static bool Initialize(IDXGISwapChain* swapChain)
+    {
+        if (g_initialized || !swapChain)
+            return g_initialized;
+
+        HRESULT hResult = swapChain->GetDevice(__uuidof(ID3D11Device), (void**)&g_device);
+        if (FAILED(hResult))
+            return false;
+        g_device->GetImmediateContext(&g_immediateContext);
+
+        D3D_FEATURE_LEVEL featureLevel = g_device->GetFeatureLevel();
+        int ConsoleGamma = FusionFixSettings.GetInt(PREF_CONSOLEGAMMA);
+
+        if (ConsoleGamma != 1 && ConsoleGamma != 2)
+            return false;
+
+        HMODULE hModule = NULL;
+        GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR)&Initialize, &hModule);
+
+        auto shaderProgram = GetShaderProgram(featureLevel, ConsoleGamma);
+
+        if (shaderProgram.vsResourceId == 0)
+            return false;
+
+        const void* vsData = nullptr;
+        UINT vsSize = 0;
+        const void* psData = nullptr;
+        UINT psSize = 0;
+
+        // Load compiled vertex shader 
+        if (!*shaderProgram.vs)
+        {
+            if (!LoadCompiledShaderResource(hModule, shaderProgram.vsResourceId, &vsData, &vsSize))
+                return false;
+
+            hResult = g_device->CreateVertexShader(vsData, vsSize, nullptr, shaderProgram.vs);
+            if (FAILED(hResult))
+                return false;
+        }
+
+        // Load compiled pixel shader
+        if (!*shaderProgram.ps)
+        {
+            if (!LoadCompiledShaderResource(hModule, shaderProgram.psResourceId, &psData, &psSize))
+                return false;
+
+            hResult = g_device->CreatePixelShader(psData, psSize, nullptr, shaderProgram.ps);
+            if (FAILED(hResult))
+                return false;
+        }
+
+        g_vertexShader = *shaderProgram.vs;
+        g_pixelShader = *shaderProgram.ps;
+
+        D3D11_INPUT_ELEMENT_DESC layoutDesc[] =
+        {
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, offsetof(VertexFormat, Pos),      D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, offsetof(VertexFormat, TexCoord), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        };
+
+        hResult = g_device->CreateInputLayout(layoutDesc, ARRAYSIZE(layoutDesc), vsData, vsSize, &g_inputLayout);
+        if (FAILED(hResult))
+            return false;
+
+        VertexFormat vertices[] =
+        {
+            { {-1, -1, 0, 1}, {0,1} },
+            { {-1,  1, 0, 1}, {0,0} },
+            { { 1, -1, 0, 1}, {1,1} },
+
+            { { 1, -1, 0, 1}, {1,1} },
+            { {-1,  1, 0, 1}, {0,0} },
+            { { 1,  1, 0, 1}, {1,0} },
+        };
+
+        D3D11_BUFFER_DESC bufferDesc = {};
+
+        bufferDesc.ByteWidth = sizeof(vertices);
+        bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+        bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+        D3D11_SUBRESOURCE_DATA initData = {};
+
+        initData.pSysMem = vertices;
+
+        hResult = g_device->CreateBuffer(&bufferDesc, &initData, &g_vertexBuffer);
+        if (FAILED(hResult))
+            return false;
+
+        // Sampler (Linear, clamp)
+        D3D11_SAMPLER_DESC samplerDesc = {};
+
+        samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+        samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+        samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+        samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+
+        hResult = g_device->CreateSamplerState(&samplerDesc, &g_samplerState);
+        if (FAILED(hResult))
+            return false;
+
+        // Blend state (No blending)
+        D3D11_BLEND_DESC blendDesc = {};
+
+        blendDesc.RenderTarget[0].BlendEnable = FALSE;
+        blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+        hResult = g_device->CreateBlendState(&blendDesc, &g_blendState);
+        if (FAILED(hResult))
+            return false;
+
+        // Depth-stencil state (Depth disabled)
+        D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
+
+        depthStencilDesc.DepthEnable = FALSE;
+        depthStencilDesc.StencilEnable = FALSE;
+
+        hResult = g_device->CreateDepthStencilState(&depthStencilDesc, &g_depthStencilState);
+        if (FAILED(hResult))
+            return false;
+
+        // Rasterizer state (No culling, no scissor)
+        D3D11_RASTERIZER_DESC rasterizerDesc = {};
+
+        rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+        rasterizerDesc.CullMode = D3D11_CULL_NONE;
+        rasterizerDesc.ScissorEnable = FALSE;
+        rasterizerDesc.DepthClipEnable = TRUE;
+
+        hResult = g_device->CreateRasterizerState(&rasterizerDesc, &g_rasterizerState);
+        if (FAILED(hResult))
+            return false;
+
+        g_initialized = true;
+        return true;
     }
 
     static void Render(IDXGISwapChain* swapChain)
@@ -123,230 +397,128 @@ private:
         if (!FusionFixSettings.GetInt(PREF_CONSOLEGAMMA) || !swapChain)
             return;
 
-        if (!s_initialized && !Initialize(swapChain))
+        if (!g_initialized && !Initialize(swapChain))
             return;
 
         ID3D11Texture2D* backBuffer = nullptr;
-        HRESULT hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
-        if (FAILED(hr)) return;
+        HRESULT hResult = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
+        if (FAILED(hResult))
+            return;
 
-        D3D11_TEXTURE2D_DESC bbDesc;
-        backBuffer->GetDesc(&bbDesc);
+        D3D11_TEXTURE2D_DESC backBufferDesc;
+        backBuffer->GetDesc(&backBufferDesc);
 
-        // ---- (Re)create copy texture if resolution changed ----
-        if (!s_copyTex || bbDesc.Width != s_width || bbDesc.Height != s_height)
+        // (Re)create copy texture if resolution has changed
+        if (!g_copyTexture || backBufferDesc.Width != g_width || backBufferDesc.Height != g_height)
         {
-            s_width = bbDesc.Width;
-            s_height = bbDesc.Height;
+            g_width = backBufferDesc.Width;
+            g_height = backBufferDesc.Height;
 
-            SAFE_RELEASE(s_copySRV);
-            SAFE_RELEASE(s_copyTex);
-            SAFE_RELEASE(s_rtv);
+            SAFE_RELEASE(g_copySRV);
+            SAFE_RELEASE(g_copyTexture);
+            SAFE_RELEASE(g_renderTargetView);
 
-            D3D11_TEXTURE2D_DESC copyDesc = bbDesc;
+            D3D11_TEXTURE2D_DESC copyDesc = backBufferDesc;
+
             copyDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
             copyDesc.MiscFlags = 0;
-            hr = s_device->CreateTexture2D(&copyDesc, nullptr, &s_copyTex);
-            if (FAILED(hr)) { SAFE_RELEASE(backBuffer); return; }
+
+            hResult = g_device->CreateTexture2D(&copyDesc, nullptr, &g_copyTexture);
+            if (FAILED(hResult))
+            {
+                SAFE_RELEASE(backBuffer);
+
+                return;
+            }
 
             D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-            srvDesc.Format = bbDesc.Format;
+
+            srvDesc.Format = backBufferDesc.Format;
             srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
             srvDesc.Texture2D.MipLevels = 1;
-            hr = s_device->CreateShaderResourceView(s_copyTex, &srvDesc, &s_copySRV);
-            if (FAILED(hr)) { SAFE_RELEASE(backBuffer); return; }
 
-            hr = s_device->CreateRenderTargetView(backBuffer, nullptr, &s_rtv);
-            if (FAILED(hr)) { SAFE_RELEASE(backBuffer); return; }
+            hResult = g_device->CreateShaderResourceView(g_copyTexture, &srvDesc, &g_copySRV);
+            if (FAILED(hResult))
+            {
+                SAFE_RELEASE(backBuffer);
+
+                return;
+            }
+
+            hResult = g_device->CreateRenderTargetView(backBuffer, nullptr, &g_renderTargetView);
+            if (FAILED(hResult))
+            {
+                SAFE_RELEASE(backBuffer);
+
+                return;
+            }
         }
 
-        // ---- Save pipeline state ----
         PipelineState old = {};
+
         SaveState(old);
 
-        // ---- Copy back buffer to our texture ----
-        s_context->CopyResource(s_copyTex, backBuffer);
+        g_immediateContext->CopyResource(g_copyTexture, backBuffer);
         SAFE_RELEASE(backBuffer);
 
-        // ---- Set up pipeline ----
-        D3D11_VIEWPORT vp = { 0.0f, 0.0f, (float)s_width, (float)s_height, 0.0f, 1.0f };
-        s_context->RSSetViewports(1, &vp);
-        s_context->RSSetState(s_rsState);
+        D3D11_VIEWPORT viewport = { 0.0f, 0.0f, (float)g_width, (float)g_height, 0.0f, 1.0f };
+        g_immediateContext->RSSetViewports(1, &viewport);
+        g_immediateContext->RSSetState(g_rasterizerState);
 
-        s_context->OMSetRenderTargets(1, &s_rtv, nullptr);
-        s_context->OMSetBlendState(s_blendState, nullptr, 0xFFFFFFFF);
-        s_context->OMSetDepthStencilState(s_dsState, 0);
+        g_immediateContext->OMSetRenderTargets(1, &g_renderTargetView, nullptr);
+        g_immediateContext->OMSetBlendState(g_blendState, nullptr, 0xFFFFFFFF);
+        g_immediateContext->OMSetDepthStencilState(g_depthStencilState, 0);
 
-        s_context->IASetInputLayout(nullptr);
-        s_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        s_context->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
+        g_immediateContext->IASetInputLayout(g_inputLayout);
+        g_immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        s_context->VSSetShader(s_vs, nullptr, 0);
-        s_context->PSSetShader(s_ps, nullptr, 0);
-        s_context->PSSetShaderResources(0, 1, &s_copySRV);
-        s_context->PSSetSamplers(0, 1, &s_sampler);
+        UINT stride = sizeof(VertexFormat);
+        UINT offset = 0;
+        g_immediateContext->IASetVertexBuffers(0, 1, &g_vertexBuffer, &stride, &offset);
 
-        // ---- Draw fullscreen triangle (3 verts, no VB) ----
-        s_context->Draw(3, 0);
+        g_immediateContext->VSSetShader(g_vertexShader, nullptr, 0);
+        g_immediateContext->PSSetShader(g_pixelShader, nullptr, 0);
+        g_immediateContext->PSSetShaderResources(0, 1, &g_copySRV);
+        g_immediateContext->PSSetSamplers(0, 1, &g_samplerState);
 
-        // ---- Unbind SRV to avoid hazard ----
+        g_immediateContext->Draw(6, 0);
+
         ID3D11ShaderResourceView* nullSRV = nullptr;
-        s_context->PSSetShaderResources(0, 1, &nullSRV);
+        g_immediateContext->PSSetShaderResources(0, 1, &nullSRV);
 
-        // ---- Restore pipeline state ----
         RestoreState(old);
-    }
-
-    static bool Initialize(IDXGISwapChain* swapChain)
-    {
-        if (s_initialized || !swapChain)
-            return s_initialized;
-
-        HRESULT hr = swapChain->GetDevice(__uuidof(ID3D11Device), (void**)&s_device);
-        if (FAILED(hr)) return false;
-        s_device->GetImmediateContext(&s_context);
-
-        static const char* shaderSource = R"(
-struct VS_OUTPUT
-{
-    float4 Position : SV_POSITION;
-    float2 Texcoord : TEXCOORD0;
-};
-
-VS_OUTPUT FullscreenVS(uint vertexID : SV_VertexID)
-{
-    VS_OUTPUT output;
-    output.Texcoord = float2((vertexID << 1) & 2, vertexID & 2);
-    output.Position = float4(output.Texcoord * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
-    return output;
-}
-
-Texture2D InputTexture : register(t0);
-SamplerState LinearClamp : register(s0);
-
-float X360GammaApprox(float x)
-{
-    float A = 0.541901f;
-    float B = 1.13465f;
-    float C = 13.53054f;
-    float D = 6.56649f;
-    float E = 0.311465f;
-    x = max(0.0f, x);
-    float f1 = A * x;
-    float f2 = pow(x, B) * (1.0f - exp2(-C * x));
-    float f3 = saturate(x * D + E);
-    return lerp(f1, f2, f3);
-}
-
-float4 ConsoleGammaPS(VS_OUTPUT input) : SV_TARGET
-{
-    float3 color = InputTexture.Sample(LinearClamp, input.Texcoord).rgb;
-    float3 outColor = float3(
-        X360GammaApprox(color.r),
-        X360GammaApprox(color.g),
-        X360GammaApprox(color.b)
-    );
-    return float4(outColor, 1.0f);
-}
-)";
-
-        ID3DBlob* vsBlob = nullptr;
-        ID3DBlob* psBlob = nullptr;
-        ID3DBlob* errBlob = nullptr;
-
-        hr = D3DCompile(shaderSource, strlen(shaderSource), "ConsoleGamma", nullptr, nullptr,
-            "FullscreenVS", "vs_5_0", D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, &vsBlob, &errBlob);
-        if (FAILED(hr))
-        {
-            if (errBlob) { OutputDebugStringA((char*)errBlob->GetBufferPointer()); errBlob->Release(); }
-            return false;
-        }
-
-        hr = D3DCompile(shaderSource, strlen(shaderSource), "ConsoleGamma", nullptr, nullptr,
-            "ConsoleGammaPS", "ps_5_0", D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, &psBlob, &errBlob);
-        if (FAILED(hr))
-        {
-            if (errBlob) { OutputDebugStringA((char*)errBlob->GetBufferPointer()); errBlob->Release(); }
-            SAFE_RELEASE(vsBlob);
-            return false;
-        }
-
-        hr = s_device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &s_vs);
-        SAFE_RELEASE(vsBlob);
-        if (FAILED(hr)) { SAFE_RELEASE(psBlob); return false; }
-
-        hr = s_device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &s_ps);
-        SAFE_RELEASE(psBlob);
-        if (FAILED(hr)) return false;
-
-        // ---- Sampler (linear, clamp) ----
-        D3D11_SAMPLER_DESC sampDesc = {};
-        sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-        sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-        sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-        sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-        sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-        hr = s_device->CreateSamplerState(&sampDesc, &s_sampler);
-        if (FAILED(hr)) return false;
-
-        // ---- Blend state (no blending) ----
-        D3D11_BLEND_DESC blendDesc = {};
-        blendDesc.RenderTarget[0].BlendEnable = FALSE;
-        blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-        hr = s_device->CreateBlendState(&blendDesc, &s_blendState);
-        if (FAILED(hr)) return false;
-
-        // ---- Depth-stencil state (depth disabled) ----
-        D3D11_DEPTH_STENCIL_DESC dsDesc = {};
-        dsDesc.DepthEnable = FALSE;
-        dsDesc.StencilEnable = FALSE;
-        hr = s_device->CreateDepthStencilState(&dsDesc, &s_dsState);
-        if (FAILED(hr)) return false;
-
-        // ---- Rasterizer state (no culling, no scissor) ----
-        D3D11_RASTERIZER_DESC rsDesc = {};
-        rsDesc.FillMode = D3D11_FILL_SOLID;
-        rsDesc.CullMode = D3D11_CULL_NONE;
-        rsDesc.ScissorEnable = FALSE;
-        rsDesc.DepthClipEnable = TRUE;
-        hr = s_device->CreateRasterizerState(&rsDesc, &s_rsState);
-        if (FAILED(hr)) return false;
-
-        s_initialized = true;
-        return true;
-    }
-
-    static void OnResize()
-    {
-        SAFE_RELEASE(s_rtv);
-        SAFE_RELEASE(s_copySRV);
-        SAFE_RELEASE(s_copyTex);
-        s_width = 0;
-        s_height = 0;
     }
 public:
     ConsoleGammaDX11()
     {
+        FusionFix::onIniFileChange() += []()
+        {
+            ReloadShaders();
+        };
+
         FusionFix::onInitEventAsync() += []()
         {
-            auto pattern = hook::pattern("0F B6 C8 ? ? F7 D9 1B C9 F7 D1 23 0D ? ? ? ? 51 52 FF D0 8B F8 81 FF ? ? ? ? 75");
-            static auto DX11PresentHook1 = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& regs)
+            auto pattern = hook::pattern("0F B6 C8 8B 07 F7 D9 1B C9 F7 D1 23 0D ? ? ? ? 51 52 FF D0 8B F8 81 FF ? ? ? ? 75");
+            static auto DX11PresentHook1 = safetyhook::create_mid(pattern.get_first(0), [](SafetyHookContext& regs)
             {
-                IDXGISwapChain* pSwapChain = (IDXGISwapChain*)regs.edx;
-                ConsoleGammaDX11::Render(pSwapChain);
+                IDXGISwapChain* swapChain = (IDXGISwapChain*)regs.edx;
+
+                ConsoleGammaDX11::Render(swapChain);
             });
 
-            pattern = hook::pattern("8B 07 F7 D9 1B C9 F7 D1 23 0D ? ? ? ? 51 52 FF D0 8B F8 81 FF 0A 00 7A 88 74");
-            static auto DX11PresentHook2 = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& regs)
+            pattern = hook::pattern("8B 07 F7 D9 1B C9 F7 D1 23 0D ? ? ? ? 51 52 FF D0 8B F8 81 FF ? ? ? ? 74");
+            static auto DX11PresentHook2 = safetyhook::create_mid(pattern.get_first(0), [](SafetyHookContext& regs)
             {
-                IDXGISwapChain* pSwapChain = (IDXGISwapChain*)regs.edx;
-                ConsoleGammaDX11::Render(pSwapChain);
+                IDXGISwapChain* swapChain = (IDXGISwapChain*)regs.edx;
+
+                ConsoleGammaDX11::Render(swapChain);
             });
 
             pattern = hook::pattern("6A ? 51 55 53 52");
-            static auto DX11ResizeBuffersHook = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& regs)
+            static auto DX11ResizeBuffersHook = safetyhook::create_mid(pattern.get_first(0), [](SafetyHookContext& regs)
             {
-                IDXGISwapChain* pSwapChain = (IDXGISwapChain*)regs.edi;
+                IDXGISwapChain* swapChain = (IDXGISwapChain*)regs.edi;
+
                 ConsoleGammaDX11::OnResize();
             });
         };
