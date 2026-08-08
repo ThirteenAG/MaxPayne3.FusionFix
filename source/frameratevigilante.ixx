@@ -36,7 +36,8 @@ public:
                 CWater::shAddToDynamicWaterSpeed = safetyhook::create_inline(pattern.get_first(0), CWater::AddToDynamicWaterSpeed);
 
                 // Buoyancy (Affects everything floating on any body of water that is flagged as physical)
-                pattern = hook::pattern("8B 44 24 ? 99 2B C2 D1 F8 05 ? ? ? ? 8B C8 81 E1 ? ? ? ? 79 ? 49 83 C9 ? 41 8B 44 24 ? 99 2B C2 D1 F8 05 ? ? ? ? 25 ? ? ? ? 79 ? 48 83 C8 ? 40 0F 57 C0");
+                pattern = find_pattern("8B 44 24 ? 99 2B C2 D1 F8 05 ? ? ? ? 8B C8 81 E1 ? ? ? ? 79 ? 49 83 C9 ? 41 8B 44 24 ? 99 2B C2 D1 F8 05 ? ? ? ? 25 ? ? ? ? 79 ? 48 83 C8 ? 40 0F 57 C0",
+                                       "8B 44 24 ? 99 2B C2 D1 F8 05 ? ? ? ? 8B C8 81 E1 ? ? ? ? 79 ? 49 83 C9 ? 41 8B 44 24 ? 99 2B C2 D1 F8 05 ? ? ? ? 25 ? ? ? ? 79 ? 48 83 C8 ? 40 0F 57 C9");
                 CWater::shModifyDynamicWaterSpeed = safetyhook::create_inline(pattern.get_first(0), CWater::ModifyDynamicWaterSpeed);
 
                 // Helicopter downwash wind particles

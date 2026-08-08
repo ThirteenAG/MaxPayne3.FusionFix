@@ -203,7 +203,7 @@ public:
         KeyboardBuffer = *pattern.get_first<void**>(1);
         pIsKeyboardKeyPressed = (decltype(pIsKeyboardKeyPressed))injector::GetBranchDestination(pattern.get_first(5)).as_int();
 
-        pattern = hook::pattern("F3 0F 11 05 ? ? ? ? 0F 28 DA");
+        pattern = hook::pattern("F3 0F 59 0D ? ? ? ? F3 0F 5C D1 F3 0F 11 96 ? ? ? ? F3 0F 59 05");
         CTimer::fTimeStep.SetAddress(*pattern.get_first<float*>(4));
     }
 } Common;
