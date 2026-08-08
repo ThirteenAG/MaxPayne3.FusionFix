@@ -181,23 +181,29 @@ export bool IsKeyboardKeyPressed(int vkeycode, int type = 1, const char* hint = 
     }
 }
 
+export class CTimer
+{
+public:
+    static inline GameRef<float> fTimeStep;
+};
+
 class Common
 {
 public:
     Common()
     {
-        FusionFix::onInitEvent() += []()
-        {
-            auto pattern = hook::pattern("53 8B 59 04 85 DB");
-            if (!pattern.empty())
-                getNativeAddress = pattern.get_one().get<void* (__fastcall)(uintptr_t*, uint32_t, uint32_t)>(0);
+        auto pattern = hook::pattern("53 8B 59 04 85 DB");
+        if (!pattern.empty())
+            getNativeAddress = pattern.get_one().get<void* (__fastcall)(uintptr_t*, uint32_t, uint32_t)>(0);
 
-            pattern = hook::pattern("B9 ? ? ? ? E8 ? ? ? ? 85 C0 75 07");
-            nativeHandlerPtrAddress = *pattern.get_first<uintptr_t*>(1);
+        pattern = hook::pattern("B9 ? ? ? ? E8 ? ? ? ? 85 C0 75 07");
+        nativeHandlerPtrAddress = *pattern.get_first<uintptr_t*>(1);
 
-            pattern = hook::pattern("B9 ? ? ? ? E8 ? ? ? ? 84 C0 74 ? E8 ? ? ? ? 2B 86");
-            KeyboardBuffer = *pattern.get_first<void**>(1);
-            pIsKeyboardKeyPressed = (decltype(pIsKeyboardKeyPressed))injector::GetBranchDestination(pattern.get_first(5)).as_int();
-        };
+        pattern = hook::pattern("B9 ? ? ? ? E8 ? ? ? ? 84 C0 74 ? E8 ? ? ? ? 2B 86");
+        KeyboardBuffer = *pattern.get_first<void**>(1);
+        pIsKeyboardKeyPressed = (decltype(pIsKeyboardKeyPressed))injector::GetBranchDestination(pattern.get_first(5)).as_int();
+
+        pattern = hook::pattern("F3 0F 11 05 ? ? ? ? 0F 28 DA");
+        CTimer::fTimeStep.SetAddress(*pattern.get_first<float*>(4));
     }
 } Common;
