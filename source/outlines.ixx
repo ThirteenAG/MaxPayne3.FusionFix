@@ -10,7 +10,7 @@ import settings;
 float* dword_1FCA9A8;
 void __fastcall sub_010AFD30(float* _this, void* edx, float a2)
 {
-    a2 *= FusionFixSettings.GetFloat(PREF_OUTLINESIZE);
+    a2 = FusionFixSettings.GetFloat(PREF_OUTLINESIZE) * FusionFixSettings.GetFloat(PREF_SUBTITLESIZE);
 
     if (a2 <= 0.0)
     {
