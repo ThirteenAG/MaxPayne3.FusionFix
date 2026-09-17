@@ -97,19 +97,25 @@ workspace "MaxPayne3.FusionFix"
    local fxc = "\"../source/dxsdk/lib/x86/fxc.exe\""
 
    local shaderProfiles = {
-      { dir = "win32_30", vs = "vs_3_0", ps = "ps_3_0", define = "/DPOSTFX_DX9", gamma = "DX9",  gammaSuffix = "DX9" },
-      { dir = "win32_40", vs = "vs_4_0", ps = "ps_4_0", define = "",            gamma = "DX11", gammaSuffix = "DX10" },
-      { dir = "win32_41", vs = "vs_4_1", ps = "ps_4_1", define = "",            gamma = "DX11", gammaSuffix = "DX10_1" },
-      { dir = "win32_50", vs = "vs_5_0", ps = "ps_5_0", define = "",            gamma = "DX11", gammaSuffix = "DX11" },
+      { dir = "win32_30", vs = "vs_3_0", ps = "ps_3_0", define = "/DPOSTFX_DX9" },
+      { dir = "win32_40", vs = "vs_4_0", ps = "ps_4_0", define = "" },
+      { dir = "win32_41", vs = "vs_4_1", ps = "ps_4_1", define = "" },
+      { dir = "win32_50", vs = "vs_5_0", ps = "ps_5_0", define = "" },
    }
 
+   -- Every post processing shader, one source each, compiled once per profile.
+   -- Shaders that need more than one variant name it in define, which is how
+   -- the console gamma gets its presets: another console is one more row here
+   -- with the next preset number, nothing else has to change.
    local postfxSources = {
-      { stage = "vs", file = "VS_PostFX.hlsl",                   entry = "VSMain",          output = "VS_PostFX" },
-      { stage = "ps", file = "PS_PostFX_SMAAEdgeDetection.hlsl", entry = "PSMain",          output = "PS_PostFX_SMAAEdgeDetection" },
-      { stage = "ps", file = "PS_PostFX_SMAABlendWeight.hlsl",   entry = "PSMain",          output = "PS_PostFX_SMAABlendWeight" },
-      { stage = "ps", file = "PS_PostFX_SMAAOutput.hlsl",        entry = "PSMain",          output = "PS_PostFX_SMAAOutput" },
+      { stage = "vs", file = "VS_PostFX.hlsl",                   entry = "VSMain",           output = "VS_PostFX" },
+      { stage = "ps", file = "PS_PostFX_SMAAEdgeDetection.hlsl", entry = "PSMain",           output = "PS_PostFX_SMAAEdgeDetection" },
+      { stage = "ps", file = "PS_PostFX_SMAABlendWeight.hlsl",   entry = "PSMain",           output = "PS_PostFX_SMAABlendWeight" },
+      { stage = "ps", file = "PS_PostFX_SMAAOutput.hlsl",        entry = "PSMain",           output = "PS_PostFX_SMAAOutput" },
       { stage = "ps", file = "PS_PostFX_Blur.hlsl",              entry = "PSBlurHorizontal", output = "PS_PostFX_BlurHorizontal" },
       { stage = "ps", file = "PS_PostFX_Blur.hlsl",              entry = "PSBlurVertical",   output = "PS_PostFX_BlurVertical" },
+      { stage = "ps", file = "PS_PostFX_Gamma.hlsl",             entry = "PSMain",           output = "PS_PostFX_GammaXenon", define = "/DPOSTFX_GAMMA_PRESET=1" },
+      { stage = "ps", file = "PS_PostFX_Gamma.hlsl",             entry = "PSMain",           output = "PS_PostFX_GammaCell",  define = "/DPOSTFX_GAMMA_PRESET=2" },
    }
 
    local prebuildShaderCommands = {}
@@ -123,16 +129,9 @@ workspace "MaxPayne3.FusionFix"
             fxc, target, define, entry, profile.dir, output, source))
       end
 
-      -- console gamma, a vertex/pixel shader pair per preset
-      for _, preset in ipairs({ "Xenon", "Cell" }) do
-         local source = "../shaders/external/gamma/hlsl/" .. preset .. "Gamma" .. profile.gamma .. ".hlsl"
-         compile("vs", source, "VSMain", "VS_Blit" .. preset .. "Gamma" .. profile.gammaSuffix, "")
-         compile("ps", source, "PSMain", "PS_Blit" .. preset .. "Gamma" .. profile.gammaSuffix, "")
-      end
-
-      -- post processing, one shader source shared by all DirectX versions
       for _, shader in ipairs(postfxSources) do
-         compile(shader.stage, "../shaders/postfx/" .. shader.file, shader.entry, shader.output, profile.define)
+         local define = table.concat({ shader.define or "", profile.define }, " ")
+         compile(shader.stage, "../shaders/postfx/" .. shader.file, shader.entry, shader.output, define)
       end
 
       table.insert(prebuildShaderCommands, table.concat(commands, " && "))
@@ -171,8 +170,6 @@ workspace "MaxPayne3.FusionFix"
    filter "configurations:Debug"
       defines { "DEBUG" }
       symbols "On"
-      -- /ZI (Edit and Continue) cannot be combined with C++ modules
-      editandcontinue "Off"
       -- /MDd breaks the compilation of module units when they are combined
       -- with header units, the compiler reports C2079 on std::basic_istream
       -- (microsoft/STL#6389), so the static runtime is used here like in

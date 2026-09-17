@@ -39,7 +39,7 @@ public:
     {
         const int nSmaa = FusionFixSettings.GetInt(PREF_SMAA); // 0 off, 1 on, 2 on with the edge view
 
-        Options.nConsoleGamma = FusionFixSettings.GetInt(PREF_CONSOLEGAMMA); // 0 off, 1 Xenon, 2 Cell
+        Options.nConsoleGamma = FusionFixSettings.GetInt(PREF_CONSOLEGAMMA); // 0 off, otherwise one of the POSTFX_GAMMA_PRESETS curves
         Options.bSmaa = nSmaa != 0;
         Options.bSmaaDebug = nSmaa == 2;
         Options.bBlur = FusionFixSettings.GetInt(PREF_BLUR) != 0;

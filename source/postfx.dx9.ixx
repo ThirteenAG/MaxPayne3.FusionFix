@@ -29,12 +29,8 @@ import postfxcommon;
 #define IDR_POSTFX_PS_SMAA_OUTPUT_DX9 154
 #define IDR_POSTFX_PS_BLUR_H_DX9      155
 #define IDR_POSTFX_PS_BLUR_V_DX9      156
-
-// console gamma, a vertex/pixel shader pair per preset
-#define IDR_VS_BlitXenonGammaDX9 101
-#define IDR_PS_BlitXenonGammaDX9 102
-#define IDR_VS_BlitCellGammaDX9  103
-#define IDR_PS_BlitCellGammaDX9  104
+#define IDR_POSTFX_PS_GAMMA_XENON_DX9 157
+#define IDR_POSTFX_PS_GAMMA_CELL_DX9  158
 
 // precomputed SMAA textures
 #define IDR_POSTFX_AREATEX   201
@@ -73,8 +69,7 @@ export namespace PostFX9
     inline IDirect3DVertexShader9* pVS = nullptr;
     inline IDirect3DPixelShader9* pPSSmaa[3] = {};   // edge detection, blending weights, neighborhood blending
     inline IDirect3DPixelShader9* pPSBlur[2] = {};   // horizontal, vertical
-    inline IDirect3DVertexShader9* pVSGamma[2] = {}; // Xenon, Cell
-    inline IDirect3DPixelShader9* pPSGamma[2] = {};
+    inline IDirect3DPixelShader9* pPSGamma[POSTFX_GAMMA_PRESETS] = {}; // Xenon, Cell
 
     inline IDirect3DTexture9* pSceneTexture = nullptr;
     inline IDirect3DSurface9* pSceneSurface = nullptr;
@@ -230,10 +225,8 @@ export namespace PostFX9
             !CreatePixelShaderFromResource(dev, IDR_POSTFX_PS_SMAA_OUTPUT_DX9, &pPSSmaa[2]) ||
             !CreatePixelShaderFromResource(dev, IDR_POSTFX_PS_BLUR_H_DX9, &pPSBlur[0]) ||
             !CreatePixelShaderFromResource(dev, IDR_POSTFX_PS_BLUR_V_DX9, &pPSBlur[1]) ||
-            !CreateVertexShaderFromResource(dev, IDR_VS_BlitXenonGammaDX9, &pVSGamma[0]) ||
-            !CreatePixelShaderFromResource(dev, IDR_PS_BlitXenonGammaDX9, &pPSGamma[0]) ||
-            !CreateVertexShaderFromResource(dev, IDR_VS_BlitCellGammaDX9, &pVSGamma[1]) ||
-            !CreatePixelShaderFromResource(dev, IDR_PS_BlitCellGammaDX9, &pPSGamma[1]))
+            !CreatePixelShaderFromResource(dev, IDR_POSTFX_PS_GAMMA_XENON_DX9, &pPSGamma[0]) ||
+            !CreatePixelShaderFromResource(dev, IDR_POSTFX_PS_GAMMA_CELL_DX9, &pPSGamma[1]))
         {
             ReportPostFXFailure(POSTFX_FAILURE_COMMON_SHADERS, "shader (d3d9)");
             ReleaseShaders();
@@ -260,10 +253,8 @@ export namespace PostFX9
         SafeRelease(pPSSmaa[2]);
         SafeRelease(pPSBlur[0]);
         SafeRelease(pPSBlur[1]);
-        SafeRelease(pVSGamma[0]);
-        SafeRelease(pPSGamma[0]);
-        SafeRelease(pVSGamma[1]);
-        SafeRelease(pPSGamma[1]);
+        for (int i = 0; i < POSTFX_GAMMA_PRESETS; i++)
+            SafeRelease(pPSGamma[i]);
         SafeRelease(pAreaTexture);
         SafeRelease(pSearchTexture);
     }
@@ -591,11 +582,11 @@ export namespace PostFX9
         DrawQuad(dev, targetInfo.width, targetInfo.height);
 
         // Diagnostic view: the detected edges, white on black, through the gamma
-        // pair, which passes a 0 and a 1 through unchanged. A frame that stays
+        // shader, which passes a 0 and a 1 through unchanged. A frame that stays
         // black means the edge detection found nothing to antialias.
         if (bDebug)
         {
-            SetupPass(dev, pRenderTarget, pVSGamma[0], pPSGamma[0], constants);
+            SetupPass(dev, pRenderTarget, pVS, pPSGamma[0], constants);
             BindTexture(dev, 0, pEdgeTexture, D3DTEXF_POINT);
             DrawQuad(dev, targetInfo.width, targetInfo.height);
             return true;
@@ -644,12 +635,12 @@ export namespace PostFX9
 
     inline bool RenderGamma(IDirect3DDevice9* dev, IDirect3DSurface9* pRenderTarget, int nConsoleGamma)
     {
-        if (nConsoleGamma < 1 || nConsoleGamma > 2)
+        if (nConsoleGamma < 1 || nConsoleGamma > POSTFX_GAMMA_PRESETS)
             return false;
 
         // the preset is picked every frame, switching it in the ini does not
         // reload anything
-        if (!pVSGamma[nConsoleGamma - 1] || !pPSGamma[nConsoleGamma - 1])
+        if (!pPSGamma[nConsoleGamma - 1])
             return false;
 
         if (!UpdateSceneTexture(dev, pRenderTarget))
@@ -657,7 +648,7 @@ export namespace PostFX9
 
         const PostFXConstants constants = MakePostFXConstants(targetInfo.width, targetInfo.height, 1.0f);
 
-        SetupPass(dev, pRenderTarget, pVSGamma[nConsoleGamma - 1], pPSGamma[nConsoleGamma - 1], constants);
+        SetupPass(dev, pRenderTarget, pVS, pPSGamma[nConsoleGamma - 1], constants);
         BindTexture(dev, 0, pSceneTexture, D3DTEXF_LINEAR);
         DrawQuad(dev, targetInfo.width, targetInfo.height);
 

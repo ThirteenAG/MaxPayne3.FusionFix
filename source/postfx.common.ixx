@@ -31,6 +31,12 @@ export enum PostFXStage
     POSTFX_STAGE_ALL = POSTFX_STAGE_SMAA | POSTFX_STAGE_BLUR | POSTFX_STAGE_GAMMA,
 };
 
+// One entry per console gamma curve the build embeds, in the order of the
+// preset numbers in MaxPayne3.FusionFix.ini: 1 Xenon (Xbox 360), 2 Cell
+// (PlayStation 3). A new curve is compiled from the same shader source with
+// another POSTFX_GAMMA_PRESET, see the shader table in premake5.lua.
+export inline constexpr int POSTFX_GAMMA_PRESETS = 2;
+
 export inline IUnknown** ppPostFXDevice = nullptr;
 export inline IUnknown** ppPostFXSwapChain = nullptr;
 

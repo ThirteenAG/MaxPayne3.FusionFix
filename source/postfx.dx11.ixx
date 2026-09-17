@@ -23,6 +23,8 @@ import postfxcommon;
 #define IDR_POSTFX_PS_SMAA_OUTPUT_DX10 164
 #define IDR_POSTFX_PS_BLUR_H_DX10      165
 #define IDR_POSTFX_PS_BLUR_V_DX10      166
+#define IDR_POSTFX_PS_GAMMA_XENON_DX10 167
+#define IDR_POSTFX_PS_GAMMA_CELL_DX10  168
 
 #define IDR_POSTFX_VS_DX10_1             171
 #define IDR_POSTFX_PS_SMAA_EDGE_DX10_1   172
@@ -30,6 +32,8 @@ import postfxcommon;
 #define IDR_POSTFX_PS_SMAA_OUTPUT_DX10_1 174
 #define IDR_POSTFX_PS_BLUR_H_DX10_1      175
 #define IDR_POSTFX_PS_BLUR_V_DX10_1      176
+#define IDR_POSTFX_PS_GAMMA_XENON_DX10_1 177
+#define IDR_POSTFX_PS_GAMMA_CELL_DX10_1  178
 
 #define IDR_POSTFX_VS_DX11             181
 #define IDR_POSTFX_PS_SMAA_EDGE_DX11   182
@@ -37,22 +41,8 @@ import postfxcommon;
 #define IDR_POSTFX_PS_SMAA_OUTPUT_DX11 184
 #define IDR_POSTFX_PS_BLUR_H_DX11      185
 #define IDR_POSTFX_PS_BLUR_V_DX11      186
-
-// console gamma, a vertex/pixel shader pair per preset
-#define IDR_VS_BlitXenonGammaDX10   111
-#define IDR_PS_BlitXenonGammaDX10   112
-#define IDR_VS_BlitCellGammaDX10    113
-#define IDR_PS_BlitCellGammaDX10    114
-
-#define IDR_VS_BlitXenonGammaDX10_1 121
-#define IDR_PS_BlitXenonGammaDX10_1 122
-#define IDR_VS_BlitCellGammaDX10_1  123
-#define IDR_PS_BlitCellGammaDX10_1  124
-
-#define IDR_VS_BlitXenonGammaDX11   131
-#define IDR_PS_BlitXenonGammaDX11   132
-#define IDR_VS_BlitCellGammaDX11    133
-#define IDR_PS_BlitCellGammaDX11    134
+#define IDR_POSTFX_PS_GAMMA_XENON_DX11 187
+#define IDR_POSTFX_PS_GAMMA_CELL_DX11  188
 
 // precomputed SMAA textures
 #define IDR_POSTFX_AREATEX   201
@@ -75,8 +65,7 @@ export namespace PostFX11
         int iVS;
         int iSmaa[3];
         int iBlur[2];
-        int iGammaVS[2];
-        int iGammaPS[2];
+        int iGamma[POSTFX_GAMMA_PRESETS];
     };
 
     inline const ShaderProfile shaderProfiles[] =
@@ -86,24 +75,21 @@ export namespace PostFX11
             IDR_POSTFX_VS_DX10,
             { IDR_POSTFX_PS_SMAA_EDGE_DX10, IDR_POSTFX_PS_SMAA_BLEND_DX10, IDR_POSTFX_PS_SMAA_OUTPUT_DX10 },
             { IDR_POSTFX_PS_BLUR_H_DX10, IDR_POSTFX_PS_BLUR_V_DX10 },
-            { IDR_VS_BlitXenonGammaDX10, IDR_VS_BlitCellGammaDX10 },
-            { IDR_PS_BlitXenonGammaDX10, IDR_PS_BlitCellGammaDX10 },
+            { IDR_POSTFX_PS_GAMMA_XENON_DX10, IDR_POSTFX_PS_GAMMA_CELL_DX10 },
         },
         {
             D3D_FEATURE_LEVEL_10_1,
             IDR_POSTFX_VS_DX10_1,
             { IDR_POSTFX_PS_SMAA_EDGE_DX10_1, IDR_POSTFX_PS_SMAA_BLEND_DX10_1, IDR_POSTFX_PS_SMAA_OUTPUT_DX10_1 },
             { IDR_POSTFX_PS_BLUR_H_DX10_1, IDR_POSTFX_PS_BLUR_V_DX10_1 },
-            { IDR_VS_BlitXenonGammaDX10_1, IDR_VS_BlitCellGammaDX10_1 },
-            { IDR_PS_BlitXenonGammaDX10_1, IDR_PS_BlitCellGammaDX10_1 },
+            { IDR_POSTFX_PS_GAMMA_XENON_DX10_1, IDR_POSTFX_PS_GAMMA_CELL_DX10_1 },
         },
         {
             D3D_FEATURE_LEVEL_11_0,
             IDR_POSTFX_VS_DX11,
             { IDR_POSTFX_PS_SMAA_EDGE_DX11, IDR_POSTFX_PS_SMAA_BLEND_DX11, IDR_POSTFX_PS_SMAA_OUTPUT_DX11 },
             { IDR_POSTFX_PS_BLUR_H_DX11, IDR_POSTFX_PS_BLUR_V_DX11 },
-            { IDR_VS_BlitXenonGammaDX11, IDR_VS_BlitCellGammaDX11 },
-            { IDR_PS_BlitXenonGammaDX11, IDR_PS_BlitCellGammaDX11 },
+            { IDR_POSTFX_PS_GAMMA_XENON_DX11, IDR_POSTFX_PS_GAMMA_CELL_DX11 },
         },
     };
 
@@ -158,8 +144,7 @@ export namespace PostFX11
     inline ID3D11VertexShader* pVS = nullptr;
     inline ID3D11PixelShader* pPSSmaa[3] = {};
     inline ID3D11PixelShader* pPSBlur[2] = {};
-    inline ID3D11VertexShader* pVSGamma[2] = {};
-    inline ID3D11PixelShader* pPSGamma[2] = {};
+    inline ID3D11PixelShader* pPSGamma[POSTFX_GAMMA_PRESETS] = {};
 
     inline ID3D11Buffer* pVertexBuffer = nullptr;
     inline ID3D11InputLayout* pInputLayout = nullptr;
@@ -244,10 +229,8 @@ export namespace PostFX11
         SafeRelease(pPSSmaa[2]);
         SafeRelease(pPSBlur[0]);
         SafeRelease(pPSBlur[1]);
-        SafeRelease(pVSGamma[0]);
-        SafeRelease(pPSGamma[0]);
-        SafeRelease(pVSGamma[1]);
-        SafeRelease(pPSGamma[1]);
+        for (int i = 0; i < POSTFX_GAMMA_PRESETS; i++)
+            SafeRelease(pPSGamma[i]);
     }
 
     inline void ReleaseDeviceObjects()
@@ -325,21 +308,6 @@ export namespace PostFX11
         return true;
     }
 
-    inline bool CreateVertexShaderFromResource(HMODULE hModule, int iResourceId, ID3D11VertexShader** ppShader, unsigned int uFailure)
-    {
-        const void* pData = nullptr;
-        UINT uSize = 0;
-
-        if (!LoadShaderResource(hModule, iResourceId, &pData, &uSize) ||
-            FAILED(pDevice->CreateVertexShader(pData, uSize, nullptr, ppShader)))
-        {
-            ReportPostFXFailure(uFailure, "vertex shader", iResourceId);
-            return false;
-        }
-
-        return true;
-    }
-
     inline bool LoadShaders(D3D_FEATURE_LEVEL level)
     {
         if (pVS)
@@ -382,13 +350,13 @@ export namespace PostFX11
             CreatePixelShaderFromResource(hModule, profile.iSmaa[i], &pPSSmaa[i], POSTFX_FAILURE_SMAA_SHADERS);
 
         for (int i = 0; i < 2; i++)
-        {
             CreatePixelShaderFromResource(hModule, profile.iBlur[i], &pPSBlur[i], POSTFX_FAILURE_BLUR_SHADERS);
 
-            // both console gamma presets stay resident, the ini decides which
-            // one is used while rendering
-            CreateVertexShaderFromResource(hModule, profile.iGammaVS[i], &pVSGamma[i], POSTFX_FAILURE_GAMMA_SHADERS);
-            CreatePixelShaderFromResource(hModule, profile.iGammaPS[i], &pPSGamma[i], POSTFX_FAILURE_GAMMA_SHADERS);
+        for (int i = 0; i < POSTFX_GAMMA_PRESETS; i++)
+        {
+            // every console gamma preset stays resident, the ini decides which
+            // one is used while rendering, they share the vertex shader above
+            CreatePixelShaderFromResource(hModule, profile.iGamma[i], &pPSGamma[i], POSTFX_FAILURE_GAMMA_SHADERS);
         }
 
         return true;
@@ -817,11 +785,11 @@ export namespace PostFX11
         DrawQuad();
 
         // Diagnostic view: the detected edges, white on black, through the gamma
-        // pair, which passes a 0 and a 1 through unchanged. A frame that stays
+        // shader, which passes a 0 and a 1 through unchanged. A frame that stays
         // black means the edge detection found nothing to antialias.
         if (bDebug)
         {
-            SetupPass(pTarget, pVSGamma[0], pPSGamma[0], constants);
+            SetupPass(pTarget, pVS, pPSGamma[0], constants);
             BindTextures(&pEdgeTextureView, 1);
             DrawQuad();
             return true;
@@ -866,16 +834,16 @@ export namespace PostFX11
 
     inline bool RenderGamma(ID3D11RenderTargetView* pTarget, ID3D11ShaderResourceView* pSceneView, int nConsoleGamma)
     {
-        if (nConsoleGamma < 1 || nConsoleGamma > 2)
+        if (nConsoleGamma < 1 || nConsoleGamma > POSTFX_GAMMA_PRESETS)
             return false;
 
-        // both presets are resident, the ini value decides per frame
-        if (!pVSGamma[nConsoleGamma - 1] || !pPSGamma[nConsoleGamma - 1])
+        // every preset is resident, the ini value decides per frame
+        if (!pPSGamma[nConsoleGamma - 1])
             return false;
 
         const PostFXConstants constants = MakePostFXConstants(targetInfo.width, targetInfo.height, 1.0f);
 
-        SetupPass(pTarget, pVSGamma[nConsoleGamma - 1], pPSGamma[nConsoleGamma - 1], constants);
+        SetupPass(pTarget, pVS, pPSGamma[nConsoleGamma - 1], constants);
         BindTextures(&pSceneView, 1);
         DrawQuad();
 
