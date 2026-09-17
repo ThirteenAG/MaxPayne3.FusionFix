@@ -14,6 +14,21 @@ BOOL WINAPI SetRect_Hook(LPRECT lprc, int xLeft, int yTop, int xRight, int yBott
     return SetRect(lprc, xLeft, yTop, xRight, yBottom);
 }
 
+// True while the style is applied from here, so the size this file forces onto
+// the window is not mistaken for the size the game wants to render at.
+static bool bApplyingWindowStyle = false;
+
+// The client area is what the game renders into, so that is the size worth
+// remembering. SetRect only reports the resolution the game asked for while
+// starting, the one the menu switches to has to be read off the window itself,
+// otherwise the remembered size stays at the resolution from the start.
+static void StoreCurrentClientSize(HWND hWnd)
+{
+    RECT rect{};
+    if (GetClientRect(hWnd, &rect) && rect.right > 0 && rect.bottom > 0)
+        gRect = { 0, 0, rect.right, rect.bottom };
+}
+
 BOOL WINAPI MoveWindow_Hook(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
 {
     RECT rect = { X, Y, nWidth, nHeight };
@@ -23,31 +38,49 @@ BOOL WINAPI MoveWindow_Hook(HWND hWnd, int X, int Y, int nWidth, int nHeight, BO
     GetMonitorInfo(monitor, &info);
     int32_t DesktopResW = info.rcMonitor.right - info.rcMonitor.left;
     int32_t DesktopResH = info.rcMonitor.bottom - info.rcMonitor.top;
-    if ((rect.right - rect.left >= DesktopResW) || (rect.bottom - rect.top >= DesktopResH))
+    // A window as big as the desktop is the game going fullscreen, the size it
+    // currently renders at is used instead of that request.
+    if (((rect.right - rect.left >= DesktopResW) || (rect.bottom - rect.top >= DesktopResH)) &&
+        gRect.right > 0 && gRect.bottom > 0)
         rect = gRect;
     rect.left = (LONG)(((float)DesktopResW / 2.0f) - ((float)rect.right / 2.0f));
     rect.top = (LONG)(((float)DesktopResH / 2.0f) - ((float)rect.bottom / 2.0f));
-    return MoveWindow(hWnd, rect.left, rect.top, rect.right, rect.bottom, bRepaint);
+
+    BOOL bResult = MoveWindow(hWnd, rect.left, rect.top, rect.right, rect.bottom, bRepaint);
+
+    if (!bApplyingWindowStyle && hWnd == gWnd)
+        StoreCurrentClientSize(hWnd);
+
+    return bResult;
 }
 
-void SwitchWindowStyle()
+// bForce: apply the style even when the window already has it. The window is
+// created with a plain style, so the first call has to set the size as well.
+// Editing the ini calls this too, and there it must not resize anything: the
+// game keeps the resolution it is running at, restoring the remembered size
+// used to put it back to the resolution the game started with.
+void SwitchWindowStyle(bool bForce = true)
 {
     if (gWnd)
     {
-        RECT rect = gRect;
+        static constexpr LONG lManagedStyle = WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU;
+
         LONG lStyle = GetWindowLong(gWnd, GWL_STYLE);
-        if (FusionFixSettings.GetInt(PREF_BORDERLESS))
-        {
-            lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
-        }
-        else
-        {
-            GetWindowRect(gWnd, &rect);
-            lStyle |= (WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
-        }
-        AdjustWindowRect(&rect, lStyle, FALSE);
-        SetWindowLong(gWnd, GWL_STYLE, lStyle);
+        LONG lNewStyle = FusionFixSettings.GetInt(PREF_BORDERLESS) ? (lStyle & ~lManagedStyle) : (lStyle | lManagedStyle);
+
+        if (!bForce && lStyle == lNewStyle)
+            return;
+
+        RECT rect = gRect;
+        if (rect.right - rect.left <= 0 || rect.bottom - rect.top <= 0)
+            GetClientRect(gWnd, &rect);
+
+        AdjustWindowRect(&rect, lNewStyle, FALSE);
+        SetWindowLong(gWnd, GWL_STYLE, lNewStyle);
+
+        bApplyingWindowStyle = true;
         MoveWindow_Hook(gWnd, 0, 0, rect.right - rect.left, rect.bottom - rect.top, TRUE);
+        bApplyingWindowStyle = false;
     }
 }
 
@@ -122,6 +155,10 @@ BOOL WINAPI SetWindowPos_Hook(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int
         CenterWindowPosition(rect.right, rect.bottom);
         return TRUE;
     }
+
+    if (!bApplyingWindowStyle && hWnd == gWnd)
+        StoreCurrentClientSize(hWnd);
+
     return res;
 }
 
@@ -162,7 +199,9 @@ public:
 
             FusionFix::onIniFileChange() += []()
             {
-                SwitchWindowStyle();
+                // the style only, an option that has nothing to do with the
+                // window must not change its size
+                SwitchWindowStyle(false);
             };
 
             FusionFix::onMenuOptionChange() += [](std::string_view name, int32_t oldVal, int32_t curVal)
