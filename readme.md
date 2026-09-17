@@ -65,8 +65,7 @@ This projects aims to add new features and fix some issues in Max Payne 3. Also 
   [**Watch full clip on YouTube**](https://youtu.be/-gucoqZh0mI)
 
 - **ConsoleGamma**, emulates the gamma curve of the console versions, 1 is the Xbox 360 preset, 2 is the PlayStation 3 preset. Works on every renderer the game supports (DirectX 9, 10, 10.1 and 11), the preset can be switched at any time
-- **SMAA**, adds SMAA antialiasing on top of the game's own MSAA. Set it to 2 to see the edges it detects instead of the result, which is a quick way to check that it finds anything to antialias
-- **Blur**, **BlurStrength**, gaussian blur with adjustable strength
+- **SMAA**, adds enhanced subpixel morphological antialiasing as a post-processing effect
 
 > [!NOTE]
 > SMAA and the blur run on the scene before the UI of the frame is drawn, the console gamma at the very end, so it covers the UI as well. Within one call the requested stages run in the order SMAA, blur, gamma, each one reading the result of the previous one.
