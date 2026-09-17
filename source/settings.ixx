@@ -23,6 +23,9 @@ export enum Pref
     PREF_HUDASPECTRATIOCONSTRAINT,
     PREF_CUSTOMFOV,
     PREF_CONSOLEGAMMA,
+    PREF_SMAA,
+    PREF_BLUR,
+    PREF_BLURSTRENGTH,
 
     COUNT,
 };
@@ -48,6 +51,9 @@ public:
         mFusionPrefs[PREF_HUDASPECTRATIOCONSTRAINT] = ParseWidescreenHudOffset(iniReader.ReadString("MAIN", "HudAspectRatioConstraint", "")).value_or(-1.0f);
         mFusionPrefs[PREF_CUSTOMFOV] = std::clamp(iniReader.ReadFloat("MAIN", "CustomFOV", 0.0f), 0.0f, 45.0f);
         mFusionPrefs[PREF_CONSOLEGAMMA] = std::clamp(iniReader.ReadInteger("MAIN", "ConsoleGamma", 0), 0, 2);
+        mFusionPrefs[PREF_SMAA] = std::clamp(iniReader.ReadInteger("MAIN", "SMAA", 0), 0, 2);
+        mFusionPrefs[PREF_BLUR] = std::clamp(iniReader.ReadInteger("MAIN", "Blur", 0), 0, 1);
+        mFusionPrefs[PREF_BLURSTRENGTH] = std::clamp(iniReader.ReadFloat("MAIN", "BlurStrength", 1.0f), 0.0f, 10.0f);
 
         static std::once_flag flag;
         std::call_once(flag, [&]()
