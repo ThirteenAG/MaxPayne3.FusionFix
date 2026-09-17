@@ -84,25 +84,62 @@ workspace "MaxPayne3.FusionFix"
 
    characterset ("Unicode")
 
-   os.mkdir("shaders/external/gamma/asm")
    os.mkdir("source/resources/shaders/win32_30")
    os.mkdir("source/resources/shaders/win32_40")
    os.mkdir("source/resources/shaders/win32_41")
    os.mkdir("source/resources/shaders/win32_50")
 
-   prebuildcommands {
-      "\"../source/dxsdk/lib/x86/fxc.exe\" /T vs_3_0 /nologo /E VSMain /Fo \"../source/resources/shaders/win32_30/VS_BlitXenonGammaDX9.cso\" /Fc \"../shaders/external/gamma/asm/VS_BlitXenonGammaDX9.asm\" \"../shaders/external/gamma/hlsl/XenonGammaDX9.hlsl\" && \"../source/dxsdk/lib/x86/fxc.exe\" /T ps_3_0 /nologo /E PSMain /Fo \"../source/resources/shaders/win32_30/PS_BlitXenonGammaDX9.cso\" /Fc \"../shaders/external/gamma/asm/PS_BlitXenonGammaDX9.asm\" \"../shaders/external/gamma/hlsl/XenonGammaDX9.hlsl\"",
-      "\"../source/dxsdk/lib/x86/fxc.exe\" /T vs_3_0 /nologo /E VSMain /Fo \"../source/resources/shaders/win32_30/VS_BlitCellGammaDX9.cso\"  /Fc \"../shaders/external/gamma/asm/VS_BlitCellGammaDX9.asm\"  \"../shaders/external/gamma/hlsl/CellGammaDX9.hlsl\"  && \"../source/dxsdk/lib/x86/fxc.exe\" /T ps_3_0 /nologo /E PSMain /Fo \"../source/resources/shaders/win32_30/PS_BlitCellGammaDX9.cso\"  /Fc \"../shaders/external/gamma/asm/PS_BlitCellGammaDX9.asm\"  \"../shaders/external/gamma/hlsl/CellGammaDX9.hlsl\"",
+   -- Shaders are compiled by fxc as a prebuild step, one set per DirectX
+   -- version, and are embedded as RCDATA (source/resources/Shaders.rc):
+   --   win32_30 (Direct3D 9, shader model 3.0), win32_40 (10, sm 4.0),
+   --   win32_41 (10.1, sm 4.1) and win32_50 (11, sm 5.0).
+   -- POSTFX_DX9 selects the shader model 3 syntax in the shared postfx sources.
+   local fxc = "\"../source/dxsdk/lib/x86/fxc.exe\""
 
-      "\"../source/dxsdk/lib/x86/fxc.exe\" /T vs_4_0 /nologo /E VSMain /Fo \"../source/resources/shaders/win32_40/VS_BlitXenonGammaDX10.cso\" /Fc \"../shaders/external/gamma/asm/VS_BlitXenonGammaDX10.asm\" \"../shaders/external/gamma/hlsl/XenonGammaDX11.hlsl\" && \"../source/dxsdk/lib/x86/fxc.exe\" /T ps_4_0 /nologo /E PSMain /Fo \"../source/resources/shaders/win32_40/PS_BlitXenonGammaDX10.cso\" /Fc \"../shaders/external/gamma/asm/PS_BlitXenonGammaDX10.asm\" \"../shaders/external/gamma/hlsl/XenonGammaDX11.hlsl\"",
-      "\"../source/dxsdk/lib/x86/fxc.exe\" /T vs_4_0 /nologo /E VSMain /Fo \"../source/resources/shaders/win32_40/VS_BlitCellGammaDX10.cso\"  /Fc \"../shaders/external/gamma/asm/VS_BlitCellGammaDX10.asm\"  \"../shaders/external/gamma/hlsl/CellGammaDX11.hlsl\"  && \"../source/dxsdk/lib/x86/fxc.exe\" /T ps_4_0 /nologo /E PSMain /Fo \"../source/resources/shaders/win32_40/PS_BlitCellGammaDX10.cso\"  /Fc \"../shaders/external/gamma/asm/PS_BlitCellGammaDX10.asm\"  \"../shaders/external/gamma/hlsl/CellGammaDX11.hlsl\"",
-
-      "\"../source/dxsdk/lib/x86/fxc.exe\" /T vs_4_1 /nologo /E VSMain /Fo \"../source/resources/shaders/win32_41/VS_BlitXenonGammaDX10_1.cso\" /Fc \"../shaders/external/gamma/asm/VS_BlitXenonGammaDX10_1.asm\" \"../shaders/external/gamma/hlsl/XenonGammaDX11.hlsl\" && \"../source/dxsdk/lib/x86/fxc.exe\" /T ps_4_1 /nologo /E PSMain /Fo \"../source/resources/shaders/win32_41/PS_BlitXenonGammaDX10_1.cso\" /Fc \"../shaders/external/gamma/asm/PS_BlitXenonGammaDX10_1.asm\" \"../shaders/external/gamma/hlsl/XenonGammaDX11.hlsl\"",
-      "\"../source/dxsdk/lib/x86/fxc.exe\" /T vs_4_1 /nologo /E VSMain /Fo \"../source/resources/shaders/win32_41/VS_BlitCellGammaDX10_1.cso\"  /Fc \"../shaders/external/gamma/asm/VS_BlitCellGammaDX10_1.asm\"  \"../shaders/external/gamma/hlsl/CellGammaDX11.hlsl\"  && \"../source/dxsdk/lib/x86/fxc.exe\" /T ps_4_1 /nologo /E PSMain /Fo \"../source/resources/shaders/win32_41/PS_BlitCellGammaDX10_1.cso\"  /Fc \"../shaders/external/gamma/asm/PS_BlitCellGammaDX10_1.asm\"  \"../shaders/external/gamma/hlsl/CellGammaDX11.hlsl\"",
-
-      "\"../source/dxsdk/lib/x86/fxc.exe\" /T vs_5_0 /nologo /E VSMain /Fo \"../source/resources/shaders/win32_50/VS_BlitXenonGammaDX11.cso\" /Fc \"../shaders/external/gamma/asm/VS_BlitXenonGammaDX11.asm\" \"../shaders/external/gamma/hlsl/XenonGammaDX11.hlsl\" && \"../source/dxsdk/lib/x86/fxc.exe\" /T ps_5_0 /nologo /E PSMain /Fo \"../source/resources/shaders/win32_50/PS_BlitXenonGammaDX11.cso\" /Fc \"../shaders/external/gamma/asm/PS_BlitXenonGammaDX11.asm\" \"../shaders/external/gamma/hlsl/XenonGammaDX11.hlsl\"",
-      "\"../source/dxsdk/lib/x86/fxc.exe\" /T vs_5_0 /nologo /E VSMain /Fo \"../source/resources/shaders/win32_50/VS_BlitCellGammaDX11.cso\"  /Fc \"../shaders/external/gamma/asm/VS_BlitCellGammaDX11.asm\"  \"../shaders/external/gamma/hlsl/CellGammaDX11.hlsl\"  && \"../source/dxsdk/lib/x86/fxc.exe\" /T ps_5_0 /nologo /E PSMain /Fo \"../source/resources/shaders/win32_50/PS_BlitCellGammaDX11.cso\"  /Fc \"../shaders/external/gamma/asm/PS_BlitCellGammaDX11.asm\"  \"../shaders/external/gamma/hlsl/CellGammaDX11.hlsl\"",
+   local shaderProfiles = {
+      { dir = "win32_30", vs = "vs_3_0", ps = "ps_3_0", define = "/DPOSTFX_DX9", gamma = "DX9",  gammaSuffix = "DX9" },
+      { dir = "win32_40", vs = "vs_4_0", ps = "ps_4_0", define = "",            gamma = "DX11", gammaSuffix = "DX10" },
+      { dir = "win32_41", vs = "vs_4_1", ps = "ps_4_1", define = "",            gamma = "DX11", gammaSuffix = "DX10_1" },
+      { dir = "win32_50", vs = "vs_5_0", ps = "ps_5_0", define = "",            gamma = "DX11", gammaSuffix = "DX11" },
    }
+
+   local postfxSources = {
+      { stage = "vs", file = "VS_PostFX.hlsl",                   entry = "VSMain",          output = "VS_PostFX" },
+      { stage = "ps", file = "PS_PostFX_SMAAEdgeDetection.hlsl", entry = "PSMain",          output = "PS_PostFX_SMAAEdgeDetection" },
+      { stage = "ps", file = "PS_PostFX_SMAABlendWeight.hlsl",   entry = "PSMain",          output = "PS_PostFX_SMAABlendWeight" },
+      { stage = "ps", file = "PS_PostFX_SMAAOutput.hlsl",        entry = "PSMain",          output = "PS_PostFX_SMAAOutput" },
+      { stage = "ps", file = "PS_PostFX_Blur.hlsl",              entry = "PSBlurHorizontal", output = "PS_PostFX_BlurHorizontal" },
+      { stage = "ps", file = "PS_PostFX_Blur.hlsl",              entry = "PSBlurVertical",   output = "PS_PostFX_BlurVertical" },
+   }
+
+   local prebuildShaderCommands = {}
+   for _, profile in ipairs(shaderProfiles) do
+      local commands = {}
+
+      local function compile(stage, source, entry, output, define)
+         local target = (stage == "vs") and profile.vs or profile.ps
+         define = define ~= "" and (define .. " ") or ""
+         table.insert(commands, string.format("%s /T %s /nologo %s/E %s /Fo \"../source/resources/shaders/%s/%s.cso\" \"%s\"",
+            fxc, target, define, entry, profile.dir, output, source))
+      end
+
+      -- console gamma, a vertex/pixel shader pair per preset
+      for _, preset in ipairs({ "Xenon", "Cell" }) do
+         local source = "../shaders/external/gamma/hlsl/" .. preset .. "Gamma" .. profile.gamma .. ".hlsl"
+         compile("vs", source, "VSMain", "VS_Blit" .. preset .. "Gamma" .. profile.gammaSuffix, "")
+         compile("ps", source, "PSMain", "PS_Blit" .. preset .. "Gamma" .. profile.gammaSuffix, "")
+      end
+
+      -- post processing, one shader source shared by all DirectX versions
+      for _, shader in ipairs(postfxSources) do
+         compile(shader.stage, "../shaders/postfx/" .. shader.file, shader.entry, shader.output, profile.define)
+      end
+
+      table.insert(prebuildShaderCommands, table.concat(commands, " && "))
+   end
+
+
+   prebuildcommands (prebuildShaderCommands)
 
    pbcommands = { 
       "setlocal EnableDelayedExpansion",
@@ -134,6 +171,13 @@ workspace "MaxPayne3.FusionFix"
    filter "configurations:Debug"
       defines { "DEBUG" }
       symbols "On"
+      -- /ZI (Edit and Continue) cannot be combined with C++ modules
+      editandcontinue "Off"
+      -- /MDd breaks the compilation of module units when they are combined
+      -- with header units, the compiler reports C2079 on std::basic_istream
+      -- (microsoft/STL#6389), so the static runtime is used here like in
+      -- Release, which also keeps the debug CRT out of the shipped plugin
+      staticruntime "On"
 
    filter "configurations:Release"
       defines { "NDEBUG" }
