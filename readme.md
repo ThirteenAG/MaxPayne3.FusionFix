@@ -67,6 +67,16 @@ This projects aims to add new features and fix some issues in Max Payne 3. Also 
 - **ConsoleGamma**, emulates the gamma curve of the console versions, 1 is the Xbox 360 preset, 2 is the PlayStation 3 preset. Works on every renderer the game supports (DirectX 9, 10, 10.1 and 11), the preset can be switched at any time
 - **SMAA**, adds enhanced subpixel morphological antialiasing as a post-processing effect
 
+# Building
+
+Run `premake5.bat` to generate the Visual Studio solution in `build`, then build it.
+
+To deploy to your game automatically after each build, create a `.env` file in the repository root pointing `MAX_PAYNE_3_DIR` at the folder containing `MaxPayne3.exe`, then run `premake5.bat` again, for example:
+
+    MAX_PAYNE_3_DIR=C:\Program Files (x86)\Steam\steamapps\common\Max Payne 3\Max Payne 3
+
+The build then copies the built `MaxPayne3.FusionFix.asi` into the `plugins` folder of that game folder and debugging launches `MaxPayne3.exe` from there. The `.env` file is ignored by git, only a plugin that is already installed is replaced, and without the file nothing is copied.
+
 # Contributing
 
 If you have an idea for a fix, add a module with its implementation to [source](https://github.com/ThirteenAG/MaxPayne3.FusionFix/tree/main/source) directory and open a pull request. See [contributing.ixx](https://github.com/ThirteenAG/MaxPayne3.FusionFix/blob/main/source/contributing.ixx) for reference.

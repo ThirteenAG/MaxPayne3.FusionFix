@@ -340,3 +340,6 @@ data/update/platform/textures/*.wtd
 data/plugins/MaxPayne3.FusionFix.asi
 MaxPayne3.FusionFix.zip
 dxwrapper.zip
+
+# the paths of this machine, read by premake5.lua, see the readme
+.env
