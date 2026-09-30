@@ -1,14 +1,14 @@
 [FUSION FIX OPTIONS]
-FUSION FIX-OPTIONEN
+FUSION-FIX-OPTIONEN
 
 [RESTORE DEFAULTS]
 STANDARD WIEDERHERSTELLEN
 
 [Customize Fusion Fix features.]
-Funktionen von Fusion Fix anpassen.
+Passe die Funktionen des Fusion Fix an.
 
 [Restore this page's defaults.]
-Standardwerte dieser Seite wiederherstellen.
+Setze alle Optionen dieser Seite auf ihre Originalwerte zurück.
 
 [Off]
 Aus
@@ -17,7 +17,7 @@ Aus
 Ein
 
 [Auto]
-Auto
+Autom.
 
 [Custom]
 Benutzerdefiniert
@@ -26,7 +26,7 @@ Benutzerdefiniert
 Intro überspringen
 
 [Hide skip prompt]
-Überspringen-Hinweis aus
+"Überspringen"-Hinweis aus
 
 [Disable leaderboards]
 Bestenlisten deaktivieren
@@ -38,7 +38,7 @@ Untertitelgröße
 Umrissstärke
 
 [Borderless window]
-Randloses Fenster
+Randloser Fenstermodus
 
 [LIGHTSYNC RGB]
 LIGHTSYNC RGB
@@ -53,7 +53,7 @@ Gerätewechsel ignorieren
 HUD-Seitenverhältnis
 
 [Additional FOV]
-Zusätzliches Sichtfeld
+FOV-Erweiterung
 
 [Console gamma]
 Konsolen-Gamma
@@ -62,13 +62,13 @@ Konsolen-Gamma
 SMAA
 
 [Skip the opening videos and legal screens. Takes effect next time the game starts.]
-Startvideos und Rechtshinweise beim nächsten Spielstart überspringen.
+Überspringe ab dem nächsten Spielstart die Introvideos und Rechtshinweise.
 
 [Hide the cutscene skip button prompt.]
-Den Hinweis zum Überspringen von Zwischensequenzen ausblenden.
+Blende den Hinweis zum Überspringen von Zwischensequenzen aus.
 
 [Disable global leaderboards to prevent the Hoboken Alleys co-op crash.]
-Globale Bestenlisten deaktivieren, um den Koop-Absturz in Hoboken Alleys zu verhindern.
+Deaktiviere globale Bestenlisten, um den Absturz im "Hoboken Gasse"-Koop zu verhindern.
 
 [Subtitle scale. 1 is the original size.]
 Untertitelskalierung. 1 entspricht der Originalgröße.
@@ -77,25 +77,25 @@ Untertitelskalierung. 1 entspricht der Originalgröße.
 Skalierung des Untertitelumrisses. 1 entspricht der Originalgröße.
 
 [Remove borders in windowed mode. Select windowed mode in Graphics first.]
-Fensterrahmen entfernen. Zuerst den Fenstermodus unter Grafik auswählen.
+Entferne die Rahmen im Fenstermodus. Wähle dafür zunächst den Fenstermodus unter Grafik aus.
 
 [Logitech lighting effects. Requires Logitech G HUB and supported hardware.]
 Logitech-Beleuchtung. Benötigt Logitech G HUB und unterstützte Hardware.
 
 [Choose the controller button artwork.]
-Darstellung der Controllertasten wählen.
+Wähle die Darstellung der Controllertasten.
 
 [Prevent device-change notifications from randomly opening the pause menu.]
-Verhindert, dass Gerätewechsel unbeabsichtigt das Pausenmenü öffnen.
+Verhindere, dass Gerätewechsel unbeabsichtigt das Pausenmenü öffnen.
 
 [Center the HUD within this aspect ratio, capped to the screen width. Auto uses the full screen.]
-HUD in diesem Seitenverhältnis zentrieren, höchstens so breit wie der Bildschirm. Auto nutzt den ganzen Bildschirm.
+Zentriere das HUD innerhalb dieses Seitenverhältnisses. Bei "Autom." wird der Bildschirm gefüllt.
 
 [Add up to 45 degrees to the gameplay field of view. 0 uses the original FOV.]
-Das Sichtfeld um bis zu 45 Grad erweitern. 0 verwendet das Original.
+Erweitere das FOV um bis zu 45 Grad. Mit 0 bleibst du beim Original-FOV.
 
 [Use the original PC gamma or a console gamma curve.]
-Originales PC-Gamma oder eine Konsolen-Gammakurve verwenden.
+Wähle zwischen originalem PC-Gamma oder einer Konsolen-Gammakurve.
 
 [Enhanced Subpixel Morphological Antialiasing.]
 Verbesserte morphologische Subpixel-Kantenglättung.
