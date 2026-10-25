@@ -3,6 +3,8 @@ module;
 #include <common.hxx>
 #include <d3d9.h>
 #include <d3d11.h>
+#include <automation/asi_automation_frames.h>
+#include "OverlayInput.hpp"
 
 export module postfx;
 
@@ -12,6 +14,7 @@ import settings;
 import postfxcommon;
 import postfxdx9;
 import postfxdx11;
+import antialiasing;
 
 // ===========================================================================
 // Post processing for every renderer Max Payne 3 can run on:
@@ -26,7 +29,7 @@ import postfxdx11;
 // Shaders are compiled by fxc during the prebuild step and embedded as RCDATA,
 // nothing is compiled at runtime.
 //
-// Options are re-read from the ini on every call, so changing any of them,
+// Options are re-read from the settings on every call, so changing any of them,
 // including which console gamma preset is used, takes effect immediately
 // without reloading shaders.
 // ===========================================================================
@@ -37,13 +40,11 @@ public:
 
     static void UpdateOptions()
     {
-        const int nSmaa = FusionFixSettings.GetInt(PREF_SMAA); // 0 off, 1 on, 2 on with the edge view
+        const int nSmaa = AntiAliasing::SmaaMode(); // 0 off, 1 on, 2 on with the edge view
 
         Options.nConsoleGamma = FusionFixSettings.GetInt(PREF_CONSOLEGAMMA); // 0 off, otherwise one of the POSTFX_GAMMA_PRESETS curves
         Options.bSmaa = nSmaa != 0;
         Options.bSmaaDebug = nSmaa == 2;
-        Options.bBlur = FusionFixSettings.GetInt(PREF_BLUR) != 0;
-        Options.fBlurStrength = FusionFixSettings.GetFloat(PREF_BLURSTRENGTH);
     }
 
     static void Shutdown()
@@ -81,6 +82,7 @@ public:
     static void OnLostDevice()
     {
         PostFX9::OnLostDevice();
+        AntiAliasing::OnLostDevice();
     }
 
     // -----------------------------------------------------------------------
@@ -98,6 +100,7 @@ public:
     static void OnResize()
     {
         PostFX11::OnResize();
+        AntiAliasing::OnResize();
     }
 
 public:
@@ -138,22 +141,40 @@ public:
             ppPostFXDevice = *hook::get_pattern<IUnknown**>("68 ? ? ? ? 68 ? ? ? ? 8B D7 83 CA 10", 1);
             ppPostFXSwapChain = *hook::get_pattern<IUnknown**>("A1 ? ? ? ? 8B 08 53 8D 54 24 14 52 50", 1);
 
+            // sub_6D71A0 ends the draw lists of the scene, G-buffer and reflection phases; the pattern is the scene
+            // phase's (CRenderPhaseDrawScene, before the HUD)
             auto pattern = hook::pattern("68 ? ? ? ? E8 ? ? ? ? 8B 15 ? ? ? ? 8B 0D ? ? ? ? 8B 04 95 ? ? ? ? 83 C4 08 03 C1");
-            static auto BeforeUIHook = safetyhook::create_mid(*pattern.get_first<void*>(1), [](SafetyHookContext& ctx)
+            static auto pPhaseEnd = *pattern.get_first<void(__cdecl*)()>(1);
+            static auto BeforeUIHook = safetyhook::create_mid(pPhaseEnd, [](SafetyHookContext& ctx)
             {
                 CPostFX::Render(POSTFX_STAGE_SMAA | POSTFX_STAGE_BLUR);
             });
+
+            // Temporal anti-aliasing resolves the scene phase's frame only: its command gets a function of its own,
+            // which resolves and then runs sub_6D71A0 (and with it the hook above)
+            static void(__cdecl* SceneEnd)() = []()
+            {
+                AntiAliasing::Render();
+                pPhaseEnd();
+                // The dev-only automation plugin's grab before the HUD (inert unless it registered)
+                asi_automation_frames::Fire(ASI_AUTOMATION_STAGE_BEFORE_UI, CPostFX::GetCommonSwapChain());
+            };
+            injector::WriteMemory(pattern.get_first(1), SceneEnd, true);
 
             pattern = hook::pattern("0F B6 C8 8B 07 F7 D9 1B C9 F7 D1 23 0D ? ? ? ? 51 52 FF D0 8B F8 81 FF ? ? ? ? 75");
             static auto DX11PresentHook1 = safetyhook::create_mid(pattern.get_first(0), [](SafetyHookContext& regs)
             {
                 CPostFX::Render(POSTFX_STAGE_GAMMA);
+                asi_automation_frames::Fire(ASI_AUTOMATION_STAGE_AFTER_UI, CPostFX::GetCommonSwapChain());
+                MP3Overlay::Present(static_cast<IDXGISwapChain*>(CPostFX::GetCommonSwapChain()));
             });
 
             pattern = hook::pattern("8B 07 F7 D9 1B C9 F7 D1 23 0D ? ? ? ? 51 52 FF D0 8B F8 81 FF ? ? ? ? 74");
             static auto DX11PresentHook2 = safetyhook::create_mid(pattern.get_first(0), [](SafetyHookContext& regs)
             {
                 CPostFX::Render(POSTFX_STAGE_GAMMA);
+                asi_automation_frames::Fire(ASI_AUTOMATION_STAGE_AFTER_UI, CPostFX::GetCommonSwapChain());
+                MP3Overlay::Present(static_cast<IDXGISwapChain*>(CPostFX::GetCommonSwapChain()));
             });
 
             pattern = hook::pattern("6A ? 51 55 53 52");
@@ -173,12 +194,19 @@ public:
             static auto EndSceneHook = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& regs)
             {
                 CPostFX::Render(POSTFX_STAGE_GAMMA);
+                IDirect3DDevice9* pDevice = nullptr;
+                if (asi_automation_frames::Wanted(ASI_AUTOMATION_STAGE_AFTER_UI) && CPostFX::AcquireDirect3D9Device(&pDevice))
+                {
+                    asi_automation_frames::Fire(ASI_AUTOMATION_STAGE_AFTER_UI, pDevice);
+                    pDevice->Release();
+                }
             });
         };
 
         FusionFix::onShutdownEvent() += []()
         {
             CPostFX::Shutdown();
+            MP3Overlay::Shutdown();
         };
     }
 } PostFX;

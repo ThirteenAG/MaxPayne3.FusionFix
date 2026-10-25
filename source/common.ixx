@@ -1,7 +1,7 @@
 module;
 
 #include <common.hxx>
-#include "includes/gameref.hpp"
+#include "gameref.hpp"
 
 export module common;
 
@@ -73,6 +73,13 @@ public:
     {
         static Event<> ShutdownEvent;
         return ShutdownEvent;
+    }
+    // The game's ExitProcess (led.ixx hooks it), before the process ends: unlike DLL_PROCESS_DETACH, new processes can
+    // still be started here
+    static Event<>& onExitEvent()
+    {
+        static Event<> ExitEvent;
+        return ExitEvent;
     }
     static Event<>& onGameInitEvent()
     {

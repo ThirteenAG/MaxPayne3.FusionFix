@@ -36,6 +36,11 @@ workspace "MaxPayne3.FusionFix"
    configurations { "Release", "Debug" }
    architecture "x86"
    location "build"
+   -- BuildTimeUtc (Versioninfo.rc): the build's own time in UTC, written before every build; the in-game update
+   -- check compares it with the release asset's time (FileVersion is only shown)
+   includedirs { "build/generated" }
+   resincludedirs { "build/generated" }
+   prebuildcommands { 'powershell -NoProfile -ExecutionPolicy Bypass -File "../tools/buildtime.ps1" -Out "../build/generated/BuildTime.h"' }
    cppdialect "C++latest"
    kind "SharedLib"
    language "C++"
@@ -90,7 +95,15 @@ workspace "MaxPayne3.FusionFix"
    defines { "_CRT_SECURE_NO_WARNINGS" }
 
    includedirs { "source" }
-   includedirs { "source/includes" }
+   -- Shared headers, ASI Settings, overlay, automation and anti-aliasing: FusionFixUtils, a submodule (change them there)
+   includedirs { "external/FusionFixUtils/include", "external/FusionFixUtils" }
+   files { "external/FusionFixUtils/include/gameref.hpp", "external/FusionFixUtils/include/ModuleList.hpp" }
+   -- The overlay of FusionFixUtils; ImGui is the imgui submodule of FusionFixUtils.
+   includedirs { "external/FusionFixUtils/imgui" }
+   files { "external/FusionFixUtils/overlay/*.hpp", "external/FusionFixUtils/imgui/*.h" }
+   files { "external/FusionFixUtils/imgui/imgui.cpp", "external/FusionFixUtils/imgui/imgui_draw.cpp", "external/FusionFixUtils/imgui/imgui_tables.cpp", "external/FusionFixUtils/imgui/imgui_widgets.cpp" }
+   files { "external/FusionFixUtils/imgui/backends/imgui_impl_win32.cpp", "external/FusionFixUtils/imgui/backends/imgui_impl_dx11.cpp" }
+   links { "d3d11", "dxgi", "dxguid" }
    includedirs { "source/ledsdk" }
    includedirs { "source/dxsdk" }
    libdirs { "source/ledsdk" }
@@ -98,7 +111,10 @@ workspace "MaxPayne3.FusionFix"
    files { "source/**.h", "source/*.hpp", "source/*.cpp", "source/*.hxx", "source/**.ixx" }
    files { "source/resources/Versioninfo.rc" }
    files { "source/resources/Shaders.rc" }
-   files { "text/*FF.txt" }
+   -- ASI Settings: the description and translations of the settings, embedded by
+   -- source/resources/Settings.rc (see docs/settings.md)
+   files { "source/resources/Settings.rc" }
+   files { "settings/*.json" }
    links { "LogitechLEDLib.lib" }
 
    includedirs { "external/hooking" }
@@ -167,6 +183,26 @@ workspace "MaxPayne3.FusionFix"
    end
 
 
+   -- Temporal anti-aliasing (source/antialiasing.ixx): the shared library of FusionFixUtils
+   -- (aa/, with upscaler/ for DLAA and FSR through FusionFixHub's bridge).
+   -- Its Direct3D 9 shader sources are compiled for Direct3D 11 in fxc's compatibility
+   -- mode (/Gec), embedded by external/FusionFixUtils/aa/AntiAliasingD3D11.rc (the .cso
+   -- files are ignored by FusionFixUtils' .gitignore).
+   files { "external/FusionFixUtils/aa/AntiAliasingD3D11.rc" }
+   -- and for the Direct3D 9 renderer the same sources as ps_3_0, embedded by external/FusionFixUtils/aa/AntiAliasing.rc
+   files { "external/FusionFixUtils/aa/AntiAliasing.rc" }
+   local aaShaders = "../external/FusionFixUtils/aa/shaders/"
+   local aaCommands = {
+      string.format("%s /T vs_5_0 /nologo /E main /Fo \"%sd3d11/Fullscreen.cso\" \"%sd3d11/Fullscreen.hlsl\"", fxc, aaShaders, aaShaders),
+   }
+   for _, name in ipairs({ "CameraMotion", "Resolve", "Output", "Copy", "Depth", "Luma", "BlockMotion", "MotionSelect" }) do
+      table.insert(aaCommands, string.format("%s /T ps_5_0 /nologo /Gec /E main /Fo \"%sd3d11/%s.cso\" \"%s%s.hlsl\"", fxc, aaShaders, name, aaShaders, name))
+   end
+   for _, name in ipairs({ "CameraMotion", "Resolve", "Output", "Copy", "Depth", "Luma", "BlockMotion", "MotionSelect", "OpaqueLuma", "Reactive", "Stabilize" }) do
+      table.insert(aaCommands, string.format("%s /T ps_3_0 /nologo /E main /Fo \"%s%s.pso\" \"%s%s.hlsl\"", fxc, aaShaders, name, aaShaders, name))
+   end
+   table.insert(prebuildShaderCommands, table.concat(aaCommands, " && "))
+
    prebuildcommands (prebuildShaderCommands)
 
    -- Deploys the built .asi into the folder that `key` names in the .env file, and
@@ -206,3 +242,6 @@ workspace "MaxPayne3.FusionFix"
 
 project "MaxPayne3.FusionFix"
    setpaths("MAX_PAYNE_3_DIR", "MaxPayne3.exe", "plugins/")
+
+-- The dev-only automation adapters (zz_Automation.asi) live in FusionFixHelpers, next to this checkout; they use the
+-- frame-stage export of this plugin (asi_automation_frames.h), which is inert without them.

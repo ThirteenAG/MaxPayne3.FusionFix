@@ -1,0 +1,147 @@
+{
+  "format": "asi-settings",
+  "version": "1.0",
+  "plugin": {
+    "name": "Fusion Fix",
+    "priority": 100,
+    "games": [ { "name": "Max Payne 3", "exe": [ "MaxPayne3.exe" ], "launcher": [ "PlayMaxPayne3.exe" ] } ]
+  },
+  "pages": [
+    { "id": "fusionfix", "title": "@page.fusionfix", "section": "other" },
+    { "id": "display", "title": "@page.display", "section": "display", "join": true },
+    { "id": "graphics", "title": "@page.graphics", "section": "graphics", "join": true },
+    { "id": "controls", "title": "@page.controls", "section": "controls", "join": true },
+    { "id": "compatibility", "title": "@page.compatibility", "section": "compatibility" }
+  ],
+  "settings": [
+    {
+      "id": "MAIN.OverlayHotkey", "type": "choice", "default": 121,
+      "choices": [ { "value": 112, "label": "Ctrl+F1" }, { "value": 113, "label": "Ctrl+F2" }, { "value": 114, "label": "Ctrl+F3" }, { "value": 115, "label": "Ctrl+F4" }, { "value": 116, "label": "Ctrl+F5" }, { "value": 117, "label": "Ctrl+F6" }, { "value": 118, "label": "Ctrl+F7" }, { "value": 119, "label": "Ctrl+F8" }, { "value": 120, "label": "Ctrl+F9" }, { "value": 121, "label": "Ctrl+F10" }, { "value": 122, "label": "Ctrl+F11" }, { "value": 123, "label": "Ctrl+F12" }, { "value": 45, "label": "Ctrl+Insert" }, { "value": 36, "label": "Ctrl+Home" }, { "value": 33, "label": "Ctrl+Page Up" }, { "value": 34, "label": "Ctrl+Page Down" }, { "value": 35, "label": "Ctrl+End" }, { "value": 46, "label": "Ctrl+Delete" }, { "value": 19, "label": "Ctrl+Pause" }, { "value": 145, "label": "Ctrl+Scroll Lock" }, { "value": 192, "label": "Ctrl+` (grave)" } ],
+      "label": "Overlay hotkey", "description": "Opens the in-game settings overlay (Ctrl held with the key). Back + Start on a controller also opens it.",
+      "page": "fusionfix", "control": [ "dropdown" ], "visibility": "editor"
+    },
+    {
+      "id": "MAIN.TextLanguage", "type": "choice", "default": "auto",
+      "choices": [ { "value": "auto", "label": "Game language" }, { "value": "en", "label": "English" },
+        { "value": "fr", "label": "Français" }, { "value": "de", "label": "Deutsch" }, { "value": "it", "label": "Italiano" },
+        { "value": "es", "label": "Español" }, { "value": "ja", "label": "日本語" }, { "value": "ru", "label": "Русский" },
+        { "value": "pt-BR", "label": "Português (Brasil)" }, { "value": "pl", "label": "Polski" }, { "value": "ko", "label": "한국어" } ],
+      "label": "Overlay text language", "description": "Language used for plugin texts in the overlay; Auto follows the game.",
+      "page": "compatibility", "visibility": "editor"
+    },
+    {
+      "id": "MAIN.SkipIntro", "type": "bool", "default": 1,
+      "label": "@skipintro", "description": "@skipintro.description",
+      "page": "fusionfix", "control": [ "switch", "cycler" ], "apply": "restart",
+      "presets": { "vanilla": 0, "recommended": 1, "enhanced": 1 }
+    },
+    {
+      "id": "MAIN.CutsceneSkip", "type": "bool", "default": 1,
+      "label": "@cutsceneskip", "description": "@cutsceneskip.description",
+      "page": "fusionfix", "control": [ "switch", "cycler" ],
+      "presets": { "vanilla": 0, "recommended": 1, "enhanced": 1 }
+    },
+    {
+      "id": "MAIN.HideSkipButton", "type": "bool", "default": 1,
+      "label": "@hideskip", "description": "@hideskip.description",
+      "page": "fusionfix", "control": [ "switch", "cycler" ],
+      "presets": { "vanilla": 0, "recommended": 1, "enhanced": 1 }
+    },
+    {
+      "id": "MAIN.DisableGlobalLeaderboards", "type": "bool", "default": 1,
+      "label": "@leaderboards", "description": "@leaderboards.description",
+      "page": "fusionfix", "control": [ "switch", "cycler" ]
+    },
+    {
+      "id": "UPDATE.CheckForUpdates", "type": "bool", "default": 0,
+      "label": "@checkupdates", "description": "@checkupdates.description",
+      "page": "fusionfix", "control": [ "switch", "cycler" ]
+    },
+    {
+      "id": "MAIN.SubtitlesSizeMultiplier", "type": "float", "default": 1.0, "min": 0, "max": 2, "step": 0.1, "decimals": 1,
+      "label": "@subtitlesize", "description": "@subtitlesize.description",
+      "page": "display", "control": [ "slider" ]
+    },
+    {
+      "id": "MAIN.OutlinesSizeMultiplier", "type": "float", "default": 1.0, "min": 0, "max": 2, "step": 0.1, "decimals": 1,
+      "label": "@outlinesize", "description": "@outlinesize.description",
+      "page": "display", "control": [ "slider" ]
+    },
+    {
+      "id": "MAIN.BorderlessWindowed", "type": "bool", "default": 1,
+      "label": "@borderless", "description": "@borderless.description",
+      "page": "graphics", "control": [ "switch", "cycler" ]
+    },
+    {
+      "id": "MAIN.ConfineCursor", "type": "bool", "default": 1,
+      "label": "@confinecursor", "description": "@confinecursor.description",
+      "page": "controls", "control": [ "switch", "cycler" ],
+      "presets": { "vanilla": 1, "recommended": 1, "enhanced": 1 }
+    },
+    {
+      "id": "MAIN.UnlockSprintLook", "type": "bool", "default": 1,
+      "label": "@sprintlook", "description": "@sprintlook.description",
+      "page": "controls", "control": [ "switch", "cycler" ],
+      "presets": { "vanilla": 0, "recommended": 1, "enhanced": 1 }
+    },
+    {
+      "id": "MAIN.LightSyncRGB", "type": "bool", "default": 1,
+      "label": "@lightsync", "description": "@lightsync.description",
+      "page": "fusionfix", "control": [ "switch", "cycler" ]
+    },
+    {
+      "id": "MAIN.GamepadIcons", "type": "choice", "default": 0,
+      "choices": [ { "value": 0, "label": "Xbox 360" }, { "value": 1, "label": "Xbox One" },
+                   { "value": 2, "label": "PlayStation 3" }, { "value": 3, "label": "PlayStation 4" },
+                   { "value": 4, "label": "PlayStation 5" }, { "value": 5, "label": "Nintendo Switch" },
+                   { "value": 6, "label": "Steam Deck" }, { "value": 7, "label": "Steam Controller" } ],
+      "label": "@gamepadicons", "description": "@gamepadicons.description",
+      "page": "controls", "control": [ "cycler", "dropdown" ]
+    },
+    {
+      "id": "MAIN.DisableDeviceChangeEvent", "type": "bool", "default": 1,
+      "label": "@devicechange", "description": "@devicechange.description",
+      "page": "compatibility", "control": [ "switch", "cycler" ]
+    },
+    {
+      "id": "MAIN.HudAspectRatioConstraint", "type": "string", "default": "Auto",
+      "special": [ { "value": "Auto", "label": "@auto" } ],
+      "suggestions": [ { "value": "4:3" }, { "value": "16:10" }, { "value": "16:9" }, { "value": "21:9" }, { "value": "32:9" } ],
+      "label": "@hudaspect", "description": "@hudaspect.description",
+      "page": "display", "control": [ "cycler", "text" ]
+    },
+    {
+      "id": "MAIN.CustomFOV", "type": "float", "default": 0, "min": 0, "max": 45, "step": 1, "decimals": 0, "unit": "°",
+      "label": "@fov", "description": "@fov.description",
+      "page": "display", "control": [ "slider" ],
+      "presets": { "vanilla": 0, "recommended": 0, "enhanced": 10 }
+    },
+    {
+      "id": "MAIN.ConsoleGamma", "type": "choice", "default": 0,
+      "choices": [ { "value": 0, "label": "@off" }, { "value": 1, "label": "Xbox 360" }, { "value": 2, "label": "PlayStation 3" } ],
+      "label": "@consolegamma", "description": "@consolegamma.description",
+      "page": "display", "control": [ "cycler", "segmented" ],
+      "presets": { "vanilla": 0, "recommended": 0, "enhanced": 1 }
+    },
+    {
+      "id": "MAIN.AntiAliasing", "type": "choice", "default": 0,
+      "choices": [ { "value": 0, "label": "@off" }, { "value": 1, "label": "@smaa" }, { "value": 3, "label": "TAA" },
+                   { "value": 4, "label": "DLAA" }, { "value": 5, "label": "FSR" } ],
+      "special": [ { "value": 2, "label": "@smaa.edges" } ],
+      "label": "@antialiasing", "description": "@antialiasing.description",
+      "page": "graphics", "control": [ "cycler", "dropdown" ],
+      "presets": { "vanilla": 0, "recommended": 0, "enhanced": 1 }
+    },
+    {
+      "id": "MAIN.AntiAliasingSharpness", "type": "float", "default": 25, "min": 0, "max": 100, "step": 5, "decimals": 0, "unit": "%",
+      "label": "@aasharpness", "description": "@aasharpness.description",
+      "page": "graphics", "control": [ "slider" ],
+      "enabledIf": { "setting": "MAIN.AntiAliasing", "in": [ 3, 4, 5 ] }
+    },
+    {
+      "id": "MAIN.SkipIntelVendorChecks", "type": "bool", "default": 1,
+      "label": "@intelchecks", "description": "@intelchecks.description",
+      "page": "compatibility", "visibility": "file", "apply": "restart"
+    }
+  ]
+}

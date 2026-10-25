@@ -45,13 +45,11 @@ This projects aims to add new features and fix some issues in Max Payne 3. Also 
 
 ### New menu options
 
-Fusion Fix options are available under **Settings -> Fusion Fix Options**, immediately after Graphics. The page's **Restore Defaults** resets only Fusion Fix settings and saves them to CFG.
+Fusion Fix options are available under **Settings -> Plugins -> Fusion Fix**; the Plugins row comes right after Graphics. The page starts with a **Preset** selector (Vanilla, Recommended, Enhanced) and **Apply Preset**, which asks for a confirmation; **Restore Defaults** resets the page's settings.
 
-FOV, subtitle size, and outline size use sliders. SMAA is an On/Off toggle; blur and diagnostic SMAA modes are CFG-only settings. Changes save automatically to `plugins/MaxPayne3.FusionFix.cfg`. If saving fails, Fusion Fix tries the game folder, `%LOCALAPPDATA%/Rockstar Games/Max Payne 3/`, `%LOCALAPPDATA%/MaxPayne3.FusionFix/`, then `Documents/MaxPayne3.FusionFix/`. Missing folders are created. Startup loads the newest readable CFG across these locations, and subsequent saves keep that location when writable. Existing INI values are imported for settings without a CFG value; the CFG takes precedence afterward. Edit the CFG while the game is closed.
+FOV, subtitle size, and outline size use sliders. Blur and the SMAA edge view are not in the menu, set them in the CFG or an editor. Changes save automatically to `plugins/MaxPayne3.FusionFix.cfg`, which is written in full with a comment for every setting when it's missing. Older INI files are not read any more. Edit the CFG while the game is closed.
 
-Menu labels and descriptions follow the game language in all ten supported languages. Separate UTF-8 GXT-layout files in `text/` are embedded at build time and extend native GXT lookup with English fallback. Plugins can register pages and translations through the [C menu API](docs/menu-api.md).
-
-Xbox Rain Droplets has its own page after Fusion Fix when the updated plugin is installed. Its INI settings save to its own CFG, and its Restore Defaults affects only Rain Droplets.
+Menu labels and descriptions follow the game language in all ten supported languages. Settings are described with [ASI Settings](https://github.com/ThirteenAG/FusionFixUtils/tree/main/asi_settings), so editors such as FusionFixHub can change them too, and other plugins with a description, such as Xbox Rain Droplets, get their own pages after Fusion Fix's. See [docs/settings.md](docs/settings.md).
 
 ### New options
 
@@ -59,7 +57,9 @@ Xbox Rain Droplets has its own page after Fusion Fix when the updated plugin is 
 > Use the settings menus to change options while playing. SkipIntro takes effect on the next launch.
 
 - **SkipIntro**, added an option to skip intro
+- **CutsceneSkip**, the skip button skips every cutscene and video, also the ones the game doesn't let you skip. Their last seconds still play, so the story continues just as after watching them
 - **HideSkipButton**, added an option to hide ![skip](https://i.imgur.com/vwELI93.png) in cutscenes
+- **UnlockSprintLook**, look up and down while sprinting as far as when walking, instead of the camera staying level
 - **DisableGlobalLeaderboards**, prevents Hoboken Alleys coop map from crashing the game
 - **OutlinesSizeMultiplier**, added an option to increase the size of subtitle text outlines
 - **DisableDeviceChangeEvent**, fixes an issue when the game randomly enters pause menu
@@ -71,6 +71,9 @@ Xbox Rain Droplets has its own page after Fusion Fix when the updated plugin is 
 
 - **ConsoleGamma**, emulates the gamma curve of the console versions, 1 is the Xbox 360 preset, 2 is the PlayStation 3 preset. Works on every renderer the game supports (DirectX 9, 10, 10.1 and 11), the preset can be switched at any time
 - **SMAA**, adds enhanced subpixel morphological antialiasing as a post-processing effect
+- **CheckForUpdates**, off by default: when on, looks up the newest version at fusionfix.io when the game starts and tells you in the game; with FusionFixHub in the game folder, its update page opens when you close the game
+
+High polling-rate mouse movement uses the full accumulated input each frame, preserving sensitivity without an extra wrapper.
 
 # Building
 

@@ -7,8 +7,6 @@ export module fixes;
 import common;
 import settings;
 
-bool bSkipIntelVendorChecks = true;
-
 class Fixes
 {
 public:
@@ -87,16 +85,11 @@ public:
 
         FusionFix::onInitEvent() += []()
         {
-            CIniReader iniReader("");
-
-            // [MAIN]
-            bSkipIntelVendorChecks = iniReader.ReadInteger("MAIN", "SkipIntelVendorChecks", 1) != 0;
-
             // Intel GPU vendor checks fix
             // Some Intel GPUs are blocked from switching to anything else than DX9, probably meant for old iGPUs which usually didn't support certain features at the time.
             // Nowadays this is not usually the case anymore, and it kills the potential of more modern integrated chips (e.g. Iris XE) or perhaps even Intel ARC cards (Not tested) to brute force this game due to outdated DX9 drivers.
-            // In case some older iGPUs have problems as a result of this change (Unlikely?!), it is gated around a hidden option which can be added in the .ini to disable it.
-            if (bSkipIntelVendorChecks)
+            // In case some older iGPUs have problems as a result of this change (Unlikely?!), it is gated around a hidden option, SkipIntelVendorChecks in the .cfg, to disable it.
+            if (FusionFixSettings.GetInt(PREF_SKIPINTELVENDORCHECKS))
             {
                 auto pattern = hook::pattern("0F 85 ? ? ? ? 81 BC 24");
                 injector::WriteMemory<uint16_t>(pattern.get_first(0), 0xE990, true);
