@@ -185,23 +185,11 @@ workspace "MaxPayne3.FusionFix"
 
    -- Temporal anti-aliasing (source/antialiasing.ixx): the shared library of FusionFixUtils
    -- (aa/, with upscaler/ for DLAA and FSR through FusionFixHub's bridge).
-   -- Its Direct3D 9 shader sources are compiled for Direct3D 11 in fxc's compatibility
-   -- mode (/Gec), embedded by external/FusionFixUtils/aa/AntiAliasingD3D11.rc (the .cso
-   -- files are ignored by FusionFixUtils' .gitignore).
-   files { "external/FusionFixUtils/aa/AntiAliasingD3D11.rc" }
-   -- and for the Direct3D 9 renderer the same sources as ps_3_0, embedded by external/FusionFixUtils/aa/AntiAliasing.rc
-   files { "external/FusionFixUtils/aa/AntiAliasing.rc" }
-   local aaShaders = "../external/FusionFixUtils/aa/shaders/"
-   local aaCommands = {
-      string.format("%s /T vs_5_0 /nologo /E main /Fo \"%sd3d11/Fullscreen.cso\" \"%sd3d11/Fullscreen.hlsl\"", fxc, aaShaders, aaShaders),
-   }
-   for _, name in ipairs({ "CameraMotion", "Resolve", "Output", "Copy", "Depth", "Luma", "BlockMotion", "MotionSelect" }) do
-      table.insert(aaCommands, string.format("%s /T ps_5_0 /nologo /Gec /E main /Fo \"%sd3d11/%s.cso\" \"%s%s.hlsl\"", fxc, aaShaders, name, aaShaders, name))
-   end
-   for _, name in ipairs({ "CameraMotion", "Resolve", "Output", "Copy", "Depth", "Luma", "BlockMotion", "MotionSelect", "OpaqueLuma", "Reactive", "Stabilize" }) do
-      table.insert(aaCommands, string.format("%s /T ps_3_0 /nologo /E main /Fo \"%s%s.pso\" \"%s%s.hlsl\"", fxc, aaShaders, name, aaShaders, name))
-   end
-   table.insert(prebuildShaderCommands, table.concat(aaCommands, " && "))
+   -- Its shaders are committed compiled there (ps_3_0 for the Direct3D 9 renderer, ps_5_0 in fxc's compatibility mode
+   -- for Direct3D 11), embedded by its aa/AntiAliasing.rc and aa/AntiAliasingD3D11.rc; its tools/compileshaders.ps1
+   -- compiles only the ones its aa/shaders.lock says are stale.
+   files { "external/FusionFixUtils/aa/AntiAliasingD3D11.rc", "external/FusionFixUtils/aa/AntiAliasing.rc" }
+   table.insert(prebuildShaderCommands, 'powershell -NoProfile -ExecutionPolicy Bypass -File "../external/FusionFixUtils/tools/compileshaders.ps1" -FxcDir "../source/dxsdk/lib/x86"')
 
    prebuildcommands (prebuildShaderCommands)
 
