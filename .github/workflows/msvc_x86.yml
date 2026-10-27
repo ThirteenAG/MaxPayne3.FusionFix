@@ -66,9 +66,9 @@ jobs:
     - name: Configure build
       run: ./premake5 vs2026 --with-version=${{ steps.versioning.outputs.version }}
 
-    # The anti-aliasing shaders are committed compiled in FusionFixUtils: the job fails when one is stale there
-    - name: Check FusionFixUtils shaders
-      run: powershell -NoProfile -ExecutionPolicy Bypass -File external/FusionFixUtils/tools/compileshaders.ps1 -FxcDir source/dxsdk/lib/x86 -Verify
+    # Every anti-aliasing shader compiled again: the job fails when a committed compiled shader doesn't match its sources
+    - name: Compile shaders
+      run: powershell -NoProfile -ExecutionPolicy Bypass -File tools/compileshaders.ps1 -Force -Verify
 
     - name: Build
       run: |

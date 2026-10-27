@@ -10,9 +10,9 @@ import common;
 import settings;
 import postfxcommon;
 
-// Anti-aliasing: SMAA (postfx), and temporal anti-aliasing through the shared module of FusionFixUtils (aa/,
-// external/FusionFixUtils): TAA, DLAA and FSR native AA, the last two run by FusionFixHub.exe. On the Direct3D 11
-// renderer (TemporalAA11) and the Direct3D 9 one (TemporalAA, TAA only); the Direct3D 10 renderer keeps SMAA.
+// Anti-aliasing: SMAA (postfx), and temporal anti-aliasing through source/aa: TAA, DLAA and FSR native AA, the last
+// two run by FusionFixHub.exe. On the Direct3D 11 renderer (TemporalAA11) and the Direct3D 9 one (TemporalAA, TAA
+// only); the Direct3D 10 renderer keeps SMAA.
 //
 // - Jitter: the game camera director (sub_B10040) updates the game viewport through sub_496970, which ends with
 //   grcViewport::Perspective (sub_EE74B0). Perspective builds the projection at +0x1C0 with the projection shift at

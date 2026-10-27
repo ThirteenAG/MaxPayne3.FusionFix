@@ -95,7 +95,8 @@ workspace "MaxPayne3.FusionFix"
    defines { "_CRT_SECURE_NO_WARNINGS" }
 
    includedirs { "source" }
-   -- Shared headers, ASI Settings, overlay, automation and anti-aliasing: FusionFixUtils, a submodule (change them there)
+   -- Shared headers, ASI Settings, overlay, automation and the upscaler bridge's protocol and client (upscaler/, shared
+   -- with FusionFixHub): FusionFixUtils, a submodule (change them there)
    includedirs { "external/FusionFixUtils/include", "external/FusionFixUtils" }
    files { "external/FusionFixUtils/include/gameref.hpp", "external/FusionFixUtils/include/ModuleList.hpp" }
    -- The overlay of FusionFixUtils; ImGui is the imgui submodule of FusionFixUtils.
@@ -183,13 +184,15 @@ workspace "MaxPayne3.FusionFix"
    end
 
 
-   -- Temporal anti-aliasing (source/antialiasing.ixx): the shared library of FusionFixUtils
-   -- (aa/, with upscaler/ for DLAA and FSR through FusionFixHub's bridge).
-   -- Its shaders are committed compiled there (ps_3_0 for the Direct3D 9 renderer, ps_5_0 in fxc's compatibility mode
-   -- for Direct3D 11), embedded by its aa/AntiAliasing.rc and aa/AntiAliasingD3D11.rc; its tools/compileshaders.ps1
-   -- compiles only the ones its aa/shaders.lock says are stale.
-   files { "external/FusionFixUtils/aa/AntiAliasingD3D11.rc", "external/FusionFixUtils/aa/AntiAliasing.rc" }
-   table.insert(prebuildShaderCommands, 'powershell -NoProfile -ExecutionPolicy Bypass -File "../external/FusionFixUtils/tools/compileshaders.ps1" -FxcDir "../source/dxsdk/lib/x86"')
+   -- Temporal anti-aliasing (source/antialiasing.ixx): source/aa, with DLAA and FSR through FusionFixHub's upscaler
+   -- bridge (FusionFixUtils upscaler/) and the graphics API, DXVK and D3D9On12 interop of source/upscaler.
+   -- Its shaders are committed compiled (ps_3_0 for the Direct3D 9 renderer, ps_5_0 in fxc's compatibility mode for
+   -- Direct3D 11) with source/resources/shaders.lock, embedded by source/aa/AntiAliasing.rc and
+   -- source/aa/AntiAliasingD3D11.rc; tools/compileshaders.ps1 compiles only the ones whose source, includes or fxc
+   -- arguments changed.
+   files { "source/aa/AntiAliasingD3D11.rc", "source/aa/AntiAliasing.rc", "source/aa/*.hpp", "source/aa/*.inl" }
+   files { "source/upscaler/*.hpp" }
+   table.insert(prebuildShaderCommands, 'powershell -NoProfile -ExecutionPolicy Bypass -File "../tools/compileshaders.ps1"')
 
    prebuildcommands (prebuildShaderCommands)
 

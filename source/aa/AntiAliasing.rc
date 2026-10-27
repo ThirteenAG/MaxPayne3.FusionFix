@@ -1,0 +1,13 @@
+// Shaders of the shared temporal anti-aliasing (AntiAliasing.hpp), compiled and committed (tools/compileshaders.ps1)
+
+WFPAA_CAMERAMOTION RCDATA "shaders/CameraMotion.pso"
+WFPAA_RESOLVE RCDATA "shaders/Resolve.pso"
+WFPAA_OUTPUT RCDATA "shaders/Output.pso"
+WFPAA_COPY RCDATA "shaders/Copy.pso"
+WFPAA_DEPTH RCDATA "shaders/Depth.pso"
+WFPAA_LUMA RCDATA "shaders/Luma.pso"
+WFPAA_BLOCKMOTION RCDATA "shaders/BlockMotion.pso"
+WFPAA_MOTIONSELECT RCDATA "shaders/MotionSelect.pso"
+WFPAA_OPAQUELUMA RCDATA "shaders/OpaqueLuma.pso"
+WFPAA_REACTIVE RCDATA "shaders/Reactive.pso"
+WFPAA_STABILIZE RCDATA "shaders/Stabilize.pso"
