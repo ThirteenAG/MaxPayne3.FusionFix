@@ -359,8 +359,10 @@ public:
             WFPAA::Options options;
             options.BridgeName = L"Local\\" + name + L".Upscaler";
             options.ClientName = "MaxPayne3.FusionFix";
+#ifdef _DEBUG
             options.Log = GetThisModulePath() / (name + L".AntiAliasing.log");
             options.HubLog = GetThisModulePath() / (name + L".Upscaler.log");
+#endif
             options.LowDynamicRange = true;
             options.CurrentWeightMin = 0.1f;   // a tenth of the current frame where nothing moves
             WFPAA::TemporalAA11::Configure(options);
