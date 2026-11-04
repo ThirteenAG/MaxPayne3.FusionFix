@@ -85,6 +85,18 @@ To deploy to your game automatically after each build, create a `.env` file in t
 
 The build then copies the built `MaxPayne3.FusionFix.asi` into the `plugins` folder of that game folder and debugging launches `MaxPayne3.exe` from there. The `.env` file is ignored by git, only a plugin that is already installed is replaced, and without the file nothing is copied.
 
+## Shaders
+
+The complete unmodified Max Payne 3 shader set lives in the separate [MaxPayne3.FusionShaders](https://github.com/ThirteenAG/MaxPayne3.FusionShaders) repository, laid out like [GTA IV FusionShaders](https://github.com/ThirteenAG/GTAIV.EFLC.FusionFix/tree/master/shaders/GTAIV.EFLC.FusionShaders): one `<container>.fxc.xml` per RAGE effect and one HLSL file per shader in a sibling `<container>` folder.
+
+[shaders/fixedshaders](shaders/fixedshaders) holds only the shaders FusionFix changes, in the same XML + HLSL layout. Copy a container from MaxPayne3.FusionShaders into `fixedshaders`, edit its HLSL, and run:
+
+```
+buildshaders.bat
+```
+
+The compiler is the separate premake project [tools/ShaderTool](tools/ShaderTool); `buildshaders.bat` compiles only `fixedshaders` into `data/update/common/shaders`, which is generated and git-ignored. CI builds the tool with MSBuild, runs the same script, and packages the resulting shaders. The first build fills `build/shadertool/hlsl-cache`; later builds only recompile shaders whose content changed.
+
 # Contributing
 
 If you have an idea for a fix, add a module with its implementation to [source](https://github.com/ThirteenAG/MaxPayne3.FusionFix/tree/main/source) directory and open a pull request. See [contributing.ixx](https://github.com/ThirteenAG/MaxPayne3.FusionFix/blob/main/source/contributing.ixx) for reference.

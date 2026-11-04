@@ -194,8 +194,6 @@ workspace "MaxPayne3.FusionFix"
    files { "source/upscaler/*.hpp" }
    table.insert(prebuildShaderCommands, 'powershell -NoProfile -ExecutionPolicy Bypass -File "../tools/compileshaders.ps1"')
 
-   prebuildcommands (prebuildShaderCommands)
-
    -- Deploys the built .asi into the folder that `key` names in the .env file, and
    -- starts the game from there when debugging. Only a plugin that is already installed
    -- in the game folder is replaced, a folder without one is left alone.
@@ -232,7 +230,27 @@ workspace "MaxPayne3.FusionFix"
       staticruntime "On"
 
 project "MaxPayne3.FusionFix"
+   prebuildcommands (prebuildShaderCommands)
    setpaths("MAX_PAYNE_3_DIR", "MaxPayne3.exe", "plugins/")
 
 -- The dev-only automation adapters (zz_Automation.asi) live in FusionFixHelpers, next to this checkout; they use the
 -- frame-stage export of this plugin (asi_automation_frames.h), which is inert without them.
+
+-- The shader compiler is a separate console project. It parses the RAGE
+-- containers under shaders/, compiles the HLSL with fxc/D3DCompile, and writes
+-- data/update/common/shaders (see tools/buildshaders.ps1).
+project "ShaderTool"
+   kind "ConsoleApp"
+   language "C++"
+   cppdialect "C++20"
+   targetdir "bin/tools"
+   targetname "mp3shadertool"
+   targetextension ".exe"
+   -- The workspace-level file list belongs to the plugin; drop it here.
+   removefiles { "source/**", "external/**", "settings/**", "data/**" }
+   files {
+      "tools/ShaderTool/src/*.h",
+      "tools/ShaderTool/src/*.cpp",
+   }
+   includedirs { "source/dxsdk" }
+   defines { "_CRT_SECURE_NO_WARNINGS" }

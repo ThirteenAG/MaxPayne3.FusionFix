@@ -66,6 +66,23 @@ jobs:
     - name: Configure build
       run: ./premake5 vs2026 --with-version=${{ steps.versioning.outputs.version }}
 
+    # The shader compiler is a premake project (build/ShaderTool.vcxproj). CI builds it, then it
+    # compiles only the fixed shaders from shaders/fixedshaders into data/update/common/shaders.
+    - name: Build shader tool
+      run: msbuild build/ShaderTool.vcxproj /property:Configuration=Release /property:Platform=Win32
+
+    # HLSL compile results, keyed by the last commit; a new commit restores the
+    # previous cache and only recompiles sources whose content hash changed.
+    - name: Cache compiled HLSL
+      uses: actions/cache@v4
+      with:
+        path: build/shadertool/hlsl-cache
+        key: hlsl-cache-${{ github.sha }}
+        restore-keys: hlsl-cache-
+
+    - name: Compile game shaders
+      run: powershell -NoProfile -ExecutionPolicy Bypass -File tools/buildshaders.ps1
+
     # Every anti-aliasing shader compiled again: the job fails when a committed compiled shader doesn't match its sources
     - name: Compile shaders
       run: powershell -NoProfile -ExecutionPolicy Bypass -File tools/compileshaders.ps1 -Force -Verify
