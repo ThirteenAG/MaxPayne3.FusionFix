@@ -306,6 +306,7 @@ struct PresetSelector
     int pending = -1;   // the preset chosen in the list, set by the Apply row
     bool armed = false; // Apply was selected once and waits for the confirmation
 };
+// A row with neither an option nor an action is a separator
 struct Row { const FusionMenu::Option* option = nullptr; Action* action = nullptr; };
 struct PageContent
 {
@@ -506,7 +507,9 @@ void AddPageRows(const Snapshot& snap, const PageRef& ref, bool full, PageConten
 {
     auto& plugin = *ref.plugin;
     const size_t start = content.rows.size();
-    if (full && ref.first && HasPresets(plugin)) AddPresetRows(snap, content, plugin);
+    const bool presets = full && ref.first && HasPresets(plugin);
+    if (presets) AddPresetRows(snap, content, plugin);
+    const size_t afterPresets = content.rows.size();
     std::vector<const asi_settings::Setting*> settings;
     for (auto& id : ref.ids)
     {
@@ -545,8 +548,12 @@ void AddPageRows(const Snapshot& snap, const PageRef& ref, bool full, PageConten
             content.rows.push_back({nullptr, &content.actions.emplace_back(std::move(link))});
             content.signature += "link" + std::to_string(target) + ";";
         }
+    // Separators like the game's own pages: below the preset rows and above Restore Defaults
+    if (presets && content.rows.size() > afterPresets)
+        content.rows.insert(content.rows.begin() + afterPresets, Row{});
     if (full && any)
     {
+        content.rows.push_back(Row{});
         // Restores the settings shown on this page, the plugin stores and applies them
         Action reset;
         reset.label = snap.Host("menu.restoredefaults");
@@ -675,6 +682,17 @@ PageAdapter pages[] = {
 };
 
 struct Binding { const FusionMenu::Option* option; int shown; UI row; };
+// Help text grows upward from the title. Text too long for the space above is drawn
+// smaller, down to MinHelpScale, and only then shortened.
+constexpr float MinHelpScale = 0.8f;
+struct HelpFit
+{
+    std::string text;           // the full text
+    std::string shown;          // the text drawn
+    float scale = 1.0f;
+    float baseX = 0, baseY = 0; // the font scale of the help text style
+    int settle = 0;             // frames until the layout shows the last change
+};
 struct Screen
 {
     UI scroll;
@@ -685,8 +703,71 @@ struct Screen
     std::vector<std::pair<UI, Action*>> actions;
     std::shared_ptr<Snapshot> snapshot;
     std::shared_ptr<PageContent> content;
+    HelpFit fit;
 };
 std::unordered_map<UI, Screen> screens;
+
+void ScaleHelp(Screen& state, float scale)
+{
+    auto& fit = state.fit;
+    if (fit.baseX <= 0)
+    {
+        fit.baseX = Field<float>(state.help, 556);
+        fit.baseY = Field<float>(state.help, 560);
+    }
+    if (scale == fit.scale || fit.baseX <= 0 || fit.baseY <= 0) return;
+    fit.scale = scale;
+    Virtual(state.help, 356, fit.baseX * scale, fit.baseY * scale);
+}
+
+// The first share of the text, ending at a space where the script has them
+std::string Shorten(std::string text, float share)
+{
+    if (text.ends_with("...")) text.resize(text.size() - 3);
+    size_t keep = static_cast<size_t>(static_cast<float>(text.size()) * std::clamp(share, 0.0f, 1.0f) * 0.95f);
+    keep = std::min(keep, text.size() > 4 ? text.size() - 4 : 0);
+    if (auto space = text.rfind(' ', keep); space != text.npos && space > keep / 2) keep = space;
+    else while (keep > 0 && (static_cast<unsigned char>(text[keep]) & 0xC0) == 0x80) --keep;
+    text.resize(keep);
+    while (!text.empty() && (text.back() == ' ' || text.back() == '.' || text.back() == ',')) text.pop_back();
+    return text + "...";
+}
+
+void ShowHelp(UI owner, Screen& state, const std::string& text)
+{
+    auto& fit = state.fit;
+    if (text != fit.text)
+    {
+        fit.text = text;
+        fit.shown = text;
+        ScaleHelp(state, 1.0f);
+        fit.settle = 2;
+    }
+    else if (fit.settle > 0) --fit.settle;
+    else
+    {
+        // Pages fill the screen. Positions are centres, y grows downward.
+        const float screenHeight = Virtual<float>(owner, 196);
+        const float height = Virtual<float>(state.help, 196);
+        const float limit = Virtual<float>(owner, 212) - screenHeight * 0.5f + screenHeight * 0.02f;
+        const float top = Virtual<float>(state.help, 212) - height * 0.5f;
+        if (screenHeight > 0 && height > 0 && top < limit)
+        {
+            const float share = std::max(height - (limit - top), 0.0f) / height;
+            if (fit.scale > MinHelpScale) ScaleHelp(state, std::max(MinHelpScale, fit.scale * std::sqrt(share)));
+            else fit.shown = Shorten(fit.shown, share);
+            fit.settle = 2;
+        }
+    }
+    Virtual(state.help, 92, Text(fit.shown));
+}
+
+// The game's own help texts use the normal size
+void ResetHelp(Screen& state)
+{
+    ScaleHelp(state, 1.0f);
+    state.fit.text.clear();
+}
 
 void Anchor(UI object, int point, UI relative, int relativePoint, float x = 0, float y = 0)
 {
@@ -793,6 +874,16 @@ UI AddAction(UI screen, UI parent, const std::string& name, const std::string& l
     return row;
 }
 
+// An empty row that can't be selected, as the stock pages use between groups
+void AddSeparator(UI parent, const std::string& name)
+{
+    auto row = ConstructRow(Allocate(316), name.c_str(), Virtual<const char*>(parent, 84));
+    Virtual(row, 656, "");
+    Virtual(row, 684, 0);
+    Virtual(row, 672, 4, 10, 8);
+    Virtual(row, 56, 0);
+}
+
 void PositionOptionsHeader(UI screen, bool custom)
 {
     auto header = Field<UI>(screen, 264);
@@ -840,6 +931,7 @@ void OpenFusionPage(UI screen, size_t page, bool sound = true)
     for (size_t i = 0; i < rows.size(); ++i)
     {
         if (rows[i].option) AddRow(screen, state, *rows[i].option, i, dictionary);
+        else if (!rows[i].action) AddSeparator(scroll, "FF.Options.Space." + std::to_string(generation) + "." + std::to_string(i));
         else
         {
             const auto name = "FF.Options.Action." + std::to_string(generation) + "." + std::to_string(i);
@@ -861,6 +953,7 @@ void CloseFusionPage(UI screen)
     if (!options.open) return;
     auto state = screens.at(screen);
     screens.erase(screen);
+    ResetHelp(state);
     options.open = false;
     Field<UI>(screen, 232) = options.focus;
     Virtual(state.scroll, 60, 0);
@@ -890,10 +983,11 @@ int SelectedIndex(UI stack)
     return -1;
 }
 
+// Restores a row's focus without the selection sound
 void Select(UI stack, int index)
 {
     const int count = Virtual<int>(stack, 612);
-    if (count > 0 && index >= 0) Virtual(stack, 696, std::min(index, count - 1), 1);
+    if (count > 0 && index >= 0) Virtual(stack, 696, std::min(index, count - 1), 0);
 }
 
 void RebuildFusionPage(UI screen)
@@ -1034,6 +1128,9 @@ int __fastcall OptionsHover(UI screen, void*, uint32_t hash)
     auto found = optionsScreens.find(screen);
     if (found == optionsScreens.end()) return optionsHoverHook.thiscall<int>(screen, hash);
     auto stack = found->second.open ? screens.at(screen).stack : Field<UI>(screen, 272);
+    // Hover arrives with every mouse move. Selecting always plays the selection sound,
+    // so like the stock handler select only when the hovered row isn't selected yet.
+    if (auto selected = Virtual<UI>(stack, 768); selected && Virtual<uint32_t>(selected, 88) == hash) return 1;
     for (int i = 0, n = Virtual<int>(stack, 612); i < n; ++i)
         if (Virtual<uint32_t>(Virtual<UI>(stack, 632, i), 88) == hash)
         { Virtual(stack, 696, i, 1); break; }
@@ -1088,12 +1185,10 @@ template<size_t P> int __fastcall BuildPage(UI screen, void*, UI previous)
     if (dictionary == -1) dictionary = FindTextureDictionary(textureDictionary, "pausemenu");
     auto footer = std::find_if(stockRows.begin(), stockRows.end(), [](UI row)
     { return std::string_view(Virtual<const char*>(row, 84)).ends_with(".RestoreDefaults"); });
-    // Keep the native separator with the reset action at the bottom.
-    if (footer != stockRows.end() && footer != stockRows.begin())
-    {
-        const std::string_view name = Virtual<const char*>(*(footer - 1), 84);
-        if (name.find(".Empty") != name.npos || name.find(".Space") != name.npos) --footer;
-    }
+    // The added settings follow the last stock setting, so actions such as Adjust Brightness
+    // keep their separators above and below, as on the stock page.
+    if (footer != stockRows.end())
+        while (footer != stockRows.begin() && !Virtual<UI>(*(footer - 1), 716)) --footer;
     auto addOptions = [&]
     {
         for (size_t i = 0; i < content->rows.size(); ++i)
@@ -1107,9 +1202,13 @@ template<size_t P> int __fastcall BuildPage(UI screen, void*, UI previous)
         if (it == footer) addOptions();
         auto row = *it;
         const auto id = Virtual<uint32_t>(row, 88);
+        // Attaching sends the row's clicks to the scrolling layout. Rows that sent them to
+        // their page (Adjust Brightness, the Controls tabs) keep doing so, the page handles them.
+        const auto clickTarget = Field<uint32_t>(row, 156);
         Virtual(oldStack, 620, id);
         Virtual(row, 104, Virtual<uint32_t>(scroll, 88));
         Virtual(scroll, 616, id);
+        if (clickTarget) Virtual(row, 532, clickTarget);
     }
     // Keep the stock selection sound callback on the new inner stack.
     std::memcpy(static_cast<char*>(stack) + 264, static_cast<char*>(oldStack) + 264, 20);
@@ -1241,10 +1340,11 @@ void UpdateHelp()
             if (!option.Enabled()) text += (text.empty() ? "" : " ") + state.snapshot->Host("menu.disabled");
             if (auto options = optionsScreens.find(owner); options != optionsScreens.end() && options->second.open && !options->second.canSave)
                 text = state.snapshot->Host("menu.savefailed");
-            Virtual(state.help, 92, Text(text));
+            ShowHelp(owner, state, text);
         }
         else if (auto action = SelectedAction(state, selected))
-            Virtual(state.help, 92, Text(action->help ? action->help() : std::string()));
+            ShowHelp(owner, state, action->help ? action->help() : std::string());
+        else ResetHelp(state);
         Field<uint8_t>(state.help, 474) = 0;
     }
     for (auto& [owner, options] : optionsScreens)

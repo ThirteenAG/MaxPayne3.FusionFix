@@ -13,8 +13,6 @@
   "cutsceneskip.description": "Il tasto per saltare salta ogni filmato e video, anche quelli che il gioco non permette di saltare. Gli ultimi secondi vengono comunque riprodotti, così la storia prosegue come dopo averli guardati.",
   "hideskip": "Nascondi invito a saltare",
   "hideskip.description": "Nasconde il suggerimento per saltare le scene.",
-  "leaderboards": "Disattiva classifiche",
-  "leaderboards.description": "Disattiva le classifiche globali per evitare il crash in cooperativa in Hoboken Alleys.",
   "checkupdates": "Cerca aggiornamenti",
   "checkupdates.description": "All'avvio del gioco cerca una versione più recente su fusionfix.io e te lo segnala in gioco.",
   "update.hub": "Fusion Fix {} è disponibile. FusionFixHub si aprirà alla chiusura del gioco.",

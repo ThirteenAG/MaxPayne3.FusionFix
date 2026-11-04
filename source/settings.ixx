@@ -12,7 +12,7 @@ import comvars;
 
 export enum Pref
 {
-    PREF_SKIPINTRO, PREF_HIDESKIP, PREF_DISABLELEADERBOARDS, PREF_SUBTITLESIZE,
+    PREF_SKIPINTRO, PREF_HIDESKIP, PREF_SUBTITLESIZE,
     PREF_OUTLINESIZE, PREF_BORDERLESS, PREF_LEDILLUMINATION, PREF_BUTTONS,
     PREF_DEVICECHANGE, PREF_HUDASPECTRATIOCONSTRAINT, PREF_CUSTOMFOV,
     PREF_CONSOLEGAMMA, PREF_ANTIALIASING, PREF_AASHARPNESS,
@@ -34,7 +34,7 @@ ASI_SETTINGS_EXPORT(SettingsPlugin())
 export class CSettings
 {
     static inline const std::array<const char*, COUNT> ids = {
-        "MAIN.SkipIntro", "MAIN.HideSkipButton", "MAIN.DisableGlobalLeaderboards", "MAIN.SubtitlesSizeMultiplier",
+        "MAIN.SkipIntro", "MAIN.HideSkipButton", "MAIN.SubtitlesSizeMultiplier",
         "MAIN.OutlinesSizeMultiplier", "MAIN.BorderlessWindowed", "MAIN.LightSyncRGB", "MAIN.GamepadIcons",
         "MAIN.DisableDeviceChangeEvent", "MAIN.HudAspectRatioConstraint", "MAIN.CustomFOV",
         "MAIN.ConsoleGamma", "MAIN.AntiAliasing", "MAIN.AntiAliasingSharpness",

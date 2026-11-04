@@ -60,7 +60,6 @@ Menu labels and descriptions follow the game language in all ten supported langu
 - **CutsceneSkip**, the skip button skips every cutscene and video, also the ones the game doesn't let you skip. Their last seconds still play, so the story continues just as after watching them
 - **HideSkipButton**, added an option to hide ![skip](https://i.imgur.com/vwELI93.png) in cutscenes
 - **UnlockSprintLook**, look up and down while sprinting as far as when walking, instead of the camera staying level
-- **DisableGlobalLeaderboards**, prevents Hoboken Alleys coop map from crashing the game
 - **OutlinesSizeMultiplier**, added an option to increase the size of subtitle text outlines
 - **DisableDeviceChangeEvent**, fixes an issue when the game randomly enters pause menu
 - **LightSyncRGB**, only Logitech hardware is supported, requires Logitech G HUB app
@@ -86,6 +85,8 @@ To deploy to your game automatically after each build, create a `.env` file in t
 The build then copies the built `MaxPayne3.FusionFix.asi` into the `plugins` folder of that game folder and debugging launches `MaxPayne3.exe` from there. The `.env` file is ignored by git, only a plugin that is already installed is replaced, and without the file nothing is copied.
 
 ## Shaders
+
+Shader replacements fix Bink video filtering and chroma alignment, restore the scope mask for chromatic fringing with MSAA, and correct directional motion-blur normalization so it preserves image brightness. The MSAA correction covers DirectX 10.1 and 11 at 2×, 4× and 8×, including stereo, zoom, heat-haze, kill-flash and multiplayer variants.
 
 The complete unmodified Max Payne 3 shader set lives in the separate [MaxPayne3.FusionShaders](https://github.com/ThirteenAG/MaxPayne3.FusionShaders) repository, laid out like [GTA IV FusionShaders](https://github.com/ThirteenAG/GTAIV.EFLC.FusionFix/tree/master/shaders/GTAIV.EFLC.FusionShaders): one `<container>.fxc.xml` per RAGE effect and one HLSL file per shader in a sibling `<container>` folder.
 

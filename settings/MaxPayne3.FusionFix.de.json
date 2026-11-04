@@ -13,8 +13,6 @@
   "cutsceneskip.description": "Die Überspringen-Taste überspringt jede Zwischensequenz und jedes Video, auch die, die das Spiel sonst nicht überspringen lässt. Deren letzte Sekunden laufen weiter, damit die Geschichte genauso weitergeht wie nach dem Ansehen.",
   "hideskip": "Überspringen-Hinweis aus",
   "hideskip.description": "Den Hinweis zum Überspringen von Zwischensequenzen ausblenden.",
-  "leaderboards": "Bestenlisten deaktivieren",
-  "leaderboards.description": "Globale Bestenlisten deaktivieren, um den Koop-Absturz in Hoboken Alleys zu verhindern.",
   "checkupdates": "Nach Updates suchen",
   "checkupdates.description": "Sucht beim Spielstart auf fusionfix.io nach einer neueren Version und zeigt sie im Spiel an.",
   "update.hub": "Fusion Fix {} ist verfügbar. FusionFixHub öffnet sich, wenn du das Spiel beendest.",

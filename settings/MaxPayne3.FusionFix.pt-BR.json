@@ -13,8 +13,6 @@
   "cutsceneskip.description": "O botão de pular pula todas as cenas e vídeos, até os que o jogo não deixa pular. Os últimos segundos ainda são exibidos, então a história continua do mesmo jeito que depois de assisti-los.",
   "hideskip": "Ocultar aviso de pular",
   "hideskip.description": "Oculta o aviso de botão para pular cenas.",
-  "leaderboards": "Desativar classificações",
-  "leaderboards.description": "Desativa as classificações globais para evitar travamentos no modo cooperativo em Hoboken Alleys.",
   "checkupdates": "Procurar atualizações",
   "checkupdates.description": "Ao iniciar o jogo, procura uma versão mais nova em fusionfix.io e avisa você no jogo.",
   "update.hub": "Fusion Fix {} está disponível. O FusionFixHub abrirá quando você fechar o jogo.",

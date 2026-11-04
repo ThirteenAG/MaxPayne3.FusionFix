@@ -1,0 +1,3509 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Effect Format="legacy" VertexType="1">
+  <ShaderGroups>
+    <Group Stage="Vertex" RawCount="8" OffsetBy1="false" Name="" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+        <Shader Name="VS_Passthrough" OffsetBy1="false" File="postfx/VS_Passthrough.hlsl" DataType="hlsl" Model="3.0" Length="416">
+          <Variables>
+            <Variable>TransPos</Variable>
+            <Variable>TransTex0</Variable>
+            <Variable>TransTex1</Variable>
+            <Variable>TransTex2</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="VS_Lum" OffsetBy1="false" File="postfx/VS_Lum.hlsl" DataType="hlsl" Model="3.0" Length="228">
+          <Variables>
+            <Variable>TransPos</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="VS_Passthrough4TexXOffset" OffsetBy1="false" File="postfx/VS_Passthrough4TexXOffset.hlsl" DataType="hlsl" Model="3.0" Length="536">
+          <Variables>
+            <Variable>TexelSize</Variable>
+            <Variable>TransPos</Variable>
+            <Variable>TransTex0</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="VS_Passthrough4TexYOffset" OffsetBy1="false" File="postfx/VS_Passthrough4TexYOffset.hlsl" DataType="hlsl" Model="3.0" Length="536">
+          <Variables>
+            <Variable>TexelSize</Variable>
+            <Variable>TransPos</Variable>
+            <Variable>TransTex0</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="VS_RadialBlur" OffsetBy1="false" File="postfx/VS_RadialBlur.hlsl" DataType="hlsl" Model="3.0" Length="392">
+          <Variables>
+            <Variable>TransPos</Variable>
+            <Variable>radialBlurCenter</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="VS_PassthroughComposite" OffsetBy1="false" File="postfx/VS_PassthroughComposite.hlsl" DataType="hlsl" Model="3.0" Length="416">
+          <Variables>
+            <Variable>TransPos</Variable>
+            <Variable>TransTex0</Variable>
+            <Variable>TransTex1</Variable>
+            <Variable>TransTex2</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="VS_PassthroughP" OffsetBy1="false" File="postfx/VS_PassthroughP.hlsl" DataType="hlsl" Model="3.0" Length="472">
+          <Variables>
+            <Variable>TransPos</Variable>
+            <Variable>TransTex0</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>gViewInverse</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="VS_Blood" OffsetBy1="false" File="postfx/VS_Blood.hlsl" DataType="hlsl" Model="3.0" Length="272">
+        </Shader>
+      </Shaders>
+    </Group>
+    <Group Stage="Pixel" RawCount="113" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+        <Shader Name="PS_AverageLum0" OffsetBy1="false" File="postfx/PS_AverageLum0.hlsl" DataType="hlsl" Model="3.0" Length="1052">
+          <Variables>
+            <Variable>CurLumSampler</Variable>
+            <Variable>TexelSize</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_AverageLum1" OffsetBy1="false" File="postfx/PS_AverageLum1.hlsl" DataType="hlsl" Model="3.0" Length="988">
+          <Variables>
+            <Variable>CurLumSampler</Variable>
+            <Variable>TexelSize</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_AverageLum2" OffsetBy1="false" File="postfx/PS_AverageLum2.hlsl" DataType="hlsl" Model="3.0" Length="988">
+          <Variables>
+            <Variable>CurLumSampler</Variable>
+            <Variable>TexelSize</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_UpdateAdaptedLum" OffsetBy1="false" File="postfx/PS_UpdateAdaptedLum.hlsl" DataType="hlsl" Model="3.0" Length="624">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>AdaptTime</Variable>
+            <Variable>AdaptedLumMax</Variable>
+            <Variable>AdaptedLumMin</Variable>
+            <Variable>CurLumSampler</Variable>
+            <Variable>ElapsedTime</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_Max" OffsetBy1="false" File="postfx/PS_Max.hlsl" DataType="hlsl" Model="3.0" Length="420">
+          <Variables>
+            <Variable>HDRSampler</Variable>
+            <Variable>TexelSize</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_BlurMaxX" OffsetBy1="false" File="postfx/PS_BlurMaxX.hlsl" DataType="hlsl" Model="3.0" Length="796">
+          <Variables>
+            <Variable>BloomSampler</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_BlurMaxY" OffsetBy1="false" File="postfx/PS_BlurMaxY.hlsl" DataType="hlsl" Model="3.0" Length="876">
+          <Variables>
+            <Variable>BloomSampler</Variable>
+            <Variable>HDRPointSampler</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_RadialBlur" OffsetBy1="false" File="postfx/PS_RadialBlur.hlsl" DataType="hlsl" Model="3.0" Length="752">
+          <Variables>
+            <Variable>HDRSampler</Variable>
+            <Variable>radialBlurSampleScale</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_Composite" OffsetBy1="false" File="postfx/PS_Composite.hlsl" DataType="hlsl" Model="3.0" Length="1656">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeMB" OffsetBy1="false" File="postfx/PS_CompositeMB.hlsl" DataType="hlsl" Model="3.0" Length="2852">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DOFSampler</Variable>
+            <Variable>DirectionalMotionBlurLength</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>StencilCopySampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>motionBlurMatrix</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHighDOF" OffsetBy1="false" File="postfx/PS_CompositeHighDOF.hlsl" DataType="hlsl" Model="3.0" Length="1656">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeDofDebug" OffsetBy1="false" File="postfx/PS_CompositeDofDebug.hlsl" DataType="hlsl" Model="3.0" Length="2244">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeNV" OffsetBy1="false" File="postfx/PS_CompositeNV.hlsl" DataType="hlsl" Model="3.0" Length="1968">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>NoiseFilterArea</Variable>
+            <Variable>NoiseParams</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_DepthEffects_Fullscreen" OffsetBy1="false" File="postfx/PS_DepthEffects_Fullscreen.hlsl" DataType="hlsl" Model="3.0" Length="2056">
+          <Variables>
+            <Variable>ColorShift</Variable>
+            <Variable>ColorShiftScalar</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>GBufferTextureSamplerSSAODepth</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>PedBrightness</Variable>
+            <Variable>PlayerBrightness</Variable>
+            <Variable>StencilCopySampler</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>gAdrenoFXVars</Variable>
+            <Variable>gDepthFxParams</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalFogParams</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_DepthEffects_Fullscreen_NoGamma" OffsetBy1="false" File="postfx/PS_DepthEffects_Fullscreen_NoGamma.hlsl" DataType="hlsl" Model="3.0" Length="1812">
+          <Variables>
+            <Variable>ColorShift</Variable>
+            <Variable>ColorShiftScalar</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>GBufferTextureSamplerSSAODepth</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>PedBrightness</Variable>
+            <Variable>PlayerBrightness</Variable>
+            <Variable>StencilCopySampler</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>gAdrenoFXVars</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalFogParams</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_DepthEffects_Fullscreen_NoGamma_NoShift" OffsetBy1="false" File="postfx/PS_DepthEffects_Fullscreen_NoGamma_NoShift.hlsl" DataType="hlsl" Model="3.0" Length="1636">
+          <Variables>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>GBufferTextureSamplerSSAODepth</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>PedBrightness</Variable>
+            <Variable>PlayerBrightness</Variable>
+            <Variable>StencilCopySampler</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>gAdrenoFXVars</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalFogParams</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_DepthEffects_Fullscreen_NoShift" OffsetBy1="false" File="postfx/PS_DepthEffects_Fullscreen_NoShift.hlsl" DataType="hlsl" Model="3.0" Length="1884">
+          <Variables>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>GBufferTextureSamplerSSAODepth</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>PedBrightness</Variable>
+            <Variable>PlayerBrightness</Variable>
+            <Variable>StencilCopySampler</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>gAdrenoFXVars</Variable>
+            <Variable>gDepthFxParams</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalFogParams</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_DepthEffects_Fullscreen_NoPed" OffsetBy1="false" File="postfx/PS_DepthEffects_Fullscreen_NoPed.hlsl" DataType="hlsl" Model="3.0" Length="1496">
+          <Variables>
+            <Variable>ColorShift</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>gAdrenoFXVars</Variable>
+            <Variable>gDepthFxParams</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalFogParams</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_DepthEffects_Fullscreen_NoPed_NoGamma" OffsetBy1="false" File="postfx/PS_DepthEffects_Fullscreen_NoPed_NoGamma.hlsl" DataType="hlsl" Model="3.0" Length="1256">
+          <Variables>
+            <Variable>ColorShift</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>gAdrenoFXVars</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalFogParams</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_DepthEffects_Fullscreen_NoPed_NoGamma_NoShift" OffsetBy1="false" File="postfx/PS_DepthEffects_Fullscreen_NoPed_NoGamma_NoShift.hlsl" DataType="hlsl" Model="3.0" Length="1156">
+          <Variables>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>gAdrenoFXVars</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalFogParams</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_DepthEffects_Fullscreen_NoPed_NoShift" OffsetBy1="false" File="postfx/PS_DepthEffects_Fullscreen_NoPed_NoShift.hlsl" DataType="hlsl" Model="3.0" Length="1400">
+          <Variables>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>gAdrenoFXVars</Variable>
+            <Variable>gDepthFxParams</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalFogParams</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_DepthEffects_ColourCorrectOnly" OffsetBy1="false" File="postfx/PS_DepthEffects_ColourCorrectOnly.hlsl" DataType="hlsl" Model="3.0" Length="396">
+          <Variables>
+            <Variable>HDRSampler</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>gAdrenoFXVars</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CascadeDebug" OffsetBy1="false" File="postfx/PS_CascadeDebug.hlsl" DataType="hlsl" Model="3.0" Length="1316">
+          <Variables>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>gCascadeXMaxThresholds</Variable>
+            <Variable>gCascadeXMinThresholds</Variable>
+            <Variable>gCascadeYMaxThresholds</Variable>
+            <Variable>gCascadeYMinThresholds</Variable>
+            <Variable>gShadowMatrix</Variable>
+            <Variable>gShadowParam18192021</Variable>
+            <Variable>gViewInverse</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_Simple" OffsetBy1="false" File="postfx/PS_Simple.hlsl" DataType="hlsl" Model="3.0" Length="724">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>deSatContrastGamma</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_LightRays0" OffsetBy1="false" File="postfx/PS_LightRays0.hlsl" DataType="hlsl" Model="3.0" Length="1280">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>GBufferTextureSamplerSSAODepth</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>SunRaysParams</Variable>
+            <Variable>TexelSize</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>lightrayParams</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_BlurX" OffsetBy1="false" File="postfx/PS_BlurX.hlsl" DataType="hlsl" Model="3.0" Length="728">
+          <Variables>
+            <Variable>HDRSampler</Variable>
+            <Variable>TexelSize</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_BlurY" OffsetBy1="false" File="postfx/PS_BlurY.hlsl" DataType="hlsl" Model="3.0" Length="728">
+          <Variables>
+            <Variable>HDRSampler</Variable>
+            <Variable>TexelSize</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CheapBlurX" OffsetBy1="false" File="postfx/PS_CheapBlurX.hlsl" DataType="hlsl" Model="3.0" Length="616">
+          <Variables>
+            <Variable>HDRSampler</Variable>
+            <Variable>TexelSize</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CheapBlurY" OffsetBy1="false" File="postfx/PS_CheapBlurY.hlsl" DataType="hlsl" Model="3.0" Length="616">
+          <Variables>
+            <Variable>HDRSampler</Variable>
+            <Variable>TexelSize</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_RenderLuminanceValues" OffsetBy1="false" File="postfx/PS_RenderLuminanceValues.hlsl" DataType="hlsl" Model="3.0" Length="1424">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>CurLumSampler</Variable>
+            <Variable>globalScreenSize</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_DownSample" OffsetBy1="false" File="postfx/PS_DownSample.hlsl" DataType="hlsl" Model="3.0" Length="240">
+          <Variables>
+            <Variable>HDRSampler</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_ZoomBlur" OffsetBy1="false" File="postfx/PS_ZoomBlur.hlsl" DataType="hlsl" Model="3.0" Length="2968">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DOFSampler</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>ImageFXParams</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomBlurMaskSize</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>deathIntensity</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>motionBlurMatrix</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_ZoomBlur_KillFlash" OffsetBy1="false" File="postfx/PS_ZoomBlur_KillFlash.hlsl" DataType="hlsl" Model="3.0" Length="2968">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DOFSampler</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>ImageFXParams</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomBlurMaskSize</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>deathIntensity</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>motionBlurMatrix</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_ZoomBlur_Scope" OffsetBy1="false" File="postfx/PS_ZoomBlur_Scope.hlsl" DataType="hlsl" Model="3.0" Length="3280">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DOFSampler</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>ImageFXParams</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomBlurMaskSize</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>deathIntensity</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>motionBlurMatrix</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_ZoomBlur_Scope_KillFlash" OffsetBy1="false" File="postfx/PS_ZoomBlur_Scope_KillFlash.hlsl" DataType="hlsl" Model="3.0" Length="3280">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DOFSampler</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>ImageFXParams</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomBlurMaskSize</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>deathIntensity</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>motionBlurMatrix</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_MP_BulletTime" OffsetBy1="false" File="postfx/PS_MP_BulletTime.hlsl" DataType="hlsl" Model="3.0" Length="1864">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_MP_BulletTime_Special" OffsetBy1="false" File="postfx/PS_MP_BulletTime_Special.hlsl" DataType="hlsl" Model="3.0" Length="3280">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DOFSampler</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>ImageFXParams</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomBlurMaskSize</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>deathIntensity</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>motionBlurMatrix</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_MP_BulletTime_Killflash" OffsetBy1="false" File="postfx/PS_MP_BulletTime_Killflash.hlsl" DataType="hlsl" Model="3.0" Length="1864">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_MP_TearGas" OffsetBy1="false" File="postfx/PS_MP_TearGas.hlsl" DataType="hlsl" Model="3.0" Length="2624">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>TearGasParams</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>globalScalars2</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_AverageLightshaftLum0" OffsetBy1="false" File="postfx/PS_AverageLightshaftLum0.hlsl" DataType="hlsl" Model="3.0" Length="916">
+          <Variables>
+            <Variable>CurLumSampler</Variable>
+            <Variable>TexelSize</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_LightRays_Adapt" OffsetBy1="false" File="postfx/PS_LightRays_Adapt.hlsl" DataType="hlsl" Model="3.0" Length="1112">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>CurLumSampler</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>GBufferTextureSamplerSSAODepth</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>SunRaysParams</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>lightrayParams</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_Blood" OffsetBy1="false" File="postfx/PS_Blood.hlsl" DataType="hlsl" Model="3.0" Length="1736">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>g_BloodColor</Variable>
+            <Variable>g_BloodSplatParams</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_Copy" OffsetBy1="false" File="postfx/PS_Copy.hlsl" DataType="hlsl" Model="3.0" Length="192">
+          <Variables>
+            <Variable>HDRPointSampler</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_SubSampleAlpha" OffsetBy1="false" File="postfx/PS_SubSampleAlpha.hlsl" DataType="hlsl" Model="3.0" Length="780">
+          <Variables>
+            <Variable>GBufferTextureSampler2</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>TexelSize</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeDefault" OffsetBy1="false" File="postfx/PS_CompositeDefault.hlsl" DataType="hlsl" Model="3.0" Length="1656">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeAdreno" OffsetBy1="false" File="postfx/PS_CompositeAdreno.hlsl" DataType="hlsl" Model="3.0" Length="1864">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeDrugged" OffsetBy1="false" File="postfx/PS_CompositeDrugged.hlsl" DataType="hlsl" Model="3.0" Length="2584">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeDrugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeDrugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="2584">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeScope" OffsetBy1="false" File="postfx/PS_CompositeScope.hlsl" DataType="hlsl" Model="3.0" Length="2180">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeScope_Adreno" OffsetBy1="false" File="postfx/PS_CompositeScope_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="2180">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeScope_Drugged" OffsetBy1="false" File="postfx/PS_CompositeScope_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="2900">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeScope_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeScope_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="2900">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeZoom" OffsetBy1="false" File="postfx/PS_CompositeZoom.hlsl" DataType="hlsl" Model="3.0" Length="2264">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeZoom_Adreno" OffsetBy1="false" File="postfx/PS_CompositeZoom_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="2476">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeZoom_Drugged" OffsetBy1="false" File="postfx/PS_CompositeZoom_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="3212">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeZoom_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeZoom_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3212">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeZoom_Scope" OffsetBy1="false" File="postfx/PS_CompositeZoom_Scope.hlsl" DataType="hlsl" Model="3.0" Length="2792">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeZoom_Scope_Adreno" OffsetBy1="false" File="postfx/PS_CompositeZoom_Scope_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="2792">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeZoom_Scope_Drugged" OffsetBy1="false" File="postfx/PS_CompositeZoom_Scope_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="3528">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeZoom_Scope_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeZoom_Scope_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3528">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze.hlsl" DataType="hlsl" Model="3.0" Length="2508">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Adreno" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="2716">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Drugged" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="3432">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3432">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Scope" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Scope.hlsl" DataType="hlsl" Model="3.0" Length="3032">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Scope_Adreno" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Scope_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3032">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Scope_Drugged" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Scope_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="3748">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Scope_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Scope_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3748">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Zoom" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Zoom.hlsl" DataType="hlsl" Model="3.0" Length="2828">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Zoom_Adreno" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Zoom_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3040">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Zoom_Drugged" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Zoom_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="3756">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Zoom_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Zoom_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3756">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Zoom_Scope" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Zoom_Scope.hlsl" DataType="hlsl" Model="3.0" Length="3356">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Zoom_Scope_Adreno" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Zoom_Scope_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3356">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Zoom_Scope_Drugged" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Zoom_Scope_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="4072">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_Zoom_Scope_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_Zoom_Scope_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="4072">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash" OffsetBy1="false" File="postfx/PS_CompositeKillFlash.hlsl" DataType="hlsl" Model="3.0" Length="1864">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="1864">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Drugged" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="2584">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="2584">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Scope" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Scope.hlsl" DataType="hlsl" Model="3.0" Length="2180">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Scope_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Scope_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="2180">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Scope_Drugged" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Scope_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="2900">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Scope_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Scope_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="2900">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Zoom" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Zoom.hlsl" DataType="hlsl" Model="3.0" Length="2476">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Zoom_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Zoom_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="2476">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Zoom_Drugged" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Zoom_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="3212">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Zoom_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Zoom_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3212">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Zoom_Scope" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Zoom_Scope.hlsl" DataType="hlsl" Model="3.0" Length="2792">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Zoom_Scope_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Zoom_Scope_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="2792">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Zoom_Scope_Drugged" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Zoom_Scope_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="3528">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_Zoom_Scope_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_Zoom_Scope_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3528">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze.hlsl" DataType="hlsl" Model="3.0" Length="2716">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="2716">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Drugged" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="3432">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3432">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Scope" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Scope.hlsl" DataType="hlsl" Model="3.0" Length="3032">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Scope_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Scope_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3032">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Scope_Drugged" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Scope_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="3748">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Scope_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Scope_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3748">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Zoom" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Zoom.hlsl" DataType="hlsl" Model="3.0" Length="3040">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Zoom_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Zoom_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3040">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Zoom_Drugged" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Zoom_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="3756">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Zoom_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Zoom_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3756">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Zoom_Scope" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Zoom_Scope.hlsl" DataType="hlsl" Model="3.0" Length="3356">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Zoom_Scope_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Zoom_Scope_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="3356">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Zoom_Scope_Drugged" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Zoom_Scope_Drugged.hlsl" DataType="hlsl" Model="3.0" Length="4072">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeKillFlash_HeatHaze_Zoom_Scope_Drugged_Adreno" OffsetBy1="false" File="postfx/PS_CompositeKillFlash_HeatHaze_Zoom_Scope_Drugged_Adreno.hlsl" DataType="hlsl" Model="3.0" Length="4072">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorFringeParams1</Variable>
+            <Variable>ColorFringeParams2</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>DruggedEffectColorShift</Variable>
+            <Variable>DruggedEffectParams</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeUseIFX" OffsetBy1="false" File="postfx/PS_CompositeUseIFX.hlsl" DataType="hlsl" Model="3.0" Length="1864">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeUseIFX_Zoom" OffsetBy1="false" File="postfx/PS_CompositeUseIFX_Zoom.hlsl" DataType="hlsl" Model="3.0" Length="2476">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_UseIFX" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_UseIFX.hlsl" DataType="hlsl" Model="3.0" Length="2716">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+        <Shader Name="PS_CompositeHeatHaze_UseIFX_Zoom" OffsetBy1="false" File="postfx/PS_CompositeHeatHaze_UseIFX_Zoom.hlsl" DataType="hlsl" Model="3.0" Length="3040">
+          <Variables>
+            <Variable>AdapLumSampler</Variable>
+            <Variable>BloomSampler</Variable>
+            <Variable>BlurSampler</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>BurnoutLimit</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>DeathSampler</Variable>
+            <Variable>Exposures</Variable>
+            <Variable>GBufferTextureSamplerDepth</Variable>
+            <Variable>HDRPointSampler</Variable>
+            <Variable>HeatHazeOffsetParams</Variable>
+            <Variable>HeatHazeParams</Variable>
+            <Variable>HeatHazeSampler</Variable>
+            <Variable>HeatHazeTex1Params</Variable>
+            <Variable>HeatHazeTex2Params</Variable>
+            <Variable>RadialBlurSampler</Variable>
+            <Variable>ToneMapParams</Variable>
+            <Variable>ZoomFocusDistance</Variable>
+            <Variable>blurIntensity</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>dofDist</Variable>
+            <Variable>dofInten</Variable>
+            <Variable>dofProj</Variable>
+            <Variable>radialBlurScale</Variable>
+            <Variable>radialBlurTextureStep</Variable>
+          </Variables>
+        </Shader>
+      </Shaders>
+    </Group>
+    <Group Stage="Compute" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+    <Group Stage="Domain" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+    <Group Stage="Geometry" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+    <Group Stage="Hull" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+  </ShaderGroups>
+  <CBuffers1>
+  </CBuffers1>
+  <Variables1>
+    <Variable Type="Float4x4" Count="0" Slot="12" Group="3" FirstName="gViewInverse" SecondName="ViewInverse" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="18" Group="2" FirstName="gDepthFxParams" SecondName="DepthFxParams" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="68" Group="2" FirstName="gAdrenoFXVars" SecondName="gAdrenoFXVars" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>0;0;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="36" Group="2" FirstName="globalScalars2" SecondName="globalScalars2" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="37" Group="2" FirstName="globalFogParams" SecondName="globalFogParams" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>1600;9000000;0.00999999978;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="50" Group="2" FirstName="globalFogColorN" SecondName="globalFogColorN" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="41" Group="2" FirstName="globalScreenSize" SecondName="globalScreenSize" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="43" Group="2" FirstName="ColorCorrectTopAndPedReflectScale" SecondName="ColorCorrectTopAndPedReflectScale" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="44" Group="2" FirstName="ColorCorrectBottomOffset" SecondName="ColorCorrectBottomOffset" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="45" Group="2" FirstName="ColorShift" SecondName="ColorShift" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="46" Group="2" FirstName="deSatContrastGamma" SecondName="deSatContrastGamma" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="75" Group="2" FirstName="deSatContrastGammaIFX" SecondName="deSatContrastGammaIFX" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="49" Group="2" FirstName="gShadowParam18192021" SecondName="ShadowParam18192021" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="94" Group="2" FirstName="gCascadeXMinThresholds" SecondName="CascadeXMinThresholds" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="95" Group="2" FirstName="gCascadeXMaxThresholds" SecondName="CascadeXMaxThresholds" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="99" Group="2" FirstName="gCascadeYMinThresholds" SecondName="CascadeYMinThresholds" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="100" Group="2" FirstName="gCascadeYMaxThresholds" SecondName="CascadeYMaxThresholds" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4x4" Count="0" Slot="57" Group="2" FirstName="gShadowMatrix" SecondName="ShadowMatrix" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="208" Group="0" FirstName="invVertexBufferSize" SecondName="invVertexBufferSize" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Annotations>
+        <Annotation Name="nostrip" Type="int" Value="1"/>
+      </Annotations>
+    </Variable>
+  </Variables1>
+  <CBuffers2>
+  </CBuffers2>
+  <Variables2>
+    <Variable Type="Float4" Count="0" Slot="88" Group="3" FirstName="TexelSize" SecondName="TexelSize" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Annotations>
+        <Annotation Name="nostrip" Type="int" Value="1"/>
+      </Annotations>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="131" Group="1" FirstName="TransPos" SecondName="TransPos" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="132" Group="1" FirstName="TransTex0" SecondName="TransTex0" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="133" Group="1" FirstName="TransTex1" SecondName="TransTex1" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="134" Group="1" FirstName="TransTex2" SecondName="TransTex2" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float2" Count="0" Slot="135" Group="2" FirstName="BrightnessSetting" SecondName="Brightness_Setting" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>1;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="136" Group="3" FirstName="dofProj" SecondName="DOF_PROJ" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="137" Group="2" FirstName="dofDist" SecondName="DOF_PARAMS" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float" Count="0" Slot="138" Group="2" FirstName="dofInten" SecondName="DOF_INTEN" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float2" Count="0" Slot="142" Group="2" FirstName="Exposures" SecondName="Exposures" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="144" Group="2" FirstName="ToneMapParams" SecondName="ToneMapParams" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float" Count="0" Slot="145" Group="2" FirstName="AdaptedLumMin" SecondName="AdaptedLumMin" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float" Count="0" Slot="146" Group="2" FirstName="AdaptedLumMax" SecondName="AdaptedLumMax" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float" Count="0" Slot="147" Group="2" FirstName="BurnoutLimit" SecondName="BurnoutLimit" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="148" Group="2" FirstName="NoiseParams" SecondName="NoiseParams" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="149" Group="2" FirstName="NoiseFilterArea" SecondName="NoiseFilterArea" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="153" Group="2" FirstName="ImageFXParams" SecondName="ImageFXParams" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float" Count="0" Slot="154" Group="2" FirstName="ZoomBlurMaskSize" SecondName="ZoomBlurMaskSize" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float" Count="0" Slot="156" Group="2" FirstName="DirectionalMotionBlurLength" SecondName="DirectionalMotionBlurLength" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4x4" Count="0" Slot="157" Group="2" FirstName="motionBlurMatrix" SecondName="MB_MATRIX" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="163" Group="2" FirstName="TearGasParams" SecondName="TearGasParams" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float" Count="0" Slot="164" Group="2" FirstName="ElapsedTime" SecondName="ElapsedTime" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float" Count="0" Slot="165" Group="2" FirstName="AdaptTime" SecondName="AdaptTime" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="182" Group="2" FirstName="HeatHazeParams" SecondName="HeatHazeParams" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="183" Group="2" FirstName="HeatHazeTex1Params" SecondName="HeatHazeTex1Params" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="184" Group="2" FirstName="HeatHazeTex2Params" SecondName="HeatHazeTex2Params" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="185" Group="2" FirstName="HeatHazeOffsetParams" SecondName="HeatHazeOffsetParams" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float" Count="0" Slot="186" Group="2" FirstName="PlayerBrightness" SecondName="PlayerBrightness" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float" Count="0" Slot="187" Group="2" FirstName="PedBrightness" SecondName="PedBrightness" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float" Count="0" Slot="188" Group="2" FirstName="ColorShiftScalar" SecondName="ColorShiftScalar" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="189" Group="2" FirstName="ColorFringeParams1" SecondName="ColorFringeParams1" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="190" Group="2" FirstName="ColorFringeParams2" SecondName="ColorFringeParams2" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="191" Group="2" FirstName="lightrayParams" SecondName="lightrayParams" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="192" Group="2" FirstName="SunRaysParams" SecondName="SunRaysParams" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float" Count="0" Slot="194" Group="2" FirstName="ZoomFocusDistance" SecondName="ZoomFocusDistance" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="197" Group="2" FirstName="DruggedEffectColorShift" SecondName="DruggedEffectColorShift" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float4" Count="0" Slot="198" Group="2" FirstName="DruggedEffectParams" SecondName="DruggedEffectParams" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0"/>
+    <Variable Type="Float" Count="0" Slot="199" Group="2" FirstName="radialBlurScale" SecondName="radialBlurScale" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>1</Values>
+    </Variable>
+    <Variable Type="Float3" Count="0" Slot="200" Group="1" FirstName="radialBlurCenter" SecondName="radialBlurCenter" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>0;0;0</Values>
+    </Variable>
+    <Variable Type="Float" Count="0" Slot="201" Group="2" FirstName="radialBlurSampleScale" SecondName="radialBlurSampleScale" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>1</Values>
+    </Variable>
+    <Variable Type="Float2" Count="0" Slot="202" Group="2" FirstName="radialBlurTextureStep" SecondName="radialBlurTextureStep" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>0.000892857031;0.00156250002</Values>
+    </Variable>
+    <Variable Type="Float" Count="0" Slot="203" Group="2" FirstName="blurIntensity" SecondName="blurIntensity" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>0</Values>
+    </Variable>
+    <Variable Type="Float" Count="0" Slot="204" Group="2" FirstName="deathIntensity" SecondName="deathIntensity" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>0</Values>
+    </Variable>
+    <Variable Type="Float3" Count="0" Slot="205" Group="2" FirstName="g_BloodColor" SecondName="BloodSplatColor" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>0.100000001;0.0411750004;0.0215687491</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="206" Group="2" FirstName="g_BloodSplatParams" SecondName="BloodSplatParams" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>3;1;3;0</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="0" Group="2" FirstName="CurLumSampler" SecondName="PostFxTextureV0" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>5;1;4;1;6;0;0;3;1;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="1" Group="2" FirstName="AdapLumSampler" SecondName="PostFxTextureV1" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>5;1;4;1;6;0;0;3;1;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="2" Group="2" FirstName="GBufferTextureSampler2" SecondName="gbufferTexture2" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>0;3;1;3;5;1;4;1;6;0</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="3" Group="2" FirstName="GBufferTextureSamplerDepth" SecondName="gbufferTextureDepth" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>0;3;1;3;5;1;4;1;6;1</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="4" Group="2" FirstName="GBufferTextureSamplerSSAODepth" SecondName="gbufferTextureSSAODepth" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>0;3;1;3;5;1;4;1;6;1</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="5" Group="2" FirstName="HDRSampler" SecondName="PostFxTexture0" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>5;2;4;2;6;2;0;3;1;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="6" Group="2" FirstName="HDRPointSampler" SecondName="PostFxTexture0a" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>5;1;4;1;6;1;0;3;1;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="7" Group="2" FirstName="BlurSampler" SecondName="PostFxTexture1" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>5;2;4;2;6;0;0;3;1;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="8" Group="2" FirstName="StencilCopySampler" SecondName="StencilCopyTexture" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>0;3;1;3;5;1;4;1;6;0</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="9" Group="2" FirstName="DOFSampler" SecondName="PostFxDOFTexture" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>5;2;4;2;6;2;0;3;1;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="10" Group="2" FirstName="BloomSampler" SecondName="BloomTexture" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>5;2;4;2;6;0;0;3;1;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="12" Group="2" FirstName="HeatHazeSampler" SecondName="HeatHazeTexture" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>5;2;4;2;6;0;0;1;1;1</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="14" Group="2" FirstName="RadialBlurSampler" SecondName="RadialBlurTexture" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>5;2;4;2;6;0;0;3;1;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="15" Group="2" FirstName="DeathSampler" SecondName="DeathTexture" Offset="255" Variant="255" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>5;2;4;2;6;0;0;3;1;3</Values>
+    </Variable>
+  </Variables2>
+  <Techniques>
+    <Technique Name="PostFx">
+      <Pass VS="0" PS="1" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="0" PS="2" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="0" PS="3" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="1" PS="4" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="0" PS="5" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="2" PS="6" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="3" PS="7" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="4" PS="8" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+      <Pass VS="5" PS="9" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="10" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="11" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="12" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="13" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="14" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="15" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="16" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="17" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="18" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="19" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="20" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="21" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="22" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="23" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="24" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="25" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="0" PS="26" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="0" PS="27" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="0" PS="28" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="0" PS="29" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="0" PS="30" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+          <Param Type="6" Value="1"/>
+          <Param Type="0" Value="0"/>
+          <Param Type="2" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="0" PS="31" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+          <Param Type="6" Value="1"/>
+          <Param Type="0" Value="0"/>
+          <Param Type="2" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="32" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+          <Param Type="6" Value="1"/>
+          <Param Type="0" Value="0"/>
+          <Param Type="2" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="33" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+          <Param Type="6" Value="1"/>
+          <Param Type="0" Value="0"/>
+          <Param Type="2" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="34" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+          <Param Type="6" Value="1"/>
+          <Param Type="0" Value="0"/>
+          <Param Type="2" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="35" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+          <Param Type="6" Value="1"/>
+          <Param Type="0" Value="0"/>
+          <Param Type="2" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="36" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+          <Param Type="6" Value="1"/>
+          <Param Type="0" Value="0"/>
+          <Param Type="2" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="37" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+          <Param Type="6" Value="1"/>
+          <Param Type="0" Value="0"/>
+          <Param Type="2" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="38" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+          <Param Type="6" Value="1"/>
+          <Param Type="0" Value="0"/>
+          <Param Type="2" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="39" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+          <Param Type="6" Value="1"/>
+          <Param Type="0" Value="0"/>
+          <Param Type="2" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="0" PS="40" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="41" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="7" PS="42" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="6" Value="1"/>
+          <Param Type="0" Value="0"/>
+          <Param Type="10" Value="1"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="0" PS="43" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+          <Param Type="2" Value="0"/>
+          <Param Type="0" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="6" PS="44" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+          <Param Type="2" Value="0"/>
+          <Param Type="0" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="45" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="46" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="47" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="48" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="49" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="50" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="51" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="52" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="53" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="54" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="55" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="56" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="57" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="58" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="59" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="60" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="61" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="62" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="63" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="64" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="65" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="66" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="67" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="68" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="69" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="70" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="71" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="72" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="73" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="74" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="75" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="76" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="77" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="78" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="79" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="80" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="81" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="82" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="83" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="84" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="85" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="86" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="87" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="88" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="89" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="90" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="91" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="92" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="93" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="94" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="95" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="96" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="97" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="98" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="99" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="100" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="101" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="102" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="103" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="104" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="105" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="106" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="107" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="108" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="109" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="110" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="111" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+      <Pass VS="5" PS="112" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="0"/>
+          <Param Type="3" Value="0"/>
+        </Params>
+      </Pass>
+    </Technique>
+  </Techniques>
+</Effect>

@@ -13,8 +13,6 @@
   "cutsceneskip.description": "スキップボタンで、ゲームが本来スキップを許可しないものも含め、すべてのカットシーンとムービーをスキップできます。最後の数秒は再生されるため、最後まで見た場合と同じようにストーリーが続きます。",
   "hideskip": "スキップ表示を非表示",
   "hideskip.description": "カットシーンをスキップするボタンの表示を隠します。",
-  "leaderboards": "ランキングを無効化",
-  "leaderboards.description": "Hoboken Alleys の協力プレイでのクラッシュを防ぐため、グローバルランキングを無効にします。",
   "checkupdates": "アップデートを確認",
   "checkupdates.description": "ゲーム起動時にfusionfix.ioで新しいバージョンを確認し、ゲーム内でお知らせします。",
   "update.hub": "Fusion Fix {} が利用可能です。ゲーム終了時にFusionFixHubが開きます。",

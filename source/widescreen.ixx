@@ -53,6 +53,61 @@ void __fastcall sub_110F3F0(void* _this, void* edx, float a2, float a3, unsigned
     return shsub_110F3F0.unsafe_fastcall(_this, edx, a2, a3, a4);
 }
 
+// Screen-space quads of the cinematic cameras (intro overlays, kill cams). Each entry is 144 bytes: top left,
+// top right and bottom left corners in pixels, then the scale the quad grows by around its center.
+namespace CinematicOverlay
+{
+    constexpr size_t EntrySize = 144;
+    constexpr size_t TopRightOffset = 0x10;
+    constexpr size_t BottomLeftOffset = 0x20;
+    constexpr size_t ScaleOffset = 0x7C;
+    constexpr size_t RelativeTypeOffset = 0x85;
+    constexpr uint8_t RelativeTypeScreen = 3;
+
+    uint8_t* pQuads = nullptr;
+    float* (__cdecl* NormalizedRectToViewportPixels)(int useMonitor, float* rect) = nullptr;
+
+    // The full-frame tint and scanline layer is designed slightly narrower than the picture; at 16:9 the
+    // picture's own borders hide that, at wider screens it leaves plain strips at the sides. A quad that
+    // already spans most of the screen width and is centered gets stretched to the whole width; the
+    // picture's black borders are drawn over it.
+    SafetyHookInline shDrawScreenQuad = {};
+    void __cdecl DrawScreenQuad(int index, char pass)
+    {
+        auto entry = pQuads + EntrySize * index;
+        auto topLeft = reinterpret_cast<float*>(entry);
+        auto topRight = reinterpret_cast<float*>(entry + TopRightOffset);
+        auto bottomLeft = reinterpret_cast<float*>(entry + BottomLeftOffset);
+        float scale = *reinterpret_cast<float*>(entry + ScaleOffset);
+
+        if (entry[RelativeTypeOffset] == RelativeTypeScreen && scale > 0.0f &&
+            std::fabs(topLeft[1] - topRight[1]) < 0.5f && std::fabs(topLeft[0] - bottomLeft[0]) < 0.5f)
+        {
+            float screen[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+            NormalizedRectToViewportPixels(1, screen);
+            float screenWidth = screen[2] - screen[0];
+            float screenCenter = (screen[0] + screen[2]) * 0.5f;
+            float quadCenter = (topLeft[0] + topRight[0]) * 0.5f;
+            float quadWidth = (topRight[0] - topLeft[0]) * scale;
+
+            if (screenWidth > 0.0f && quadWidth >= screenWidth * 0.9f && std::fabs(quadCenter - screenCenter) <= screenWidth * 0.05f)
+            {
+                float left = topLeft[0], right = topRight[0], bottom = bottomLeft[0];
+                float halfWidth = screenWidth * 0.5f / scale;
+                topLeft[0] = bottomLeft[0] = screenCenter - halfWidth;
+                topRight[0] = screenCenter + halfWidth;
+                shDrawScreenQuad.unsafe_ccall(index, pass);
+                topLeft[0] = left;
+                topRight[0] = right;
+                bottomLeft[0] = bottom;
+                return;
+            }
+        }
+
+        shDrawScreenQuad.unsafe_ccall(index, pass);
+    }
+}
+
 class Widescreen
 {
 public:
@@ -77,13 +132,13 @@ public:
             pattern = hook::pattern("8B 44 24 ? F3 0F 10 44 24 ? 33 D2 F3 0F 11 41 ? 39 41 ? 74 ? 89 41 ? 89 51 ? F3 0F 10 44 24");
             shsub_110F3F0 = safetyhook::create_inline(pattern.get_first(), sub_110F3F0);
 
-            pattern = hook::pattern("F3 0F 11 44 24 ? E8 ? ? ? ? 83 C4 ? E8 ? ? ? ? 84 C0");
-            static auto camBulletHook = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& regs)
-            {
-                float ar = MonitorConfiguration::sm_MonitorConfig->ar;
-                if (ar > (16.0f / 9.0f))
-                    *(float*)(regs.esp + 0x10) /= ar / (16.0f / 9.0f);
-            });
+            // Cinematic camera overlays
+            pattern = hook::pattern("83 EC 10 80 7C 24 14 00 0F 57 C0 F3 0F 11 04 24 F3 0F 11 44 24 0C 74");
+            CinematicOverlay::NormalizedRectToViewportPixels = reinterpret_cast<decltype(CinematicOverlay::NormalizedRectToViewportPixels)>(pattern.get_first());
+
+            pattern = hook::pattern("55 8B EC 83 E4 F0 8B 55 08 81 EC 74 05 00 00 80 BA ? ? ? ? 00 53 56 57 0F 84 ? ? ? ? 8D 34 D2 C1 E6 04 80 BE");
+            CinematicOverlay::pQuads = *pattern.get_first<uint8_t*>(0x27) - 0x30; // the entry's active flag is at +0x30
+            CinematicOverlay::shDrawScreenQuad = safetyhook::create_inline(pattern.get_first(), CinematicOverlay::DrawScreenQuad);
 
             // Videos
             pattern = hook::pattern("F3 0F 11 44 24 ? E8 ? ? ? ? 8D 4F ? E8");

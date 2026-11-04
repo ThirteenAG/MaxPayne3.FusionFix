@@ -1,11 +1,51 @@
 module;
 
 #include <common.hxx>
+#include <format>
 
 export module fixes;
 
 import common;
 import settings;
+
+namespace TextNumbers
+{
+    int __cdecl Substitute(const wchar_t* text, int first, int second, int third, int fourth,
+        int fifth, int sixth, float value, int precision, wchar_t* output)
+    {
+        if (!text)
+        {
+            *output = L'\0';
+            return 0;
+        }
+
+        // The original uses wchar_t[10], including its terminator. A ten-digit
+        // leaderboard score overwrites the return address with that terminator.
+        const std::array numbers = { first, second, third, fourth, fifth, sixth };
+        auto number = precision < 0 ? std::to_wstring(first)
+            : std::format(L"{:.{}f}", static_cast<double>(value), precision);
+        const std::wstring_view input(text);
+        unsigned char substitutions = 0;
+        for (size_t i = 0; i < input.size();)
+        {
+            if (i + 2 < input.size() &&
+                ((input[i] == L'~' && input[i + 1] == L'1' && input[i + 2] == L'~') ||
+                 (input[i] == L'|' && input[i + 1] == L'0' && input[i + 2] == L'\\')))
+            {
+                for (auto character : number) *output++ = character;
+                i += 3;
+                // Preserve the game's six arguments, including its behavior for
+                // additional placeholders and the byte-sized substitution counter.
+                if (++substitutions >= 1 && substitutions <= 5)
+                    number = std::to_wstring(numbers[substitutions]);
+            }
+            else
+                *output++ = input[i++];
+        }
+        *output = L'\0';
+        return 0;
+    }
+}
 
 class Fixes
 {
@@ -14,25 +54,10 @@ public:
     {
         FusionFix::onInitEventAsync() += []()
         {
-            // Disable global leaderboards, fixes a crash while playing on the Hoboken Alleys coop map
+            // Keep leaderboards usable when a record needs ten or more digits.
             {
-                auto pattern = hook::pattern("8B 81 ? ? ? ? 83 F8 ? 77 ? FF 24 85 ? ? ? ? B8");
-                static raw_mem fnLeaderboards(pattern.get_first(0), { 0xC3 }); // ret
-
-                static auto LeaderboardsCB = []()
-                {
-                    if (FusionFixSettings.GetInt(PREF_DISABLELEADERBOARDS))
-                        fnLeaderboards.Write();
-                    else
-                        fnLeaderboards.Restore();
-                };
-
-                LeaderboardsCB();
-
-                FusionFix::onIniFileChange() += []()
-                {
-                    LeaderboardsCB();
-                };
+                auto pattern = hook::pattern("83 EC 30 57 8B 7C 24 38 85 FF 75 ? 8B 4C 24 5C 33 C0 66 89 01");
+                static auto TextNumbersFix = safetyhook::create_inline(pattern.get_first(), TextNumbers::Substitute);
             }
 
             // Disable WM_DEVICECHANGE message handler, since it pauses the game randomly for some reason

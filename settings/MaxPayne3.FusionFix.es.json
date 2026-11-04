@@ -13,8 +13,6 @@
   "cutsceneskip.description": "El botón de omitir salta todas las cinemáticas y vídeos, también los que el juego no deja omitir. Sus últimos segundos se siguen reproduciendo, así que la historia continúa igual que tras verlos.",
   "hideskip": "Ocultar aviso de omitir",
   "hideskip.description": "Oculta el aviso del botón para omitir cinemáticas.",
-  "leaderboards": "Desactivar clasificaciones",
-  "leaderboards.description": "Desactiva las clasificaciones globales para evitar el cierre en cooperativo en Hoboken Alleys.",
   "checkupdates": "Buscar actualizaciones",
   "checkupdates.description": "Al iniciar el juego busca una versión más reciente en fusionfix.io y te avisa en el juego.",
   "update.hub": "Fusion Fix {} está disponible. FusionFixHub se abrirá al cerrar el juego.",

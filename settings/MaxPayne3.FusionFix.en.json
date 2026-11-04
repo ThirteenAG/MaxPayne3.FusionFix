@@ -13,8 +13,6 @@
   "cutsceneskip.description": "The skip button skips every cutscene and video, also the ones the game doesn't let you skip. Their last seconds still play, so the story continues just as after watching them.",
   "hideskip": "Hide skip prompt",
   "hideskip.description": "Hide the cutscene skip button prompt.",
-  "leaderboards": "Disable leaderboards",
-  "leaderboards.description": "Disable global leaderboards to prevent the Hoboken Alleys co-op crash.",
   "checkupdates": "Check for updates",
   "checkupdates.description": "Checks fusionfix.io for a newer version when the game starts and tells you in the game.",
   "update.hub": "Fusion Fix {} is available. FusionFixHub opens when you close the game.",

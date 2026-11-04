@@ -48,11 +48,6 @@
       "presets": { "vanilla": 0, "recommended": 1, "enhanced": 1 }
     },
     {
-      "id": "MAIN.DisableGlobalLeaderboards", "type": "bool", "default": 1,
-      "label": "@leaderboards", "description": "@leaderboards.description",
-      "page": "fusionfix", "control": [ "switch", "cycler" ]
-    },
-    {
       "id": "UPDATE.CheckForUpdates", "type": "bool", "default": 0,
       "label": "@checkupdates", "description": "@checkupdates.description",
       "page": "fusionfix", "control": [ "switch", "cycler" ]

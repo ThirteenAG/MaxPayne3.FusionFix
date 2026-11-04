@@ -13,8 +13,6 @@
   "cutsceneskip.description": "Le bouton pour passer saute chaque cinématique et vidéo, même celles que le jeu ne permet pas de passer. Leurs dernières secondes sont jouées, l'histoire continue donc comme après les avoir regardées.",
   "hideskip": "Masquer l'invite de saut",
   "hideskip.description": "Masquer l'invite permettant de passer les cinématiques.",
-  "leaderboards": "Désactiver les classements",
-  "leaderboards.description": "Désactiver les classements mondiaux pour éviter le plantage en coopération dans Hoboken Alleys.",
   "checkupdates": "Rechercher les mises à jour",
   "checkupdates.description": "Cherche une version plus récente sur fusionfix.io au lancement du jeu et vous prévient en jeu.",
   "update.hub": "Fusion Fix {} est disponible. FusionFixHub s'ouvrira à la fermeture du jeu.",

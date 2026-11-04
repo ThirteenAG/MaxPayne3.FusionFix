@@ -1,0 +1,234 @@
+cbuffer _Globals : register(b1)
+{
+	float4 TexelSize : packoffset(c98);
+	float4 TransColor : packoffset(c130);
+	float4 TransPos : packoffset(c131);
+	float4 TransTex0 : packoffset(c132);
+	float4 TransTex1 : packoffset(c133);
+	float4 TransTex2 : packoffset(c134);
+	float2 BrightnessSetting : packoffset(c135);
+	float4 dofProj : packoffset(c136);
+	float4 dofDist : packoffset(c137);
+	float dofInten : packoffset(c138);
+	float4 dofBlur : packoffset(c139);
+	float dofNoBlurRadius : packoffset(c140);
+	float dofNoBlurBlendRingSize : packoffset(c141);
+	float2 Exposures : packoffset(c142);
+	float4 SharpenFilterParams : packoffset(c143);
+	float4 ToneMapParams : packoffset(c144);
+	float AdaptedLumMin : packoffset(c145);
+	float AdaptedLumMax : packoffset(c146);
+	float BurnoutLimit : packoffset(c147);
+	float4 NoiseParams : packoffset(c148);
+	float4 NoiseFilterArea : packoffset(c149);
+	float4 KillFlashUVOff : packoffset(c150);
+	float4 KillFlashCol : packoffset(c151);
+	float4 InterlaceMask : packoffset(c152);
+	float4 ImageFXParams : packoffset(c153);
+	float ZoomBlurMaskSize : packoffset(c154);
+	float ChromaticEntire : packoffset(c155);
+	float DirectionalMotionBlurLength : packoffset(c156);
+	row_major float4x4 motionBlurMatrix : packoffset(c157);
+	float MaskTex : packoffset(c161);
+	float4 MP_BulletTimeParams : packoffset(c162);
+	float4 TearGasParams : packoffset(c163);
+	float ElapsedTime : packoffset(c164);
+	float AdaptTime : packoffset(c165);
+	float lowLum : packoffset(c166);
+	float highLum : packoffset(c167);
+	float topLum : packoffset(c168);
+	float scalerLum : packoffset(c169);
+	float offsetLum : packoffset(c170);
+	float offsetLowLum : packoffset(c171);
+	float offsetHighLum : packoffset(c172);
+	float noiseLum : packoffset(c173);
+	float noiseLowLum : packoffset(c174);
+	float noiseHighLum : packoffset(c175);
+	float bloomLum : packoffset(c176);
+	float4 colorLum : packoffset(c177);
+	float4 colorLowLum : packoffset(c178);
+	float4 colorHighLum : packoffset(c179);
+	float3 scanlineParameters : packoffset(c180);
+	float2 highlightParameters : packoffset(c181);
+	float4 HeatHazeParams : packoffset(c182);
+	float4 HeatHazeTex1Params : packoffset(c183);
+	float4 HeatHazeTex2Params : packoffset(c184);
+	float4 HeatHazeOffsetParams : packoffset(c185);
+	float PlayerBrightness : packoffset(c186);
+	float PedBrightness : packoffset(c187);
+	float ColorShiftScalar : packoffset(c188);
+	float4 ColorFringeParams1 : packoffset(c189);
+	float4 ColorFringeParams2 : packoffset(c190);
+	float4 lightrayParams : packoffset(c191);
+	float4 SunRaysParams : packoffset(c192);
+	float AdrenoEffectStrength : packoffset(c193);
+	float ZoomFocusDistance : packoffset(c194);
+	float ZoomFocusWidth : packoffset(c195);
+	float TotalElapsedTime : packoffset(c196);
+	float4 DruggedEffectColorShift : packoffset(c197);
+	float4 DruggedEffectParams : packoffset(c198);
+	float radialBlurScale : packoffset(c199);
+	float3 radialBlurCenter : packoffset(c200);
+	float radialBlurSampleScale : packoffset(c201);
+	float2 radialBlurTextureStep : packoffset(c202);
+	float blurIntensity : packoffset(c203);
+	float deathIntensity : packoffset(c204);
+};
+
+cbuffer rage_globals : register(b5)
+{
+	float4 globalScalars : packoffset(c0);
+	float4 globalScalars2 : packoffset(c1);
+	float4 globalScalars3 : packoffset(c2);
+	float4 globalScalars4 : packoffset(c3);
+	float4 globalFogParams : packoffset(c4);
+	float4 globalFogColor : packoffset(c5);
+	float4 globalFogOffsetN : packoffset(c6);
+	float4 globalFogColorN : packoffset(c7);
+	float4 globalScreenSize : packoffset(c8);
+	float4 globalDayNightEffects : packoffset(c9);
+	float4 ColorCorrectTopAndPedReflectScale : packoffset(c10);
+	float4 ColorCorrectBottomOffset : packoffset(c11);
+	float4 ColorShift : packoffset(c12);
+	float4 deSatContrastGamma : packoffset(c13);
+	float4 deSatContrastGammaIFX : packoffset(c14);
+};
+
+SamplerState AdapLumSampler : register(s1);
+SamplerState HDRPointSampler : register(s6);
+SamplerState BlurSampler : register(s7);
+SamplerState DOFSampler : register(s9);
+SamplerState BloomSampler : register(s10);
+SamplerState RadialBlurSampler : register(s14);
+SamplerState DeathSampler : register(s15);
+Texture2D AdapLumSampler_tex : register(t1);
+Texture2D HDRPointSampler_tex : register(t6);
+Texture2D BlurSampler_tex : register(t7);
+Texture2D DOFSampler_tex : register(t9);
+Texture2D BloomSampler_tex : register(t10);
+Texture2D RadialBlurSampler_tex : register(t14);
+Texture2D DeathSampler_tex : register(t15);
+
+struct PS_IN
+{
+	float4 sv_position : SV_Position;
+	float2 texcoord : TEXCOORD;
+	float2 texcoord1 : TEXCOORD1;
+	float2 texcoord2 : TEXCOORD2;
+};
+
+float4 main(PS_IN i) : SV_Target
+{
+	float4 o;
+
+	int4 r0;
+	int4 r1;
+	float4 r2;
+	float4 r3;
+	float4 r4;
+	float4 r5;
+	float4 r6;
+	float4 r7;
+	float4 r8;
+	float4 r9;
+	r0 = asint(HDRPointSampler_tex.Sample(HDRPointSampler, i.texcoord.xy));
+	r0.w = (radialBlurScale != 1) ? -1 : 0;
+	if (r0.w != 0) {
+		r1.xy = asint(i.texcoord.xy + radialBlurTextureStep.xy);
+		r1 = asint(RadialBlurSampler_tex.Sample(RadialBlurSampler, asfloat(r1.xy)));
+		r0.xyz = asint(asfloat(r0.xyz) * radialBlurScale + asfloat(r1.xyz));
+	}
+	r0.w = (0 != blurIntensity) ? -1 : 0;
+	if (r0.w != 0) {
+		r1 = asint(BlurSampler_tex.Sample(BlurSampler, i.texcoord.xy));
+		r1.xyz = asint(-(asfloat(r0.xyz)) + asfloat(r1.xyz));
+		r0.xyz = asint(blurIntensity * asfloat(r1.xyz) + asfloat(r0.xyz));
+	}
+	r1 = asint(DeathSampler_tex.Sample(DeathSampler, i.texcoord1));
+	r0.w = (0 < deathIntensity) ? -1 : 0;
+	r1.xyz = (r0.www != 0) ? int3(0, 0, 0) : r1.xzw;
+	r0.w = asint(saturate(asfloat(r1.z) * ZoomBlurMaskSize));
+	r0.w = asint(-(asfloat(r0.w)) + 1);
+	r0.w = asint(asfloat(r0.w) * ImageFXParams.z);
+	r1.z = (asfloat(r0.w) < 1) ? -1 : 0;
+	r1.w = asint(dofProj.z * -(motionBlurMatrix[3].z));
+	r2.x = motionBlurMatrix[3].x / asfloat(r1.w);
+	r1.w = asint(dofProj.w * motionBlurMatrix[3].z);
+	r2.y = motionBlurMatrix[3].y / asfloat(r1.w);
+	r2.zw = i.texcoord.xy * float2(2, 2) + float2(-1, -1);
+	r2.xy = -(r2.zw) + r2.xy;
+	r2.xy = r2.xy * ImageFXParams.yy;
+	r2.xy = r2.xy * float2(0.125, 0.125);
+	r2.xy = asfloat(r0.ww) * -(r2.xy) + r2.xy;
+	r3.xy = r2.xy + i.texcoord.xy;
+	r3 = DOFSampler_tex.Sample(DOFSampler, r3.xy);
+	r4.xy = r2.xy * float2(2, 2) + i.texcoord.xy;
+	r4 = DOFSampler_tex.Sample(DOFSampler, r4.xy);
+	r5 = r2.xyxy * float4(3, 3, 4, 4) + i.texcoord.xyxy;
+	r6 = DOFSampler_tex.Sample(DOFSampler, r5.xy);
+	r5 = DOFSampler_tex.Sample(DOFSampler, r5.zw);
+	r7 = r2.xyxy * float4(5, 5, 6, 6) + i.texcoord.xyxy;
+	r8 = DOFSampler_tex.Sample(DOFSampler, r7.xy);
+	r7 = DOFSampler_tex.Sample(DOFSampler, r7.zw);
+	r2.xy = r2.xy * float2(7, 7) + i.texcoord.xy;
+	r9 = DOFSampler_tex.Sample(DOFSampler, r2.xy);
+	if (r1.z != 0) {
+		r3.xyz = asfloat(r0.xyz) + r3.xyz;
+		r3.xyz = r4.xyz + r3.xyz;
+		r3.xyz = r6.xyz + r3.xyz;
+		r3.xyz = r5.xyz + r3.xyz;
+		r3.xyz = r8.xyz + r3.xyz;
+		r3.xyz = r7.xyz + r3.xyz;
+		r3.xyz = r9.xyz + r3.xyz;
+		r0.xyz = asint(r3.xyz * float3(0.125, 0.125, 0.125));
+	}
+	r3 = AdapLumSampler_tex.Sample(AdapLumSampler, float2(0, 0));
+	r0.w = asint(r3.x + 0.000000999999997);
+	r0.w = asint(ToneMapParams.y / asfloat(r0.w));
+	r3 = BloomSampler_tex.Sample(BloomSampler, i.texcoord.xy);
+	r1.z = asint(-(ToneMapParams.z) + ToneMapParams.w);
+	r1.z = asint(asfloat(r1.x) * asfloat(r1.z) + ToneMapParams.z);
+	r3.xyz = asfloat(r1.zzz) * r3.xyz;
+	r0.xyz = asint(r3.xyz * float3(0.25, 0.25, 0.25) + asfloat(r0.xyz));
+	r3.xyz = i.texcoord.yyy * ColorCorrectBottomOffset.xyz + ColorCorrectTopAndPedReflectScale.xyz;
+	r0.xyz = asint(asfloat(r0.xyz) * r3.xyz);
+	r1.z = asint(-(Exposures.x) + Exposures.y);
+	r1.x = asint(asfloat(r1.x) * asfloat(r1.z) + Exposures.x);
+	r0.xyz = asint(asfloat(r0.xyz) * asfloat(r1.xxx));
+	r1.x = asint(dot(asfloat(r0.xyz), float3(0.212500006, 0.715399981, 0.0720999986)));
+	r1.z = asint(asfloat(r0.w) * asfloat(r1.x));
+	r1.w = asint(BurnoutLimit * BurnoutLimit);
+	r1.w = asint(asfloat(r1.z) / asfloat(r1.w));
+	r1.w = asint(asfloat(r1.w) + 1);
+	r1.z = asint(asfloat(r1.w) * asfloat(r1.z));
+	r0.w = asint(asfloat(r1.x) * asfloat(r0.w) + 1);
+	r0.w = asint(asfloat(r1.z) / asfloat(r0.w));
+	r0.xyz = asint(asfloat(r0.www) * asfloat(r0.xyz));
+	r0.w = asint(saturate(dot(asfloat(r0.xyz), float3(0.212500006, 0.715399981, 0.0720999986))));
+	r0.w = asint(asfloat(r0.w) + 0.0000100999996);
+	r1.x = asint(-(deSatContrastGamma.z) + deSatContrastGammaIFX.z);
+	r1.x = asint(asfloat(r1.y) * asfloat(r1.x) + deSatContrastGamma.z);
+	r1.x = asint(asfloat(r1.x) + -0.999989986);
+	r0.w = asint(log2(asfloat(r0.w)));
+	r0.w = asint(asfloat(r0.w) * asfloat(r1.x));
+	r0.w = asint(exp2(asfloat(r0.w)));
+	r0.w = asint(min(asfloat(r0.w), 65000));
+	r0.xyz = asint(asfloat(r0.www) * asfloat(r0.xyz));
+	r0.w = (deathIntensity != 0) ? -1 : 0;
+	if (r0.w != 0) {
+		r0.w = asint(1 + -(deathIntensity));
+		r1 = asint(DeathSampler_tex.Sample(DeathSampler, i.texcoord.xy));
+		r1.w = asint(dot(r2.zw, r2.zw));
+		r1.w = asint(-(asfloat(r0.w)) * 1.41421354 + asfloat(r1.w));
+		r0.w = asint(-(asfloat(r0.w)) * 1.41421354 + 1.41421354);
+		r0.w = asint(saturate(asfloat(r1.w) / asfloat(r0.w)));
+		r1.xyz = asint(asfloat(r0.xyz) * asfloat(r1.xyz) + -(asfloat(r0.xyz)));
+		r0.xyz = asint(asfloat(r0.www) * asfloat(r1.xyz) + asfloat(r0.xyz));
+	}
+	r0.xyz = asint(asfloat(r0.xyz) * BrightnessSetting.xxx + BrightnessSetting.yyy);
+	r1.xyz = asint(saturate(asfloat(r0.xyz)));
+	o.w = dot(asfloat(r1.xyz), float3(0.298999995, 0.587000012, 0.114000000));
+	o.xyz = asfloat(r0.xyz);
+
+	return o;
+}

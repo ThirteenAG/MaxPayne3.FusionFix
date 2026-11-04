@@ -13,8 +13,6 @@
   "cutsceneskip.description": "Przycisk pomijania pomija każdy przerywnik i film, także te, których gra nie pozwala pominąć. Ich ostatnie sekundy są odtwarzane, więc historia toczy się dalej tak samo jak po ich obejrzeniu.",
   "hideskip": "Ukryj podpowiedź pomijania",
   "hideskip.description": "Ukrywa podpowiedź przycisku pomijania przerywników.",
-  "leaderboards": "Wyłącz rankingi",
-  "leaderboards.description": "Wyłącza rankingi globalne, aby zapobiec awarii w trybie współpracy na mapie Hoboken Alleys.",
   "checkupdates": "Sprawdzaj aktualizacje",
   "checkupdates.description": "Przy starcie gry sprawdza na fusionfix.io, czy jest nowsza wersja, i informuje o niej w grze.",
   "update.hub": "Dostępny jest Fusion Fix {}. FusionFixHub otworzy się po zamknięciu gry.",

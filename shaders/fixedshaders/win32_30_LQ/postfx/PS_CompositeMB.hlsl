@@ -1,0 +1,123 @@
+sampler2D AdapLumSampler : register(s1);
+sampler2D BloomSampler : register(s10);
+sampler2D BlurSampler : register(s7);
+float2 BrightnessSetting : register(c135);
+float BurnoutLimit : register(c147);
+float4 ColorCorrectBottomOffset : register(c44);
+float4 ColorCorrectTopAndPedReflectScale : register(c43);
+sampler2D DOFSampler : register(s9);
+float DirectionalMotionBlurLength : register(c156);
+float2 Exposures : register(c142);
+sampler2D GBufferTextureSamplerDepth : register(s3);
+sampler2D HDRPointSampler : register(s6);
+sampler2D RadialBlurSampler : register(s14);
+sampler2D StencilCopySampler : register(s8);
+float4 ToneMapParams : register(c144);
+float blurIntensity : register(c203);
+float4 deSatContrastGamma : register(c46);
+float4 dofProj : register(c136);
+float4 globalScreenSize : register(c41);
+row_major float4x4 motionBlurMatrix : register(c157);
+float radialBlurScale : register(c199);
+float2 radialBlurTextureStep : register(c202);
+
+float4 main(float2 texcoord : TEXCOORD) : COLOR
+{
+	float4 o;
+
+	float4 r0;
+	float4 r1;
+	float4 r2;
+	float4 r3;
+	r0 = tex2D(GBufferTextureSamplerDepth, texcoord.xy);
+	r0.y = -dofProj.x + dofProj.y;
+	r0.y = 1 / r0.y;
+	r0.z = r0.y * dofProj.y;
+	r0.z = r0.z * -dofProj.x;
+	r0.x = dofProj.y * -r0.y + r0.x;
+	r0.x = 1 / r0.x;
+	r0.x = r0.x * r0.z;
+	r1 = tex2D(HDRPointSampler, texcoord.xy);
+	r2.x = -1;
+	r0.y = r2.x + radialBlurScale.x;
+	r0.zw = radialBlurTextureStep.xy + texcoord.xy;
+	r2 = tex2D(RadialBlurSampler, r0.zw);
+	r2.xyz = r1.xyz * radialBlurScale.xxx + r2.xyz;
+	r0.yzw = (-abs(r0.yyy) >= 0) ? r1.xyz : r2.xyz;
+	if (blurIntensity.x != -blurIntensity.x) {
+		r1 = tex2D(BlurSampler, texcoord.xy);
+		r2.xyz = lerp(r0.yzw, r1.xyz, blurIntensity.xxx);
+		r0.yzw = r2.xyz;
+	}
+	r1.xyz = texcoord.yxy * 2 + -1;
+	r1.w = r1.y * dofProj.z;
+	r1.x = -r1.x * dofProj.w;
+	r1.xw = r0.xx * r1.xw;
+	r2.xyz = r1.xxx * motionBlurMatrix[1].xyz;
+	r2.xyz = r1.www * motionBlurMatrix[0].xyz + r2.xyz;
+	r2.xyz = -r0.xxx * motionBlurMatrix[2].xyz + r2.xyz;
+	r2.xyz = r2.xyz + motionBlurMatrix[3].xyz;
+	r0.x = -r2.z * dofProj.z;
+	r0.x = 1 / r0.x;
+	r3.x = r0.x * r2.x;
+	r0.x = r2.z * dofProj.w;
+	r0.x = 1 / r0.x;
+	r3.y = r0.x * r2.y;
+	r1.xy = -r1.yz + r3.xy;
+	r1.xy = r1.xy * DirectionalMotionBlurLength.xx;
+	r1.zw = r1.xy * 0.16666667;
+	r2 = tex2D(StencilCopySampler, texcoord.xy);
+	r0.x = -r2.w + 0.5015686;
+	r2.xyz = r0.yzw;
+	r2.w = 1;
+	for (int i0 = 0; i0 < 5; i0++) {
+		r3.xy = r1.zw * r2.ww + texcoord.xy;
+		r3 = tex2D(DOFSampler, r3.xy);
+		r2.xyz = r2.xyz + r3.xyz;
+		r2.w = r2.w + 1;
+	}
+	r1.xy = r1.xy * globalScreenSize.xy;
+	r1.x = dot(r1.xy, r1.xy) + 0;
+	r1.x = rsqrt(r1.x);
+	r1.x = 1 / r1.x;
+	r1.x = saturate(r1.x * 0.5);
+	// Normalize the center sample plus five motion-blur samples.
+	r1.yzw = r2.xyz * 0.166666667 + -r0.yzw;
+	r1.xyz = r1.yzw * r1.xxx;
+	r1.xyz = (r0.xxx >= 0) ? r1.xyz : 0;
+	r0.xyz = r0.yzw + r1.xyz;
+	r1 = tex2D(AdapLumSampler, 0);
+	r0.w = r1.x + 1E-06;
+	r0.w = 1 / r0.w;
+	r0.w = r0.w * ToneMapParams.y;
+	r1 = tex2D(BloomSampler, texcoord.xy);
+	r1.xyz = r1.xyz * ToneMapParams.zzz;
+	r0.xyz = r1.xyz * 0.25 + r0.xyz;
+	r1.xyz = ColorCorrectBottomOffset.xyz;
+	r1.xyz = texcoord.yyy * r1.xyz + ColorCorrectTopAndPedReflectScale.xyz;
+	r0.xyz = r0.xyz * r1.xyz;
+	r0.xyz = r0.xyz * Exposures.xxx;
+	r1.x = dot(r0.xyz, float3(0.2125, 0.7154, 0.0721));
+	r1.y = r0.w * r1.x;
+	r1.z = BurnoutLimit.x * BurnoutLimit.x;
+	r1.z = 1 / r1.z;
+	r1.z = r1.y * r1.z + 1;
+	r1.y = r1.z * r1.y;
+	r0.w = r1.x * r0.w + 1;
+	r0.w = 1 / r0.w;
+	r0.w = r0.w * r1.y;
+	r0.xyz = r0.www * r0.xyz;
+	r0.w = saturate(dot(r0.xyz, float3(0.2125, 0.7154, 0.0721)));
+	r0.w = r0.w + 1.01E-05;
+	r1.w = -0.99999;
+	r1.x = r1.w + deSatContrastGamma.z;
+	r2.x = pow(r0.w, r1.x);
+	r0.w = min(r2.x, 65000);
+	r0.xyz = r0.www * r0.xyz;
+	r0.xyz = r0.xyz * BrightnessSetting.xxx + BrightnessSetting.yyy;
+	r1.xyz = saturate(r0.xyz);
+	o.w = dot(r1.xyz, float3(0.299, 0.587, 0.114));
+	o.xyz = r0.xyz;
+
+	return o;
+}
