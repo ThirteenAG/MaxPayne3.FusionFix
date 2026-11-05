@@ -1,4 +1,4 @@
-# Compiles the anti-aliasing shaders (source/aa) with fxc before the build (premake5.lua). The compiled shaders are
+# Compiles the temporal resolve shaders with fxc before the build (premake5.lua). The compiled shaders are
 # committed, with source/resources/shaders.lock: per shader, a hash of its source, the files it includes, the fxc
 # arguments and fxc itself, and a hash of the compiled file. A shader compiles only when that input hash changed or the compiled file is
 # missing or differs, so a fresh clone compiles nothing; the ones that need it compile in parallel and a failed compile
@@ -18,16 +18,12 @@ $fxc = Join-Path $fxcDir "fxc.exe"
 # Src: the source, relative to the repository root; a wildcard compiles every match, {0} in the outputs is the matched
 # file's name without extension. T: profile, E: entry point, Fo: compiled file, Fc: assembly listing (only for
 # convenience, not committed), Flags: more fxc options. The post processing shaders are compiled by premake5.lua.
-$aa = "source/aa/shaders"
 $shaders = @(
-    # Direct3D 9 (source/aa/AntiAliasing.rc)
-    @{ Src = "$aa/*.hlsl"; T = "ps_3_0"; E = "main"; Fo = "$aa/{0}.pso" }
-
-    # Direct3D 11 (source/aa/AntiAliasingD3D11.rc): the same sources in fxc's compatibility mode
-    @{ Src = "$aa/d3d11/Fullscreen.hlsl"; T = "vs_5_0"; E = "main"; Fo = "$aa/d3d11/{0}.cso" }
-    foreach ($name in @("CameraMotion", "Resolve", "Output", "Copy", "Depth", "Luma", "BlockMotion", "MotionSelect"))
+    @{ Src = "shaders/temporal/HDR.hlsl"; T = "ps_5_0"; E = "HDROutput"; Fo = "source/resources/temporal/HDROutput.cso" }
+    @{ Src = "shaders/temporal/Temporal.hlsl"; T = "vs_4_0"; E = "Fullscreen"; Fo = "source/resources/temporal/Fullscreen.cso" }
+    foreach ($name in @("Resolve", "BridgeMotion", "CopyDepth", "BridgeColor", "Output", "HistoryDepth"))
     {
-        @{ Src = "$aa/$name.hlsl"; T = "ps_5_0"; E = "main"; Flags = "/Gec"; Fo = "$aa/d3d11/{0}.cso" }
+        @{ Src = "shaders/temporal/Temporal.hlsl"; T = "ps_4_0"; E = $name; Fo = "source/resources/temporal/$name.cso" }
     }
 )
 

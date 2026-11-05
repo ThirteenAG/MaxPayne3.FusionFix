@@ -1,349 +1,543 @@
 module;
 
 #include <common.hxx>
-#include <d3d11.h>
-#include <aa/AntiAliasingD3D11.hpp>
+#include <aa/Upscaler.hpp>
+#include <wrl/client.h>
 
 export module antialiasing;
 
 import common;
 import settings;
 import postfxcommon;
-
-// Anti-aliasing: SMAA (postfx), and temporal anti-aliasing through source/aa: TAA, DLAA and FSR native AA, the last
-// two run by FusionFixHub.exe. On the Direct3D 11 renderer (TemporalAA11) and the Direct3D 9 one (TemporalAA, TAA
-// only); the Direct3D 10 renderer keeps SMAA.
-//
-// - Jitter: the game camera director (sub_B10040) updates the game viewport through sub_496970, which ends with
-//   grcViewport::Perspective (sub_EE74B0). Perspective builds the projection at +0x1C0 with the projection shift at
-//   +0x358/+0x35C as P20/P21. Only there, for the game camera, the shift gets the jitter and Perspective runs again; the
-//   shift stays in the viewport, so every render phase that copies it and builds its projection again (the G-buffer
-//   phase's own Perspective, the scene phase) draws with the same jitter. The jitter is taken out of the shift again
-//   before the next frame's Perspective. The front end director's camera isn't jittered.
-// - The frame being drawn: RAGE draws on a render thread while the next frame is built. The draw list command that
-//   sets a viewport (sub_6C2E30) carries a copy of it: its view and projection tell the library which recorded camera
-//   the render thread is drawing (OnRenderedCamera).
-// - Depth: _DEFERRED_GBUFFER_Z_ (created in sub_6AFC20), the scene's depth-stencil, standard [0, 1] depth (on Direct3D 9
-//   a texture the depth-stencil can be read through). Not with the game's MSAA, which makes it multisampled: the
-//   temporal modes aren't offered then.
-// - Resolve: at the end of CRenderPhaseDrawScene's draw list (the command sub_6D71A0 that postfx's BeforeUIHook also
-//   uses, the instance queued at 0x91F33F), into the back buffer: the scene is complete there, after the game's post
-//   processing, before the HUD, so LDR.
+import temporal;
 
 namespace
 {
-    enum Setting
+    using Microsoft::WRL::ComPtr;
+    using Matrix = Antialiasing::Matrix;
+    using Jitter = Antialiasing::Jitter;
+    using Backend = Antialiasing::Backend;
+    namespace Bridge = Antialiasing::detail;
+
+    enum Mode { Off, SMAA, SMAAEdges, TAA, DLAA, FSR };
+
+    struct Camera
     {
-        Off = 0, SMAA = 1, SMAAEdges = 2, TAA = 3, DLAA = 4, FSR = 5
+        Matrix View, Projection, ViewProjection;
+        Jitter Offset;
+        uint64_t Serial{}, Time{};
+        UINT Width{}, Height{};
+        float Near{}, Far{}, Fov{};
+        bool Valid{};
     };
 
-    // grcViewport
-    constexpr size_t ViewOffset = 0x180;            // world -> view, sixteen floats
-    constexpr size_t ProjectionOffset = 0x1C0;      // sixteen floats
-    constexpr size_t ShiftOffset = 0x358;           // projection shift x, y in NDC, P20 and P21 of the projection
-
-    // The game thread
-    bool bGameCamera = false;                       // the game camera director updates its viewport
-    uint8_t* pJitteredViewport = nullptr;
-    float fAppliedShift[2] = {};
-
-    // From the render thread
-    std::atomic<uint32_t> nRenderWidth = 0;
-    std::atomic<uint32_t> nRenderHeight = 0;
-    std::atomic<bool> bDirect3D11 = false;
-    std::atomic<bool> bDirect3D9 = false;           // the Direct3D 9 renderer runs
-    std::atomic<bool> bDepth9Usable = false;        // and its depth can be read
-    std::atomic<uint32_t> nDepth9Changes = 0;       // for the menu to ask again
-    std::atomic<bool> bTemporal = false;            // TAA, DLAA or FSR chosen, read once per frame in Render
-
-    void** ppDepthTarget = nullptr;                 // grcRenderTarget* of _DEFERRED_GBUFFER_Z_
-
-    WFPAA::Mode ToMode(int value)
+    std::array<Camera, 16> Cameras;
+    size_t NextCamera{};
+    std::mutex CameraMutex;
+    std::atomic<UINT> Width{}, Height{};
+    std::atomic<bool> DepthReady{}, Ready{};
+    std::atomic<uint32_t> AvailabilityGeneration{};
+    std::atomic<int> SelectedMode{};
+    uint64_t RenderSerial{}, LastResolve{};
+    Camera Current, Previous;
+    bool Matched{}, LastBridged{}, SceneResolved{};
+    int LastMode{};
+    void** DepthTarget{};
+    thread_local bool GameCamera{};
+    struct RenderViewport
     {
-        switch (value)
+        uint8_t* Viewport;
+        float Shift[2];
+    };
+    RenderViewport JitteredRenderViewport{};
+    void* (__fastcall* Perspective)(uint8_t*, void*, float, float, float, float){};
+    int (__fastcall* UpdateViewport)(void*, void*, void*){};
+
+    struct Parameters
+    {
+        float Pixel[4];
+        float Temporal[4];
+        float Camera[4];
+        float Jitter[4];
+        float PreviousClip[16];
+    };
+
+    Parameters Constants;
+    Jitter FrameOffset, SceneOffset;
+    uint32_t* ViewportSlot{};
+
+    bool SameLens(const float* projection, const Matrix& camera)
+    {
+        return std::abs(projection[0] - camera.m[0][0]) <= 0.001 * std::abs(camera.m[0][0]) &&
+            std::abs(projection[5] - camera.m[1][1]) <= 0.001 * std::abs(camera.m[1][1]);
+    }
+
+    void MatchCamera(uint8_t* viewport)
+    {
+        if (SceneResolved || !Ready || !TemporalMotion::IsReady())
+            return;
+        auto projection = reinterpret_cast<float*>(viewport + 0x1C0);
+        if (projection[11] == 0)
+            return;
+        UINT width{}, height{};
         {
-        case TAA: return WFPAA::Mode::TAA;
-        case DLAA: return WFPAA::Mode::DLAA;
-        case FSR: return WFPAA::Mode::FSR;
-        default: return WFPAA::Mode::Off;
+            std::lock_guard lock(CameraMutex);
+            for (auto& camera : Cameras)
+                if (camera.Valid && SameLens(projection, camera.Projection))
+                {
+                    width = camera.Width;
+                    height = camera.Height;
+                    break;
+                }
         }
+        if (!width || !height)
+            return;
+        auto shift = reinterpret_cast<float*>(viewport + 0x358);
+        JitteredRenderViewport = { viewport, { shift[0], shift[1] } };
+        shift[0] += 2 * FrameOffset.X / width * projection[11];
+        shift[1] -= 2 * FrameOffset.Y / height * projection[11];
+        auto parameters = reinterpret_cast<float*>(viewport + 0x338);
+        Perspective(viewport, nullptr, parameters[0], parameters[1], parameters[2], parameters[3]);
     }
 
-    bool IsTemporalSetting()
+    void SceneViewport()
     {
-        return FusionFixSettings.GetInt(PREF_ANTIALIASING) >= TAA;
+        if (SceneResolved || Matched || !Ready || !Width || !Height)
+            return;
+        auto storage = reinterpret_cast<uint8_t**>(__readfsdword(0x2C))[*ViewportSlot];
+        auto viewport = *reinterpret_cast<uint8_t**>(storage + 0xA20);
+        if (!viewport || reinterpret_cast<float*>(viewport + 0x1C0)[11] == 0)
+            return;
+        auto parameters = reinterpret_cast<float*>(viewport + 0x338);
+        Camera camera;
+        camera.Width = Width;
+        camera.Height = Height;
+        camera.View = Matrix::From(reinterpret_cast<float*>(viewport + 0x180));
+        camera.Projection = Matrix::From(reinterpret_cast<float*>(viewport + 0x1C0));
+        bool jittered = JitteredRenderViewport.Viewport == viewport;
+        if (jittered)
+        {
+            camera.Projection.m[2][0] = JitteredRenderViewport.Shift[0];
+            camera.Projection.m[2][1] = JitteredRenderViewport.Shift[1];
+        }
+        camera.ViewProjection = camera.View * camera.Projection;
+        camera.Near = parameters[2];
+        camera.Far = parameters[3];
+        camera.Fov = static_cast<float>(2 * std::atan(1.0 / std::abs(camera.Projection.m[1][1])));
+        camera.Valid = camera.Near > 0 && camera.Far > camera.Near;
+        camera.Offset = jittered ? FrameOffset : Jitter{};
+        camera.Serial = RenderSerial + 1;
+        camera.Time = GetTickCount64();
+        Current = camera;
+        Matched = true;
+        TemporalMotion::SetPixelParameters(1.0f / camera.Width, 1.0f / camera.Height,
+            (Current.Offset.X - SceneOffset.X) / camera.Width, (Current.Offset.Y - SceneOffset.Y) / camera.Height);
     }
 
-    // -------------------------------------------------------------------------------------------------------------
-    // Jitter
-
-    void* (__fastcall* Perspective)(uint8_t* viewport, void* edx, float fov, float aspect, float nearClip, float farClip) = nullptr;
     void* __fastcall PerspectiveHook(uint8_t* viewport, void* edx, float fov, float aspect, float nearClip, float farClip)
     {
-        // The game's own shift again: last frame's jitter comes out first
-        auto shift = reinterpret_cast<float*>(viewport + ShiftOffset);
-        if (viewport == pJitteredViewport)
-        {
-            shift[0] -= fAppliedShift[0];
-            shift[1] -= fAppliedShift[1];
-            pJitteredViewport = nullptr;
-        }
-
         auto result = Perspective(viewport, edx, fov, aspect, nearClip, farClip);
-        if (!bGameCamera || !bTemporal)
+        if (!GameCamera || SelectedMode < TAA || !Ready || !TemporalMotion::IsReady())
             return result;
-
-        WFPAA::Camera camera;
-        camera.View = WFPAA::Matrix::From(reinterpret_cast<float*>(viewport + ViewOffset));
-        camera.Projection = WFPAA::Matrix::From(reinterpret_cast<float*>(viewport + ProjectionOffset));
-        camera.Width = nRenderWidth;
-        camera.Height = nRenderHeight;
-        auto jitter = bDirect3D9 ? WFPAA::TemporalAA::OnCamera(camera) : WFPAA::TemporalAA11::OnCamera(camera);
-        if (jitter.X == 0.0f && jitter.Y == 0.0f)
+        Camera camera;
+        camera.Width = Width;
+        camera.Height = Height;
+        if (!camera.Width || !camera.Height)
             return result;
-
-        // JitterProjection's change of P20 and P21, made through the shift so the copies of the viewport keep it
-        float delta[16] = {};
-        delta[11] = reinterpret_cast<float*>(viewport + ProjectionOffset)[11];
-        WFPAA::JitterProjection(delta, jitter, static_cast<float>(camera.Width), static_cast<float>(camera.Height));
-        fAppliedShift[0] = delta[8];
-        fAppliedShift[1] = delta[9];
-        shift[0] += delta[8];
-        shift[1] += delta[9];
-        pJitteredViewport = viewport;
-        return Perspective(viewport, edx, fov, aspect, nearClip, farClip);
-    }
-
-    // sub_496970, the viewport update of a camera director, as called by the game camera director
-    int (__fastcall* UpdateViewport)(void* viewport, void* edx, void* frame) = nullptr;
-    int __fastcall GameCameraUpdateViewport(void* viewport, void* edx, void* frame)
-    {
-        bGameCamera = true;
-        auto result = UpdateViewport(viewport, edx, frame);
-        bGameCamera = false;
+        camera.View = Matrix::From(reinterpret_cast<float*>(viewport + 0x180));
+        camera.Projection = Matrix::From(reinterpret_cast<float*>(viewport + 0x1C0));
+        camera.ViewProjection = camera.View * camera.Projection;
+        camera.Near = nearClip;
+        camera.Far = farClip;
+        camera.Fov = static_cast<float>(2 * std::atan(1.0 / std::abs(camera.Projection.m[1][1])));
+        camera.Valid = nearClip > 0 && farClip > nearClip;
+        {
+            std::lock_guard lock(CameraMutex);
+            Cameras[NextCamera] = camera;
+            NextCamera = (NextCamera + 1) % Cameras.size();
+        }
         return result;
     }
 
-    // -------------------------------------------------------------------------------------------------------------
-    // Depth
-
-    bool ReadPointer(const void* address, void*& value)
+    int __fastcall CameraViewport(void* viewport, void* edx, void* frame)
     {
-        __try
+        GameCamera = true;
+        auto result = UpdateViewport(viewport, edx, frame);
+        GameCamera = false;
+        return result;
+    }
+
+    void RestoreViewport()
+    {
+        auto entry = std::exchange(JitteredRenderViewport, {});
+        if (!entry.Viewport)
+            return;
+        auto shift = reinterpret_cast<float*>(entry.Viewport + 0x358);
+        shift[0] = entry.Shift[0];
+        shift[1] = entry.Shift[1];
+        auto parameters = reinterpret_cast<float*>(entry.Viewport + 0x338);
+        Perspective(entry.Viewport, nullptr, parameters[0], parameters[1], parameters[2], parameters[3]);
+    }
+
+    bool ValidHistory(int mode)
+    {
+        if (!Previous.Valid || LastResolve + 1 != RenderSerial || LastMode != mode || Current.Width != Previous.Width ||
+            Current.Height != Previous.Height || Current.Time < Previous.Time || Current.Time - Previous.Time > 250)
+            return false;
+        auto current = Current.View.Inverse();
+        auto previous = Previous.View.Inverse();
+        double distance{}, direction{};
+        for (size_t i = 0; i < 3; ++i)
         {
-            value = *static_cast<void* const*>(address);
+            auto difference = current.m[3][i] - previous.m[3][i];
+            distance += difference * difference;
+            direction += current.m[2][i] * previous.m[2][i];
+        }
+        return distance < 625 && direction > 0.5 && std::abs(Current.Projection.m[0][0] / Previous.Projection.m[0][0] - 1) < 0.1;
+    }
+
+    void SetConstants(bool history)
+    {
+        Constants = {};
+        Constants.Pixel[0] = 1.0f / Current.Width;
+        Constants.Pixel[1] = 1.0f / Current.Height;
+        Constants.Pixel[2] = 0;
+        Constants.Pixel[3] = 0;
+        Constants.Temporal[0] = 0.05f;
+        Constants.Temporal[1] = 0.2f;
+        Constants.Temporal[2] = 1.25f;
+        Constants.Temporal[3] = history ? 1.0f : 0;
+        Constants.Camera[0] = Current.Near;
+        Constants.Camera[1] = Current.Far;
+        Constants.Camera[2] = 0.1f;
+        Constants.Camera[3] = FusionFixSettings.GetFloat(PREF_AASHARPNESS) / 100.0f;
+        Constants.Jitter[0] = Current.Offset.X / Current.Width;
+        Constants.Jitter[1] = Current.Offset.Y / Current.Height;
+        (Current.ViewProjection.Inverse() * (Previous.Valid ? Previous.ViewProjection : Current.ViewProjection)).To(Constants.PreviousClip);
+    }
+
+    bool Program(UINT id, const void** code, UINT* size)
+    {
+        return LoadPostFXResource(GetPostFXModuleHandle(&Program), id, code, size);
+    }
+
+    DXGI_FORMAT Typed(DXGI_FORMAT format)
+    {
+        switch (format)
+        {
+        case DXGI_FORMAT_R16G16B16A16_TYPELESS: return DXGI_FORMAT_R16G16B16A16_FLOAT;
+        case DXGI_FORMAT_R32G32B32A32_TYPELESS: return DXGI_FORMAT_R32G32B32A32_FLOAT;
+        case DXGI_FORMAT_R8G8B8A8_TYPELESS: return DXGI_FORMAT_R8G8B8A8_UNORM;
+        case DXGI_FORMAT_R10G10B10A2_TYPELESS: return DXGI_FORMAT_R10G10B10A2_UNORM;
+        default: return format;
+        }
+    }
+
+    struct Target11
+    {
+        ComPtr<ID3D11Texture2D> Texture;
+        ComPtr<ID3D11RenderTargetView> Target;
+        ComPtr<ID3D11ShaderResourceView> View;
+    };
+
+    struct Renderer11
+    {
+        ComPtr<ID3D11Device> Device;
+        ComPtr<ID3D11DeviceContext1> Context;
+        ComPtr<ID3DDeviceContextState> State;
+        ComPtr<ID3D11VertexShader> Vertex;
+        std::array<ComPtr<ID3D11PixelShader>, 6> Shaders;
+        ComPtr<ID3D11Buffer> Parameters;
+        ComPtr<ID3D11SamplerState> Point, Linear;
+        Target11 Scene, History[2], Depth[2], Motion, BridgeColor, BridgeOutput;
+        UINT Width{}, Height{}, Index{};
+        DXGI_FORMAT Format{};
+        bool Complete{};
+
+        bool MakeTarget(Target11& target, DXGI_FORMAT format)
+        {
+            D3D11_TEXTURE2D_DESC description{};
+            description.Width = Width;
+            description.Height = Height;
+            description.MipLevels = description.ArraySize = 1;
+            description.Format = format;
+            description.SampleDesc.Count = 1;
+            description.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+            return SUCCEEDED(Device->CreateTexture2D(&description, nullptr, &target.Texture)) &&
+                SUCCEEDED(Device->CreateRenderTargetView(target.Texture.Get(), nullptr, &target.Target)) &&
+                SUCCEEDED(Device->CreateShaderResourceView(target.Texture.Get(), nullptr, &target.View));
+        }
+
+        bool Initialize(ID3D11Device* device, UINT width, UINT height, DXGI_FORMAT format, bool bridge)
+        {
+            if (!Complete || Device.Get() != device || Width != width || Height != height || Format != format)
+                *this = {};
+            if (!Device)
+            {
+                Device = device;
+                Width = width;
+                Height = height;
+                Format = format;
+                ComPtr<ID3D11Device1> modern;
+                ComPtr<ID3D11DeviceContext> context;
+                Device->GetImmediateContext(&context);
+                if (FAILED(Device.As(&modern)) || FAILED(context.As(&Context)))
+                    return false;
+                auto feature = device->GetFeatureLevel();
+                auto flags = (device->GetCreationFlags() & D3D11_CREATE_DEVICE_SINGLETHREADED) ? D3D11_1_CREATE_DEVICE_CONTEXT_STATE_SINGLETHREADED : 0u;
+                if (FAILED(modern->CreateDeviceContextState(flags, &feature, 1, D3D11_SDK_VERSION, __uuidof(ID3D11Device), nullptr, &State)))
+                    return false;
+                const void* code{};
+                UINT size{};
+                if (!Program(300, &code, &size) || FAILED(Device->CreateVertexShader(code, size, nullptr, &Vertex)))
+                    return false;
+                for (UINT i = 0; i < Shaders.size(); ++i)
+                    if (!Program(311 + i, &code, &size) || FAILED(Device->CreatePixelShader(code, size, nullptr, &Shaders[i])))
+                        return false;
+                D3D11_BUFFER_DESC buffer{};
+                buffer.ByteWidth = sizeof(Constants);
+                buffer.Usage = D3D11_USAGE_DEFAULT;
+                buffer.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+                if (FAILED(Device->CreateBuffer(&buffer, nullptr, &Parameters)))
+                    return false;
+                D3D11_SAMPLER_DESC sampler{};
+                sampler.AddressU = sampler.AddressV = sampler.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+                sampler.MaxLOD = D3D11_FLOAT32_MAX;
+                sampler.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+                if (FAILED(Device->CreateSamplerState(&sampler, &Point)))
+                    return false;
+                sampler.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+                if (FAILED(Device->CreateSamplerState(&sampler, &Linear)))
+                    return false;
+                if (!MakeTarget(Scene, Typed(Format)) || !MakeTarget(History[0], DXGI_FORMAT_R16G16B16A16_FLOAT) ||
+                    !MakeTarget(History[1], DXGI_FORMAT_R16G16B16A16_FLOAT) || !MakeTarget(Depth[0], DXGI_FORMAT_R32_FLOAT) ||
+                    !MakeTarget(Depth[1], DXGI_FORMAT_R32_FLOAT))
+                    return false;
+                Complete = true;
+            }
+            if (!State || !History[1].Texture)
+                return false;
+            if (bridge && (!BridgeOutput.View || !BridgeColor.View || !Motion.View))
+            {
+                Motion = {};
+                BridgeColor = {};
+                BridgeOutput = {};
+                return MakeTarget(Motion, DXGI_FORMAT_R16G16_FLOAT) && MakeTarget(BridgeColor, DXGI_FORMAT_R16G16B16A16_FLOAT) &&
+                    MakeTarget(BridgeOutput, DXGI_FORMAT_R16G16B16A16_FLOAT);
+            }
             return true;
         }
-        __except (EXCEPTION_EXECUTE_HANDLER)
+
+        ComPtr<ID3D11ShaderResourceView> View(ID3D11Texture2D* texture, bool depth)
         {
-            return false;
-        }
-    }
-
-    // A Direct3D 11 object: its vtable is in d3d11.dll
-    bool IsD3D11Object(void* object)
-    {
-        static auto d3d11 = GetModuleHandleW(L"d3d11.dll");
-        void* vtable = nullptr;
-        HMODULE module = nullptr;
-        return object && ReadPointer(object, vtable) && vtable &&
-            GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, static_cast<LPCWSTR>(vtable), &module) &&
-            module == d3d11;
-    }
-
-    bool IsDepthFormat(DXGI_FORMAT format)
-    {
-        return format == DXGI_FORMAT_R24G8_TYPELESS || format == DXGI_FORMAT_R32G8X24_TYPELESS || format == DXGI_FORMAT_R32_TYPELESS;
-    }
-
-    // The texture of a grcRenderTargetDX11, with a reference. The member that holds it is found once, by looking for a
-    // Direct3D 11 depth texture among the first members.
-    ID3D11Texture2D* DepthTexture(void* target)
-    {
-        static int offset = -1;
-        if (!target)
-            return nullptr;
-
-        auto textureAt = [&](int at) -> ID3D11Texture2D*
-        {
-            void* member = nullptr;
-            if (!ReadPointer(static_cast<uint8_t*>(target) + at, member) || !IsD3D11Object(member))
-                return nullptr;
-            ID3D11Texture2D* texture = nullptr;
-            if (FAILED(static_cast<IUnknown*>(member)->QueryInterface(IID_PPV_ARGS(&texture))) || !texture)
-                return nullptr;
-            D3D11_TEXTURE2D_DESC desc{};
-            texture->GetDesc(&desc);
-            if (IsDepthFormat(desc.Format))
-                return texture;
-            texture->Release();
-            return nullptr;
-        };
-
-        if (offset >= 0)
-            return textureAt(offset);
-        for (int at = 4; at < 0x100; at += 4)
-        {
-            if (auto texture = textureAt(at))
+            if (!texture)
+                return {};
+            D3D11_TEXTURE2D_DESC description{};
+            texture->GetDesc(&description);
+            if (description.SampleDesc.Count != 1)
+                return {};
+            D3D11_SHADER_RESOURCE_VIEW_DESC view{};
+            view.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+            view.Texture2D.MipLevels = 1;
+            view.Format = description.Format;
+            if (!depth)
+                view.Format = Typed(view.Format);
+            if (depth)
             {
-                offset = at;
-                char text[96];
-                sprintf_s(text, "Depth: the texture of _DEFERRED_GBUFFER_Z_ is at +0x%X", at);
-                WFPAA::TemporalAA11::Log(text);
-                return texture;
+                if (view.Format == DXGI_FORMAT_R24G8_TYPELESS)
+                    view.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+                else if (view.Format == DXGI_FORMAT_R32G8X24_TYPELESS)
+                    view.Format = DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
+                else if (view.Format == DXGI_FORMAT_R32_TYPELESS)
+                    view.Format = DXGI_FORMAT_R32_FLOAT;
             }
+            ComPtr<ID3D11ShaderResourceView> result;
+            Device->CreateShaderResourceView(texture, &view, &result);
+            return result;
         }
-        return nullptr;
-    }
 
-    // Formats a Direct3D 9 depth can be sampled in (the hardware depth formats, or depth written to a float target)
-    bool IsDepthFormat9(D3DFORMAT format)
-    {
-        return format == static_cast<D3DFORMAT>(MAKEFOURCC('I', 'N', 'T', 'Z')) || format == static_cast<D3DFORMAT>(MAKEFOURCC('D', 'F', '2', '4')) ||
-            format == static_cast<D3DFORMAT>(MAKEFOURCC('D', 'F', '1', '6')) || format == D3DFMT_R32F;
-    }
-
-    // The texture of the grcRenderTargetDX9 (sub_EFD070 creates it, the destructor sub_EFCE60 releases it), with a
-    // reference, when it's in a format the depth can be sampled in
-    IDirect3DTexture9* DepthTexture9(void* target)
-    {
-        constexpr size_t TextureOffset = 0x38;
-        static D3DFORMAT logged = D3DFMT_UNKNOWN;
-        void* member = nullptr;
-        void* vtable = nullptr;
-        if (!target || !ReadPointer(static_cast<uint8_t*>(target) + TextureOffset, member) || !member || !ReadPointer(member, vtable) || !vtable)
-            return nullptr;
-        IDirect3DTexture9* texture = nullptr;
-        if (FAILED(static_cast<IUnknown*>(member)->QueryInterface(IID_IDirect3DTexture9, reinterpret_cast<void**>(&texture))) || !texture)
-            return nullptr;
-        D3DSURFACE_DESC desc{};
-        texture->GetLevelDesc(0, &desc);
-        if (desc.Format != logged)
+        void Pass(ID3D11RenderTargetView* output, size_t shader, ID3D11ShaderResourceView* scene, ID3D11ShaderResourceView* motion,
+            ID3D11ShaderResourceView* depth, ID3D11ShaderResourceView* history, ID3D11ShaderResourceView* previousDepth,
+            ID3D11ShaderResourceView* original = nullptr)
         {
-            logged = desc.Format;
-            char text[128];
-            sprintf_s(text, "Depth: the Direct3D 9 texture of _DEFERRED_GBUFFER_Z_ has the format 0x%X, %ux%u%s", static_cast<unsigned>(desc.Format),
-                desc.Width, desc.Height, IsDepthFormat9(desc.Format) ? "" : ", which can't be read");
-            WFPAA::TemporalAA::Log(text);
+            ID3D11ShaderResourceView* inputs[]{ scene, motion, depth, history, previousDepth, original };
+            ID3D11ShaderResourceView* empty[std::size(inputs)]{};
+            Context->PSSetShaderResources(0, UINT(std::size(empty)), empty);
+            Context->OMSetRenderTargets(1, &output, nullptr);
+            Context->PSSetShaderResources(0, UINT(std::size(inputs)), inputs);
+            Context->PSSetShader(Shaders[shader].Get(), nullptr, 0);
+            Context->Draw(3, 0);
+            Context->PSSetShaderResources(0, UINT(std::size(empty)), empty);
         }
-        if (IsDepthFormat9(desc.Format) && desc.MultiSampleType == D3DMULTISAMPLE_NONE)
-            return texture;
-        texture->Release();
-        return nullptr;
+
+        bool Render(ID3D11Texture2D* output, ID3D11Texture2D* depth, ID3D11Texture2D* motion, int mode, bool valid)
+        {
+            auto depthView = View(depth, true);
+            auto motionView = View(motion, false);
+            ComPtr<ID3D11RenderTargetView> outputView;
+            D3D11_TEXTURE2D_DESC outputDescription{};
+            output->GetDesc(&outputDescription);
+            D3D11_RENDER_TARGET_VIEW_DESC target{ Typed(outputDescription.Format), D3D11_RTV_DIMENSION_TEXTURE2D };
+            if (!depthView || !motionView || FAILED(Device->CreateRenderTargetView(output, &target, &outputView)))
+                return false;
+            ComPtr<ID3DDeviceContextState> previousState;
+            Context->SwapDeviceContextState(State.Get(), &previousState);
+            Context->CopyResource(Scene.Texture.Get(), output);
+            D3D11_VIEWPORT viewport{ 0, 0, static_cast<float>(Width), static_cast<float>(Height), 0, 1 };
+            Context->RSSetViewports(1, &viewport);
+            Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            Context->VSSetShader(Vertex.Get(), nullptr, 0);
+            Context->UpdateSubresource(Parameters.Get(), 0, nullptr, &Constants, 0, 0);
+            Context->PSSetConstantBuffers(0, 1, Parameters.GetAddressOf());
+            ID3D11SamplerState* samplers[]{ Point.Get(), Linear.Get() };
+            Context->PSSetSamplers(0, 2, samplers);
+            bool bridged{};
+            if (mode == DLAA || mode == FSR)
+            {
+                Bridge::Config().LowDynamicRange = mode == DLAA;
+                Constants.Pixel[2] = mode == DLAA ? 1.0f : 0.0f;
+                Context->UpdateSubresource(Parameters.Get(), 0, nullptr, &Constants, 0, 0);
+                Pass(BridgeColor.Target.Get(), 3, Scene.View.Get(), nullptr, nullptr, nullptr, nullptr);
+                Pass(Depth[Index].Target.Get(), 2, nullptr, nullptr, depthView.Get(), nullptr, nullptr);
+                Pass(Motion.Target.Get(), 1, nullptr, motionView.Get(), depthView.Get(), nullptr, nullptr);
+                Bridge::UpscalerFrame11 frame;
+                frame.Color = BridgeColor.Texture.Get();
+                frame.Depth = Depth[Index].Texture.Get();
+                frame.Motion = Motion.Texture.Get();
+                frame.Output = BridgeOutput.Texture.Get();
+                frame.Width = Width;
+                frame.Height = Height;
+                frame.JitterPixels = Current.Offset;
+                frame.CameraNear = Current.Near;
+                frame.CameraFar = Current.Far;
+                frame.CameraFovY = Current.Fov;
+                frame.FrameTimeMs = Previous.Valid ? std::clamp(static_cast<float>(Current.Time - Previous.Time), 1.0f, 100.0f) : 16.6f;
+                frame.Reset = !valid;
+                bridged = Bridge::TheUpscaler11().Evaluate(mode == DLAA ? Backend::DLSS : Backend::FSR, frame);
+            }
+            if (!bridged)
+            {
+                Constants.Temporal[3] = valid && !LastBridged ? 1.0f : 0;
+                Context->UpdateSubresource(Parameters.Get(), 0, nullptr, &Constants, 0, 0);
+                Pass(History[Index].Target.Get(), 0, Scene.View.Get(), motionView.Get(), depthView.Get(), History[Index ^ 1].View.Get(), Depth[Index ^ 1].View.Get());
+            }
+            Constants.Pixel[2] = bridged && mode == DLAA ? 1.0f : 0.0f;
+            Context->UpdateSubresource(Parameters.Get(), 0, nullptr, &Constants, 0, 0);
+            Pass(outputView.Get(), 4, bridged ? BridgeOutput.View.Get() : History[Index].View.Get(), nullptr, nullptr, nullptr, nullptr, Scene.View.Get());
+            Pass(Depth[Index].Target.Get(), 5, nullptr, nullptr, depthView.Get(), nullptr, nullptr);
+            Context->SwapDeviceContextState(previousState.Get(), nullptr);
+            LastBridged = bridged;
+            Index ^= 1;
+            return true;
+        }
+    } Modern;
+
+    IUnknown* DepthTexture()
+    {
+        auto target = DepthTarget ? *DepthTarget : nullptr;
+        return target ? *reinterpret_cast<IUnknown**>(static_cast<uint8_t*>(target) + 0x38) : nullptr;
     }
 
-    // The Direct3D 9 device of the renderer, with a reference, or null on Direct3D 10 and 11
-    IDirect3DDevice9* Direct3D9Device()
+    void ChangeReady(bool ready)
     {
-        auto object = ppPostFXDevice ? *ppPostFXDevice : nullptr;
-        IDirect3DDevice9* device = nullptr;
-        if (!object || FAILED(object->QueryInterface(IID_PostFXDirect3DDevice9, reinterpret_cast<void**>(&device))))
-            return nullptr;
-        return device;
+        if (Ready.exchange(ready) != ready)
+            ++AvailabilityGeneration;
     }
 
-    // Direct3D 9: the scene in the render target the scene's draw list ends with
-    void Render9(IDirect3DDevice9* device)
+    void Render11(int mode, bool resolve)
     {
-        bDirect3D9 = true;
-        if (FAILED(device->TestCooperativeLevel()))
+        ComPtr<IDXGISwapChain> swapChain;
+        auto object = ppPostFXSwapChain ? *ppPostFXSwapChain : nullptr;
+        if (!object || FAILED(object->QueryInterface(IID_PPV_ARGS(&swapChain))))
+        {
+            ChangeReady(false);
             return;
-        WFPAA::TemporalAA::SetMode(ToMode(FusionFixSettings.GetInt(PREF_ANTIALIASING)), FusionFixSettings.GetFloat(PREF_AASHARPNESS) / 100.0f);
-
-        IDirect3DSurface9* target = nullptr;
-        if (FAILED(device->GetRenderTarget(0, &target)) || !target)
+        }
+        ComPtr<ID3D11Device> device;
+        ComPtr<ID3D11Texture2D> output, depth, motion;
+        output.Attach(TemporalMotion::AcquireSceneTexture11());
+        if (!output || FAILED(swapChain->GetDevice(IID_PPV_ARGS(&device))))
             return;
-        D3DSURFACE_DESC desc{};
-        target->GetDesc(&desc);
-        nRenderWidth = desc.Width;
-        nRenderHeight = desc.Height;
-
-        auto depth = ppDepthTarget ? DepthTexture9(*ppDepthTarget) : nullptr;
-        if (bDepth9Usable.exchange(depth != nullptr) != (depth != nullptr))
-            ++nDepth9Changes;
-        if (depth && desc.MultiSampleType == D3DMULTISAMPLE_NONE)
-            WFPAA::TemporalAA::Render(device, target, depth, target);
-        else
-            WFPAA::TemporalAA::Update(device);
+        if (device->GetFeatureLevel() < D3D_FEATURE_LEVEL_11_0 || FAILED(device->GetDeviceRemovedReason()))
+        {
+            ChangeReady(false);
+            return;
+        }
+        Bridge::TheUpscaler11().Update(device.Get());
+        D3D11_TEXTURE2D_DESC description{};
+        output->GetDesc(&description);
+        Width = description.Width;
+        Height = description.Height;
+        auto texture = DepthTexture();
+        if (texture)
+            texture->QueryInterface(IID_PPV_ARGS(&depth));
+        D3D11_TEXTURE2D_DESC depthDescription{};
         if (depth)
-            depth->Release();
-        target->Release();
+            depth->GetDesc(&depthDescription);
+        DepthReady = depth && (depthDescription.BindFlags & D3D11_BIND_SHADER_RESOURCE) &&
+            depthDescription.SampleDesc.Count == 1 && description.SampleDesc.Count == 1;
+        ChangeReady(DepthReady && TemporalMotion::IsReady());
+        if (!resolve || mode < TAA || !Ready || !Matched || Current.Serial == Previous.Serial)
+            return;
+        motion.Attach(TemporalMotion::AcquireTexture11());
+        if (!motion || !Modern.Initialize(device.Get(), description.Width, description.Height, description.Format, mode != TAA))
+            return;
+        auto valid = ValidHistory(mode);
+        SetConstants(valid);
+        if (Modern.Render(output.Get(), depth.Get(), motion.Get(), mode, valid))
+        {
+            Previous = Current;
+            LastResolve = RenderSerial;
+            LastMode = mode;
+        }
     }
 }
 
 export namespace AntiAliasing
 {
-    // SMAA, for postfx: 0 off, 1 on, 2 the edge view
     int SmaaMode()
     {
         auto value = FusionFixSettings.GetInt(PREF_ANTIALIASING);
         return value == SMAA || value == SMAAEdges ? value : 0;
     }
 
-    // Before the HUD, at the end of the scene's draw list on the render thread. Without a temporal mode there's no
-    // jitter and no pass; only every 30th frame the library looks at the device and the depth and starts the hub, so
-    // the menu knows which temporal modes it can offer.
-    void Render()
+    void EndFrame()
     {
-        static uint32_t idleFrames = 0;
-        bTemporal = IsTemporalSetting();
-        if (bTemporal)
-            idleFrames = 0;
-        else if (idleFrames++ % 30 != 0)
-            return;
-
-        if (auto device9 = Direct3D9Device())
+        if (!SceneResolved)
+            ++RenderSerial;
+        auto mode = FusionFixSettings.GetInt(PREF_ANTIALIASING);
+        SelectedMode = mode;
+        TemporalMotion::SetEnabled(mode >= TAA && Ready);
+        Render11(mode, false);
+        RestoreViewport();
+        TemporalMotion::SetEnabled(mode >= TAA && Ready);
+        if (RenderSerial <= 2 || RenderSerial % 120 == 0)
+            Bridge::Log("Temporal frame %llu: mode %d, ready %d, camera %d, resolved %d", RenderSerial,
+                mode, Ready.load(), Matched, LastResolve == RenderSerial);
+        TemporalMotion::EndFrame();
+        SceneOffset = Matched ? Current.Offset : Jitter{};
+        Matched = false;
+        SceneResolved = false;
+        auto index = static_cast<uint32_t>((RenderSerial + 1) % (mode == DLAA ? 32 : 16)) + 1;
+        FrameOffset = { Antialiasing::Halton(index, 2) - 0.5f, Antialiasing::Halton(index, 3) - 0.5f };
+        if (mode < TAA)
         {
-            Render9(device9);
-            device9->Release();
-            return;
+            Previous = {};
+            LastBridged = false;
         }
-
-        IDXGISwapChain* swapChain = nullptr;
-        auto object = ppPostFXSwapChain ? *ppPostFXSwapChain : nullptr;
-        if (!object || FAILED(object->QueryInterface(IID_PPV_ARGS(&swapChain))) || !swapChain)
-            return;
-
-        ID3D11Device* device = nullptr;
-        ID3D11Texture2D* backBuffer = nullptr;
-        if (SUCCEEDED(swapChain->GetDevice(IID_PPV_ARGS(&device))) && device && SUCCEEDED(swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer))) && backBuffer)
-        {
-            bDirect3D11 = device->GetFeatureLevel() >= D3D_FEATURE_LEVEL_11_0;
-            D3D11_TEXTURE2D_DESC desc{};
-            backBuffer->GetDesc(&desc);
-            nRenderWidth = desc.Width;
-            nRenderHeight = desc.Height;
-
-            if (bDirect3D11)
-            {
-                WFPAA::TemporalAA11::SetMode(ToMode(FusionFixSettings.GetInt(PREF_ANTIALIASING)), FusionFixSettings.GetFloat(PREF_AASHARPNESS) / 100.0f);
-                ID3D11DeviceContext* context = nullptr;
-                device->GetImmediateContext(&context);
-                auto depth = ppDepthTarget ? DepthTexture(*ppDepthTarget) : nullptr;
-                WFPAA::TemporalAA11::Render(context, backBuffer, depth, backBuffer);
-                if (depth)
-                    depth->Release();
-                if (context)
-                    context->Release();
-            }
-        }
-        if (backBuffer)
-            backBuffer->Release();
-        if (device)
-            device->Release();
-        swapChain->Release();
     }
 
-    // Before the swap chain's buffers are resized
     void OnResize()
     {
-        WFPAA::TemporalAA11::OnResize();
+        Modern = {};
+        Previous = {};
+        ChangeReady(false);
+        TemporalMotion::OnLostDevice();
     }
 
-    // Direct3D 9: before the device is reset
     void OnLostDevice()
     {
-        WFPAA::TemporalAA::OnLostDevice();
+        OnResize();
     }
 }
 
@@ -356,89 +550,69 @@ public:
         {
             auto name = GetThisModuleName<std::wstring>();
             name = name.substr(0, name.find_last_of(L'.'));
-            WFPAA::Options options;
-            options.BridgeName = L"Local\\" + name + L".Upscaler";
-            options.ClientName = "MaxPayne3.FusionFix";
+            auto& configuration = Bridge::Config();
+            configuration.BridgeName = L"Local\\" + name + L".Upscaler";
+            configuration.ClientName = "MaxPayne3.FusionFix";
+            configuration.LowDynamicRange = true;
 #ifdef _DEBUG
-            options.Log = GetThisModulePath() / (name + L".AntiAliasing.log");
-            options.HubLog = GetThisModulePath() / (name + L".Upscaler.log");
+            configuration.Log = GetThisModulePath() / (name + L".AntiAliasing.log");
+            configuration.HubLog = GetThisModulePath() / (name + L".Upscaler.log");
 #endif
-            options.LowDynamicRange = true;
-            options.CurrentWeightMin = 0.1f;   // a tenth of the current frame where nothing moves
-            WFPAA::TemporalAA11::Configure(options);
-
-            // The temporal modes on Direct3D 11 or 9 with a readable depth, DLAA and FSR once the hub reported them (it
-            // starts with the first frame)
+            TemporalMotion::Initialize();
+            TemporalMotion::SetResolveCallback([]
+            {
+                if (SceneResolved)
+                    return;
+                SceneResolved = true;
+                ++RenderSerial;
+                Render11(FusionFixSettings.GetInt(PREF_ANTIALIASING), true);
+            });
             SettingsPlugin().Availability("MAIN.AntiAliasing", [](std::string_view value)
             {
-                bool d3d9 = bDirect3D9 && bDepth9Usable;
-                bool d3d11 = !bDirect3D9 && WFPAA::TemporalAA11::IsRunning();
                 if (value == "3")
-                    return d3d9 || d3d11;
+                    return Ready.load();
                 if (value == "4")
-                    return (d3d9 && WFPAA::TemporalAA::IsAvailable(WFPAA::Backend::DLSS)) || (d3d11 && WFPAA::TemporalAA11::IsAvailable(WFPAA::Backend::DLSS));
+                    return Ready && Bridge::TheUpscaler11().IsAvailable(Backend::DLSS);
                 if (value == "5")
-                    return (d3d9 && WFPAA::TemporalAA::IsAvailable(WFPAA::Backend::FSR)) || (d3d11 && WFPAA::TemporalAA11::IsAvailable(WFPAA::Backend::FSR));
+                    return Ready && Bridge::TheUpscaler11().IsAvailable(Backend::FSR);
                 return true;
             });
-
             static auto refresh = []()
             {
-                static uint32_t generation = 0;
-                auto now = WFPAA::TemporalAA11::Generation() + WFPAA::TemporalAA::Generation() + nDepth9Changes;
-                if (generation != now)
+                static uint32_t generation = UINT32_MAX;
+                auto current = AvailabilityGeneration.load() + Bridge::TheUpscaler11().generation.load();
+                if (generation != current)
                 {
-                    generation = now;
+                    generation = current;
                     SettingsPlugin().Refresh("MAIN.AntiAliasing");
                 }
             };
             FusionFix::onGameProcessEvent() += refresh;
             FusionFix::onMenuDrawingEvent() += refresh;
-
-            // The game camera director's call of sub_496970
             auto pattern = hook::pattern("56 8B CB 89 83 A0 05 00 00 E8");
-            if (!pattern.empty())
-                UpdateViewport = injector::MakeCALL(pattern.get_first(9), GameCameraUpdateViewport, true).get();
-
-            // grcViewport::Perspective in sub_496970
+            UpdateViewport = injector::MakeCALL(pattern.get_first(9), CameraViewport, true).get();
             pattern = hook::pattern("D9 46 54 D9 5C 24 08 D9 5C 24 04 D9 46 50 D9 1C 24 E8");
-            if (!pattern.empty())
-                Perspective = injector::MakeCALL(pattern.get_first(17), PerspectiveHook, true).get();
-
-            // The viewport command of the draw lists (sub_6C2E30), on the render thread: ecx is the command, the viewport
-            // is at +16 unless the byte at +0x480 resets it
+            Perspective = injector::MakeCALL(pattern.get_first(17), PerspectiveHook, true).get();
             pattern = hook::pattern("80 B9 80 04 00 00 00 56 74 13 6A 01 6A 01 6A 00 E8");
-            bool viewportHooked = !pattern.empty();
-            if (viewportHooked)
+            static auto viewport = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& registers)
             {
-                static auto SetViewportHook = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& regs)
-                {
-                    auto command = reinterpret_cast<uint8_t*>(regs.ecx);
-                    if (command[0x480] || !bTemporal)
-                        return;
-                    auto viewport = command + 16;
-                    auto view = reinterpret_cast<float*>(viewport + ViewOffset);
-                    auto projection = reinterpret_cast<float*>(viewport + ProjectionOffset);
-                    if (bDirect3D9)
-                        WFPAA::TemporalAA::OnRenderedCamera(view, projection);
-                    else
-                        WFPAA::TemporalAA11::OnRenderedCamera(view, projection);
-                });
-            }
-
-            // _DEFERRED_GBUFFER_Z_, stored in sub_6AFC20
+                auto command = reinterpret_cast<uint8_t*>(registers.ecx);
+                RestoreViewport();
+                if (!command[0x480] && SelectedMode >= TAA)
+                    MatchCamera(command + 16);
+            });
+            ViewportSlot = *hook::pattern("8B 35 ? ? ? ? 8B 0C B0 57 8B B9 20 0A 00 00").get_first<uint32_t*>(2);
+            TemporalMotion::SetSceneCallback(SceneViewport);
             pattern = hook::pattern("68 ? ? ? ? FF D0 81 3D ? ? ? ? E8 03 00 00 8B 0D ? ? ? ? A3");
-            if (!pattern.empty())
-                ppDepthTarget = *pattern.get_first<void**>(24);
-
-            if (!UpdateViewport || !Perspective || !viewportHooked || !ppDepthTarget)
-                WFPAA::TemporalAA11::Log("Hooks: a pattern wasn't found, temporal anti-aliasing won't work");
+            DepthTarget = *pattern.get_first<void**>(24);
         };
-
         FusionFix::onShutdownEvent() += []()
         {
-            WFPAA::TemporalAA11::Shutdown();
-            WFPAA::TemporalAA::Shutdown();
+            AntiAliasing::OnLostDevice();
+            AntiAliasing::OnResize();
+            auto& upscaler = Bridge::TheUpscaler11();
+            upscaler.hub.Stop(false);
+            upscaler.bridge.Release();
         };
     }
 } AntiAliasingInit;

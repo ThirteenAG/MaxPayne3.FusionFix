@@ -15,6 +15,7 @@ import postfxcommon;
 import postfxdx9;
 import postfxdx11;
 import antialiasing;
+import hdr;
 
 // ===========================================================================
 // Post processing for every renderer Max Payne 3 can run on:
@@ -42,7 +43,7 @@ public:
     {
         const int nSmaa = AntiAliasing::SmaaMode(); // 0 off, 1 on, 2 on with the edge view
 
-        Options.nConsoleGamma = FusionFixSettings.GetInt(PREF_CONSOLEGAMMA); // 0 off, otherwise one of the POSTFX_GAMMA_PRESETS curves
+        Options.nConsoleGamma = HDR::Active() ? 0 : FusionFixSettings.GetInt(PREF_CONSOLEGAMMA);
         Options.bSmaa = nSmaa != 0;
         Options.bSmaaDebug = nSmaa == 2;
     }
@@ -150,11 +151,10 @@ public:
                 CPostFX::Render(POSTFX_STAGE_SMAA | POSTFX_STAGE_BLUR);
             });
 
-            // Temporal anti-aliasing resolves the scene phase's frame only: its command gets a function of its own,
-            // which resolves and then runs sub_6D71A0 (and with it the hook above)
+            // Finish temporal frame state before the HUD.
             static void(__cdecl* SceneEnd)() = []()
             {
-                AntiAliasing::Render();
+                AntiAliasing::EndFrame();
                 pPhaseEnd();
                 // The dev-only automation plugin's grab before the HUD (inert unless it registered)
                 asi_automation_frames::Fire(ASI_AUTOMATION_STAGE_BEFORE_UI, CPostFX::GetCommonSwapChain());
@@ -203,9 +203,13 @@ public:
             });
         };
 
+        FusionFix::onGameProcessEvent() += []() { HDR::CheckDisplay(); };
+        FusionFix::onMenuDrawingEvent() += []() { HDR::CheckDisplay(); };
+
         FusionFix::onShutdownEvent() += []()
         {
             CPostFX::Shutdown();
+            HDR::Shutdown();
             MP3Overlay::Shutdown();
         };
     }

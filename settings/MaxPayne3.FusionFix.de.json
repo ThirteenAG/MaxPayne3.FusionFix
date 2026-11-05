@@ -42,7 +42,7 @@
   "smaa": "SMAA",
   "smaa.edges": "Kantenansicht",
   "antialiasing": "Kantenglättung",
-  "antialiasing.description": "TAA benötigt DirectX 11 oder 9, DLAA und FSR benötigen DirectX 11; jeweils mit ausgeschaltetem MSAA des Spiels. DLAA und FSR benötigen außerdem die Upscaler von FusionFixHub.",
+  "antialiasing.description": "TAA, DLAA und FSR benötigen DirectX 11 mit ausgeschaltetem MSAA des Spiels. DLAA und FSR benötigen außerdem die Upscaler von FusionFixHub.",
   "aasharpness": "Schärfe der Kantenglättung",
   "aasharpness.description": "Schärft das Bild nach TAA, DLAA oder FSR. 0 schaltet es aus.",
   "intelchecks": "Intel-Grafikprüfungen überspringen",
@@ -63,5 +63,10 @@
   "menu.apply.description": "Setzt die zugehörigen Einstellungen auf die gewählte Voreinstellung.",
   "menu.apply.confirm": "Zum Bestätigen erneut auswählen. Manche Änderungen wirken erst beim nächsten Spielstart.",
   "menu.disabled": "Mit den aktuellen Einstellungen nicht verfügbar.",
-  "menu.savefailed": "Die Einstellungsdatei konnte nicht gespeichert werden. Änderungen bleiben im Arbeitsspeicher."
+  "menu.savefailed": "Die Einstellungsdatei konnte nicht gespeichert werden. Änderungen bleiben im Arbeitsspeicher.",
+  "hdr.white": "HDR-Papierweiß",
+  "hdr.peak": "HDR-Spitzenhelligkeit",
+  "hdr.description": "Native HDR-Ausgabe. Benötigt ein HDR-Display mit Windows-HDR, DirectX 11 und deaktiviertes MSAA. Neustart erforderlich.",
+  "hdr.white.description": "Helligkeit von normalem Weiß und der Oberfläche.",
+  "hdr.peak.description": "Auf die maximale Helligkeit des Bildschirms einstellen."
 }

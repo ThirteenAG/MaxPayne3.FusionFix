@@ -1,0 +1,9 @@
+#include <windows.h>
+300 RCDATA "Fullscreen.cso"
+311 RCDATA "Resolve.cso"
+312 RCDATA "BridgeMotion.cso"
+313 RCDATA "CopyDepth.cso"
+314 RCDATA "BridgeColor.cso"
+315 RCDATA "Output.cso"
+316 RCDATA "HistoryDepth.cso"
+320 RCDATA "HDROutput.cso"

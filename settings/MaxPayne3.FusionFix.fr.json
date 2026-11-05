@@ -42,7 +42,7 @@
   "smaa": "SMAA",
   "smaa.edges": "Vue des contours",
   "antialiasing": "Anticrénelage",
-  "antialiasing.description": "Le TAA nécessite DirectX 11 ou 9, le DLAA et le FSR DirectX 11 ; toujours avec le MSAA du jeu désactivé. Le DLAA et le FSR nécessitent aussi les upscalers de FusionFixHub.",
+  "antialiasing.description": "Le TAA, le DLAA et le FSR nécessitent DirectX 11 avec le MSAA du jeu désactivé. Le DLAA et le FSR nécessitent aussi les upscalers de FusionFixHub.",
   "aasharpness": "Netteté de l'anticrénelage",
   "aasharpness.description": "Accentue la netteté de l'image après TAA, DLAA ou FSR. 0 la désactive.",
   "intelchecks": "Ignorer les vérifications des GPU Intel",
@@ -63,5 +63,10 @@
   "menu.apply.description": "Applique le préréglage choisi aux paramètres concernés.",
   "menu.apply.confirm": "Sélectionnez à nouveau pour confirmer. Certains changements prennent effet au prochain démarrage.",
   "menu.disabled": "Indisponible avec les paramètres actuels.",
-  "menu.savefailed": "Impossible d'enregistrer le fichier de paramètres. Les modifications restent en mémoire."
+  "menu.savefailed": "Impossible d'enregistrer le fichier de paramètres. Les modifications restent en mémoire.",
+  "hdr.white": "Blanc de référence HDR",
+  "hdr.peak": "Luminosité maximale HDR",
+  "hdr.description": "Sortie HDR native. Écran HDR avec HDR Windows activé, DirectX 11 et MSAA désactivé requis. Redémarrage nécessaire.",
+  "hdr.white.description": "Luminosité du blanc ordinaire et de l’interface.",
+  "hdr.peak.description": "Réglez sur la luminosité maximale de votre écran."
 }

@@ -42,7 +42,7 @@
   "smaa": "SMAA",
   "smaa.edges": "Edge view",
   "antialiasing": "Anti-aliasing",
-  "antialiasing.description": "TAA needs DirectX 11 or 9, DLAA and FSR need DirectX 11; all with the game's MSAA off. DLAA and FSR also need FusionFixHub's upscalers.",
+  "antialiasing.description": "TAA, DLAA and FSR require DirectX 11 with the game's MSAA off. DLAA and FSR also require FusionFixHub's upscalers.",
   "aasharpness": "Anti-aliasing sharpness",
   "aasharpness.description": "Sharpens the image after TAA, DLAA or FSR. 0 turns it off.",
   "intelchecks": "Skip Intel GPU checks",
@@ -63,5 +63,10 @@
   "menu.apply.description": "Sets the settings that take part in presets to the chosen preset.",
   "menu.apply.confirm": "Select again to confirm. Some changes take effect next time the game starts.",
   "menu.disabled": "Not available with the current settings.",
-  "menu.savefailed": "Could not save the settings file. Changes remain in memory."
+  "menu.savefailed": "Could not save the settings file. Changes remain in memory.",
+  "hdr.white": "HDR paper white",
+  "hdr.peak": "HDR peak brightness",
+  "hdr.description": "Native HDR output. Needs an HDR display with Windows HDR on, DirectX 11 and MSAA off. Restart required.",
+  "hdr.white.description": "Brightness of ordinary white and the interface.",
+  "hdr.peak.description": "Set this to the peak brightness of your display."
 }

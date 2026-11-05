@@ -1,0 +1,83 @@
+cbuffer rage_matrices : register(b0)
+{
+	row_major float4x4 gWorld : packoffset(c0);
+	row_major float4x4 gWorldView : packoffset(c4);
+	row_major float4x4 gWorldViewProj : packoffset(c8);
+};
+
+struct VS_IN
+{
+	float3 position : POSITION;
+	float4 color : COLOR;
+	float2 texcoord : TEXCOORD;
+};
+
+struct VS_OUT
+{
+	float4 sv_position : SV_Position;
+	float4 color : COLOR;
+	float2 texcoord : TEXCOORD;
+	float4 texcoord6 : TEXCOORD6;
+	float3 temporalPrevious : TEXCOORD15;
+};
+
+cbuffer TemporalPrevious : register(b13)
+{
+	float4 TemporalState : packoffset(c0);
+	row_major float4x4 Temporal_b0_o0_gWorld : packoffset(c1);
+	row_major float4x4 Temporal_b0_o64_gWorldView : packoffset(c5);
+	row_major float4x4 Temporal_b0_o128_gWorldViewProj : packoffset(c9);
+};
+
+
+VS_OUT TemporalCurrent(VS_IN i)
+{
+	VS_OUT o;
+
+	float4 r0;
+	r0 = i.position.y * gWorldViewProj[1];
+	r0 = i.position.x * gWorldViewProj[0] + r0;
+	r0 = i.position.z * gWorldViewProj[2] + r0;
+	o.sv_position = r0 + gWorldViewProj[3];
+	o.color = i.color;
+	o.texcoord = i.texcoord.xy;
+	r0.xyz = i.position.yyy * gWorld[1].xyz;
+	r0.xyz = i.position.xxx * gWorld[0].xyz + r0.xyz;
+	r0.xyz = i.position.zzz * gWorld[2].xyz + r0.xyz;
+	o.texcoord6.xyz = r0.xyz + gWorld[3].xyz;
+	o.texcoord6.w = 1;
+
+	return o;
+}
+
+VS_OUT TemporalVertexPrevious(VS_IN i)
+{
+	VS_OUT o;
+
+	float4 r0;
+	r0 = i.position.y * Temporal_b0_o128_gWorldViewProj[1];
+	r0 = i.position.x * Temporal_b0_o128_gWorldViewProj[0] + r0;
+	r0 = i.position.z * Temporal_b0_o128_gWorldViewProj[2] + r0;
+	o.sv_position = r0 + Temporal_b0_o128_gWorldViewProj[3];
+	o.color = i.color;
+	o.texcoord = i.texcoord.xy;
+	r0.xyz = i.position.yyy * Temporal_b0_o0_gWorld[1].xyz;
+	r0.xyz = i.position.xxx * Temporal_b0_o0_gWorld[0].xyz + r0.xyz;
+	r0.xyz = i.position.zzz * Temporal_b0_o0_gWorld[2].xyz + r0.xyz;
+	o.texcoord6.xyz = r0.xyz + Temporal_b0_o0_gWorld[3].xyz;
+	o.texcoord6.w = 1;
+
+	return o;
+}
+
+VS_OUT main(VS_IN i)
+{
+    VS_OUT o = TemporalCurrent(i);
+    o.temporalPrevious = float3(0, 0, -1);
+
+    [branch] if (TemporalState.x > 0)
+    {
+        o.temporalPrevious = TemporalVertexPrevious(i).sv_position.xyw;
+    }
+    return o;
+}

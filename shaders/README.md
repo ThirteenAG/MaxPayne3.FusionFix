@@ -21,11 +21,17 @@ into `fixedshaders/`, edit the HLSL, and run:
 buildshaders.bat
 ```
 
-The script compiles only `fixedshaders/` into
+The script compiles `fixedshaders/` and `temporal/` into
 `data/update/common/shaders`; that folder is generated and git-ignored. The
+plugin loads these containers by their full path, because the game's title
+update archive takes precedence over loose files. The
 first build fills `build/shadertool/hlsl-cache`, and later builds only
 recompile shaders whose content changed. CI runs the same script and packages
 the generated shaders.
 
 The compiler is [tools/ShaderTool](../tools/ShaderTool), a premake console
 project built by the main solution.
+
+`temporal/` supplies deferred motion vectors for TAA, DLAA and FSR. Its
+containers use the same profile layout as `fixedshaders/` and require the
+matching runtime bindings and dedicated floating-point motion target.

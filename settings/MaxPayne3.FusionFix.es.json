@@ -42,7 +42,7 @@
   "smaa": "SMAA",
   "smaa.edges": "Vista de bordes",
   "antialiasing": "Antialiasing",
-  "antialiasing.description": "TAA necesita DirectX 11 o 9; DLAA y FSR necesitan DirectX 11; siempre con el MSAA del juego desactivado. DLAA y FSR también necesitan los escaladores de FusionFixHub.",
+  "antialiasing.description": "TAA, DLAA y FSR requieren DirectX 11 con el MSAA del juego desactivado. DLAA y FSR también requieren los escaladores de FusionFixHub.",
   "aasharpness": "Nitidez del antialiasing",
   "aasharpness.description": "Aumenta la nitidez de la imagen tras TAA, DLAA o FSR. 0 la desactiva.",
   "intelchecks": "Omitir comprobaciones de GPU Intel",
@@ -63,5 +63,10 @@
   "menu.apply.description": "Ajusta las opciones correspondientes al preajuste elegido.",
   "menu.apply.confirm": "Selecciona de nuevo para confirmar. Algunos cambios se aplicarán la próxima vez que se inicie el juego.",
   "menu.disabled": "No disponible con los ajustes actuales.",
-  "menu.savefailed": "No se pudo guardar el archivo de ajustes. Los cambios permanecen en memoria."
+  "menu.savefailed": "No se pudo guardar el archivo de ajustes. Los cambios permanecen en memoria.",
+  "hdr.white": "Blanco de referencia HDR",
+  "hdr.peak": "Brillo máximo HDR",
+  "hdr.description": "Salida HDR nativa. Requiere una pantalla HDR con HDR de Windows activado, DirectX 11 y MSAA desactivado. Reinicia el juego.",
+  "hdr.white.description": "Brillo del blanco normal y de la interfaz.",
+  "hdr.peak.description": "Ajusta al brillo máximo de tu pantalla."
 }

@@ -42,7 +42,7 @@
   "smaa": "SMAA",
   "smaa.edges": "エッジ表示",
   "antialiasing": "アンチエイリアス",
-  "antialiasing.description": "TAAにはDirectX 11または9、DLAAとFSRにはDirectX 11が必要です（いずれもゲームのMSAAはオフ）。DLAAとFSRにはFusionFixHubのアップスケーラーも必要です。",
+  "antialiasing.description": "TAA、DLAA、FSRにはDirectX 11が必要です。ゲームのMSAAはオフにしてください。DLAAとFSRにはFusionFixHubのアップスケーラーも必要です。",
   "aasharpness": "アンチエイリアスのシャープネス",
   "aasharpness.description": "TAA、DLAA、FSRの後に画像をシャープにします。0でオフになります。",
   "intelchecks": "Intel GPUのチェックを省略",
@@ -63,5 +63,10 @@
   "menu.apply.description": "対象の設定を選んだプリセットに変更します。",
   "menu.apply.confirm": "もう一度選択すると確定します。一部の変更は次回の起動時に反映されます。",
   "menu.disabled": "現在の設定では使用できません。",
-  "menu.savefailed": "設定ファイルを保存できません。変更はメモリ内に保持されます。"
+  "menu.savefailed": "設定ファイルを保存できません。変更はメモリ内に保持されます。",
+  "hdr.white": "HDR基準白輝度",
+  "hdr.peak": "HDR最大輝度",
+  "hdr.description": "ネイティブHDR出力。Windows HDRが有効なHDRディスプレイ、DirectX 11、MSAAの無効化が必要です。再起動が必要です。",
+  "hdr.white.description": "通常の白とインターフェースの明るさ。",
+  "hdr.peak.description": "ディスプレイの最大輝度に合わせて設定します。"
 }

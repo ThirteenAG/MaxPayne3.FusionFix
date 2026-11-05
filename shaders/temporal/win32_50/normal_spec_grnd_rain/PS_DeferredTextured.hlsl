@@ -1,0 +1,155 @@
+cbuffer TemporalPixel : register(b13) { float4 TemporalSizeJitter; };
+cbuffer rage_globals : register(b5)
+{
+	float4 globalScalars : packoffset(c0);
+	float4 globalScalars2 : packoffset(c1);
+	float4 globalScalars3 : packoffset(c2);
+	float4 globalScalars4 : packoffset(c3);
+	float4 globalFogParams : packoffset(c4);
+	float4 globalFogColor : packoffset(c5);
+	float4 globalFogOffsetN : packoffset(c6);
+	float4 globalFogColorN : packoffset(c7);
+	float4 globalScreenSize : packoffset(c8);
+	float4 globalDayNightEffects : packoffset(c9);
+	float4 ColorCorrectTopAndPedReflectScale : packoffset(c10);
+	float4 ColorCorrectBottomOffset : packoffset(c11);
+	float4 ColorShift : packoffset(c12);
+	float4 deSatContrastGamma : packoffset(c13);
+	float4 deSatContrastGammaIFX : packoffset(c14);
+	float4 colorize : packoffset(c15);
+	float4 globalUmScalars : packoffset(c16);
+	float4 gToneMapScalers : packoffset(c17);
+	float4 gAmbientOcclusionEffect : packoffset(c18);
+	float4 gWaterGlobals : packoffset(c19);
+};
+
+cbuffer CacheMegaVariables : register(b4)
+{
+	float specularFactor : packoffset(c0);
+	float3 specMapIntMask : packoffset(c0.y);
+	float4 specMapExpMask : packoffset(c1);
+	float bumpiness : packoffset(c2);
+};
+
+cbuffer Wet : register(b7)
+{
+	float4 WetDarken : packoffset(c0);
+};
+
+SamplerState DiffuseSampler : register(s0);
+SamplerState BumpSampler : register(s1);
+SamplerState PuddleMaskSampler : register(s2);
+SamplerState SpecSampler : register(s3);
+SamplerState WaterRainRippleNormalSampler : register(s14);
+Texture2D DiffuseSampler_tex : register(t0);
+Texture2D BumpSampler_tex : register(t1);
+Texture2D PuddleMaskSampler_tex : register(t2);
+Texture2D SpecSampler_tex : register(t3);
+Texture2D WaterRainRippleNormalSampler_tex : register(t14);
+
+struct PS_IN
+{
+	float4 sv_position : SV_Position;
+	float4 color : COLOR;
+	float2 texcoord : TEXCOORD;
+	float4 texcoord1 : TEXCOORD1;
+	float3 texcoord4 : TEXCOORD4;
+	float3 texcoord5 : TEXCOORD5;
+	float3 texcoord6 : TEXCOORD6;
+	float3 temporalPrevious : TEXCOORD15;
+};
+
+struct PS_OUT
+{
+	float4 sv_target : SV_Target;
+	float4 sv_target1 : SV_Target1;
+	float4 sv_target2 : SV_Target2;
+	float4 sv_target3 : SV_Target3;
+	float2 temporalVelocity : SV_Target4;
+};
+
+PS_OUT main(PS_IN i)
+{
+	PS_OUT o;
+
+	int4 r0;
+	float4 r1;
+	float4 r2;
+	int4 r3;
+	float3 r4;
+	r0.xyz = asint(BumpSampler_tex.Sample(BumpSampler, i.texcoord.xy).xyw);
+	r0.w = asint(-(asfloat(r0.z)) + 1);
+	r0.w = (asfloat(r0.w) < asfloat(r0.x)) ? -1 : 0;
+	r0.w = r0.w & 1065353216;
+	r1.xy = -(asfloat(r0.zy)) + asfloat(r0.xy);
+	r0.xy = asint(asfloat(r0.ww) * r1.xy + asfloat(r0.zy));
+	r1 = DiffuseSampler_tex.Sample(DiffuseSampler, i.texcoord.xy);
+	r0.xy = asint(asfloat(r0.xy) * float2(2, 2) + float2(-1, -1));
+	r0.xy = asint(asfloat(r0.xy) * bumpiness);
+	r0.w = asint(dot(asfloat(r0.xy), asfloat(r0.xy)));
+	r0.w = asint(-(asfloat(r0.w)) + 1);
+	r0.w = asint(max(asfloat(r0.w), 0));
+	r0.z = asint(sqrt(asfloat(r0.w)));
+	r2 = SpecSampler_tex.Sample(SpecSampler, i.texcoord.xy);
+	r0.w = asint(dot(r2, specMapExpMask));
+	r0.w = asint(asfloat(r0.w) * specularFactor);
+	r2.x = dot(r2.xyz, specMapIntMask);
+	r0.w = asint(max(asfloat(r0.w), 1));
+	r3.x = (0 < i.color.y) ? -1 : 0;
+	r3.yz = asint(i.texcoord6.xy * WetDarken.ww);
+	r3.y = asint(PuddleMaskSampler_tex.Sample(PuddleMaskSampler, asfloat(r3.yz)).x);
+	r3.zw = asint(i.texcoord6.xy * float2(0.300000012, 0.300000012));
+	r4 = WaterRainRippleNormalSampler_tex.Sample(WaterRainRippleNormalSampler, asfloat(r3.zw)).xyz;
+	if (r3.x != 0) {
+		r3.x = asint(asfloat(r3.y) + gWaterGlobals.y);
+		r3.x = asint(saturate(asfloat(r3.x) + -(i.color.y)));
+		r3.y = (0 < asfloat(r3.x)) ? -1 : 0;
+		if (r3.y != 0) {
+			r1.xyz = r1.xyz * WetDarken.xyz;
+			r3.y = asint(-(r2.x) + gWaterGlobals.z);
+			r2.x = asfloat(r3.x) * asfloat(r3.y) + r2.x;
+			r3.y = asint(-(asfloat(r0.w)) + gWaterGlobals.w);
+			r0.w = asint(asfloat(r3.x) * asfloat(r3.y) + asfloat(r0.w));
+			r3.yzw = asint(r4.xyz * float3(2, 2, 2) + float3(-1, -1, -1));
+			r3.yzw = asint(asfloat(r3.yzw) * i.texcoord1.zzz + -(asfloat(r0.xyz)));
+			r3.xyz = asint(asfloat(r3.xxx) * asfloat(r3.yzw) + asfloat(r0.xyz));
+			r3.xyz = asint(asfloat(r3.xyz) + float3(0.00000999999975, 0.00000999999975, 0.00000999999975));
+			r3.w = asint(dot(asfloat(r3.xyz), asfloat(r3.xyz)));
+			r3.w = asint(rsqrt(asfloat(r3.w)));
+			r0.xyz = asint(asfloat(r3.www) * asfloat(r3.xyz));
+		} else {
+			r3.x = asint(saturate(gWaterGlobals.y));
+			r3.yzw = asint(r1.xyz * WetDarken.xyz + -(r1.xyz));
+			r1.xyz = asfloat(r3.xxx) * asfloat(r3.yzw) + r1.xyz;
+		}
+	}
+	r3.xyz = asint(asfloat(r0.xxx) * i.texcoord4.xyz);
+	r3.xyz = asint(asfloat(r0.zzz) * i.texcoord1.xyz + asfloat(r3.xyz));
+	r0.xyz = asint(asfloat(r0.yyy) * i.texcoord5.xyz + asfloat(r3.xyz));
+	r0.xyz = asint(asfloat(r0.xyz) + float3(0.00000999999975, 0.00000999999975, 0.00000999999975));
+	r3.x = asint(dot(asfloat(r0.xyz), asfloat(r0.xyz)));
+	r3.x = asint(rsqrt(asfloat(r3.x)));
+	r0.xyz = asint(asfloat(r0.xyz) * asfloat(r3.xxx));
+	r1.w = r1.w * i.color.w;
+	r3.x = asint(saturate(i.color.x + -1));
+	o.sv_target.xyz = asfloat(r3.xxx) * globalScalars2.zzz + r1.xyz;
+	o.sv_target1.xyz = asfloat(r0.xyz) * float3(0.5, 0.5, 0.5) + float3(0.5, 0.5, 0.5);
+	r0.x = asint(saturate(asfloat(r0.w) * 0.00510204071));
+	r0.x = asint(sqrt(asfloat(r0.x)));
+	r2.y = sqrt(asfloat(r0.x));
+	r2.z = i.color.x * gAmbientOcclusionEffect.w;
+	r2.w = r1.w * globalScalars.x;
+	o.sv_target.w = r2.w;
+	o.sv_target1.w = r2.w;
+	o.sv_target2 = r2;
+	o.sv_target3.xyz = float3(0, 0, 0);
+	o.sv_target3.w = r2.w;
+
+	float w = i.temporalPrevious.z;
+    float2 previousUV = i.temporalPrevious.xy / (abs(w) > 0.000001 ? w : 0.000001) * float2(0.5, -0.5) + 0.5;
+    float2 currentUV = i.sv_position.xy * TemporalSizeJitter.xy;
+    o.temporalVelocity = float2(2, 2);
+    if (TemporalSizeJitter.x > 0)
+        o.temporalVelocity = w > 0 ? previousUV - currentUV + TemporalSizeJitter.zw : float2(2, 2);
+    return o;
+}

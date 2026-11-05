@@ -110,6 +110,24 @@ public:
 
         FusionFix::onInitEvent() += []()
         {
+            // Shader containers of the title update archive take precedence over loose files, so the fix's shaders
+            // in update/common/shaders are opened by their full path.
+            {
+                static std::string root = (std::filesystem::path(GetExeModulePath()) / "update" / "common" / "shaders").string();
+                static thread_local std::string path;
+                auto pattern = hook::pattern("8B 87 B8 00 00 00 6A 01 50 E8");
+                static auto ShaderPath = safetyhook::create_mid(pattern.get_first(6), [](SafetyHookContext& regs)
+                {
+                    constexpr std::string_view device = "common:/shaders/";
+                    std::string_view name = reinterpret_cast<const char*>(regs.eax);
+                    if (!name.starts_with(device))
+                        return;
+                    path = root + "\\" + std::string(name.substr(device.size()));
+                    if (GetFileAttributesA(path.c_str()) != INVALID_FILE_ATTRIBUTES)
+                        regs.eax = reinterpret_cast<uintptr_t>(path.c_str());
+                });
+            }
+
             // Intel GPU vendor checks fix
             // Some Intel GPUs are blocked from switching to anything else than DX9, probably meant for old iGPUs which usually didn't support certain features at the time.
             // Nowadays this is not usually the case anymore, and it kills the potential of more modern integrated chips (e.g. Iris XE) or perhaps even Intel ARC cards (Not tested) to brute force this game due to outdated DX9 drivers.

@@ -112,6 +112,20 @@
       "presets": { "vanilla": 0, "recommended": 0, "enhanced": 10 }
     },
     {
+      "id": "MAIN.HDR", "type": "bool", "default": 0,
+      "label": "HDR", "description": "@hdr.description", "page": "display", "control": [ "switch", "cycler" ], "apply": "restart"
+    },
+    {
+      "id": "MAIN.HDRPaperWhite", "type": "float", "default": 200, "min": 80, "max": 500, "step": 10, "decimals": 0, "unit": "nits",
+      "label": "@hdr.white", "description": "@hdr.white.description", "page": "display", "control": [ "slider" ],
+      "enabledIf": { "setting": "MAIN.HDR", "in": [ 1 ] }
+    },
+    {
+      "id": "MAIN.HDRPeakBrightness", "type": "float", "default": 1000, "min": 200, "max": 10000, "step": 50, "decimals": 0, "unit": "nits",
+      "label": "@hdr.peak", "description": "@hdr.peak.description", "page": "display", "control": [ "slider" ],
+      "enabledIf": { "setting": "MAIN.HDR", "in": [ 1 ] }
+    },
+    {
       "id": "MAIN.ConsoleGamma", "type": "choice", "default": 0,
       "choices": [ { "value": 0, "label": "@off" }, { "value": 1, "label": "Xbox 360" }, { "value": 2, "label": "PlayStation 3" } ],
       "label": "@consolegamma", "description": "@consolegamma.description",

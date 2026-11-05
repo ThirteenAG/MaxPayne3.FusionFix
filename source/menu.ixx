@@ -685,12 +685,14 @@ struct Binding { const FusionMenu::Option* option; int shown; UI row; };
 // Help text grows upward from the title. Text too long for the space above is drawn
 // smaller, down to MinHelpScale, and only then shortened.
 constexpr float MinHelpScale = 0.8f;
+constexpr size_t MinShortened = 60;
 struct HelpFit
 {
     std::string text;           // the full text
     std::string shown;          // the text drawn
     float scale = 1.0f;
     float baseX = 0, baseY = 0; // the font scale of the help text style
+    float shortened = 0;        // the height measured when the text was last shortened
     int settle = 0;             // frames until the layout shows the last change
 };
 struct Screen
@@ -733,29 +735,35 @@ std::string Shorten(std::string text, float share)
     return text + "...";
 }
 
-void ShowHelp(UI owner, Screen& state, const std::string& text)
+void ShowHelp(Screen& state, const std::string& text)
 {
     auto& fit = state.fit;
     if (text != fit.text)
     {
         fit.text = text;
         fit.shown = text;
+        fit.shortened = 0;
         ScaleHelp(state, 1.0f);
         fit.settle = 2;
     }
     else if (fit.settle > 0) --fit.settle;
     else
     {
-        // Pages fill the screen. Positions are centres, y grows downward.
-        const float screenHeight = Virtual<float>(owner, 196);
+        // Positions are centres in fractions of the screen, y grows downward. The page keeps to the
+        // safe area, the help text may use the space above it up to a small margin from the top edge.
         const float height = Virtual<float>(state.help, 196);
-        const float limit = Virtual<float>(owner, 212) - screenHeight * 0.5f + screenHeight * 0.02f;
+        const float limit = 0.01f;
         const float top = Virtual<float>(state.help, 212) - height * 0.5f;
-        if (screenHeight > 0 && height > 0 && top < limit)
+        if (height > 0 && top < limit)
         {
             const float share = std::max(height - (limit - top), 0.0f) / height;
+            // Shortening stops when it no longer makes the text smaller: a short line always fits
             if (fit.scale > MinHelpScale) ScaleHelp(state, std::max(MinHelpScale, fit.scale * std::sqrt(share)));
-            else fit.shown = Shorten(fit.shown, share);
+            else if (fit.text.size() > MinShortened && (fit.shortened <= 0 || height < fit.shortened))
+            {
+                fit.shortened = height;
+                fit.shown = Shorten(fit.shown, std::max(share, static_cast<float>(MinShortened) / fit.shown.size()));
+            }
             fit.settle = 2;
         }
     }
@@ -1340,10 +1348,10 @@ void UpdateHelp()
             if (!option.Enabled()) text += (text.empty() ? "" : " ") + state.snapshot->Host("menu.disabled");
             if (auto options = optionsScreens.find(owner); options != optionsScreens.end() && options->second.open && !options->second.canSave)
                 text = state.snapshot->Host("menu.savefailed");
-            ShowHelp(owner, state, text);
+            ShowHelp(state, text);
         }
         else if (auto action = SelectedAction(state, selected))
-            ShowHelp(owner, state, action->help ? action->help() : std::string());
+            ShowHelp(state, action->help ? action->help() : std::string());
         else ResetHelp(state);
         Field<uint8_t>(state.help, 474) = 0;
     }

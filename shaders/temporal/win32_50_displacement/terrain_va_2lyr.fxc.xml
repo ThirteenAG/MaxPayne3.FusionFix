@@ -1,0 +1,488 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Effect Format="modern" VertexType="473">
+  <ShaderGroups>
+    <Group Stage="Vertex" RawCount="2" OffsetBy1="false" Name="" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+        <Shader Name="VS_TransformDeferred" OffsetBy1="false" File="../win32_50/terrain_va_2lyr/VS_TransformDeferred.hlsl" DataType="hlsl" Model="5.0" Length="4000">
+          <Variables>
+            <Variable>gWorld</Variable>
+            <Variable>gWorldView</Variable>
+            <Variable>gWorldViewProj</Variable>
+            <Variable>gViewInverse</Variable>
+            <Variable>globalScalars</Variable>
+            <Variable>globalScalars2</Variable>
+            <Variable>globalScalars3</Variable>
+            <Variable>globalScalars4</Variable>
+            <Variable>globalFogParams</Variable>
+            <Variable>globalFogColor</Variable>
+            <Variable>globalFogOffsetN</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>globalDayNightEffects</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorShift</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>colorize</Variable>
+            <Variable>globalUmScalars</Variable>
+            <Variable>gToneMapScalers</Variable>
+            <Variable>gAmbientOcclusionEffect</Variable>
+            <Variable>gWaterGlobals</Variable>
+            <Variable>ColorCorrectTopScreenEdge</Variable>
+            <Variable>ColorCorrectBottomOffsetScreenEdge</Variable>
+            <Variable>gScreenSpaceTessFactors</Variable>
+            <Variable>gTessFactors</Variable>
+            <Variable>gFrustumPlaneEquation_Left</Variable>
+            <Variable>gFrustumPlaneEquation_Right</Variable>
+            <Variable>gFrustumPlaneEquation_Top</Variable>
+            <Variable>gFrustumPlaneEquation_Bottom</Variable>
+            <Variable>gTessParameters</Variable>
+            <Variable>materialDiffuse</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_matrices" Slot="0" />
+            <Buffer Name="rage_globals" Slot="5" />
+            <Buffer Name="CacheTerrainVA" Slot="4" />
+          </Buffers>
+        </Shader>
+        <Shader Name="VS_Transform" OffsetBy1="false" File="../win32_50/terrain_va_2lyr/VS_Transform.hlsl" DataType="hlsl" Model="5.0" Length="2036">
+          <Variables>
+            <Variable>gWorld</Variable>
+            <Variable>gWorldView</Variable>
+            <Variable>gWorldViewProj</Variable>
+            <Variable>gViewInverse</Variable>
+            <Variable>materialDiffuse</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_matrices" Slot="0" />
+            <Buffer Name="CacheTerrainVA" Slot="4" />
+          </Buffers>
+        </Shader>
+      </Shaders>
+    </Group>
+    <Group Stage="Pixel" RawCount="4" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+        <Shader Name="PS_TexturedDeferred" OffsetBy1="false" File="../win32_50/terrain_va_2lyr/PS_TexturedDeferred.hlsl" DataType="hlsl" Model="5.0" Length="3372">
+          <Variables>
+            <Variable>globalScalars</Variable>
+            <Variable>globalScalars2</Variable>
+            <Variable>globalScalars3</Variable>
+            <Variable>globalScalars4</Variable>
+            <Variable>globalFogParams</Variable>
+            <Variable>globalFogColor</Variable>
+            <Variable>globalFogOffsetN</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>globalDayNightEffects</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorShift</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>colorize</Variable>
+            <Variable>globalUmScalars</Variable>
+            <Variable>gToneMapScalers</Variable>
+            <Variable>gAmbientOcclusionEffect</Variable>
+            <Variable>gWaterGlobals</Variable>
+            <Variable>ColorCorrectTopScreenEdge</Variable>
+            <Variable>ColorCorrectBottomOffsetScreenEdge</Variable>
+            <Variable>gScreenSpaceTessFactors</Variable>
+            <Variable>gTessFactors</Variable>
+            <Variable>gFrustumPlaneEquation_Left</Variable>
+            <Variable>gFrustumPlaneEquation_Right</Variable>
+            <Variable>gFrustumPlaneEquation_Top</Variable>
+            <Variable>gFrustumPlaneEquation_Bottom</Variable>
+            <Variable>gTessParameters</Variable>
+            <Variable>TextureSampler_layer0</Variable>
+            <Variable>TextureSampler_layer1</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_globals" Slot="5" />
+          </Buffers>
+        </Shader>
+        <Shader Name="PS_Textured" OffsetBy1="false" File="../win32_50/terrain_va_2lyr/PS_Textured.hlsl" DataType="hlsl" Model="5.0" Length="8788">
+          <Variables>
+            <Variable>gWorld</Variable>
+            <Variable>gWorldView</Variable>
+            <Variable>gWorldViewProj</Variable>
+            <Variable>gViewInverse</Variable>
+            <Variable>gDepthFxParams</Variable>
+            <Variable>gDirectionalLight</Variable>
+            <Variable>gDirectionalColour</Variable>
+            <Variable>gLightPosX</Variable>
+            <Variable>gLightPosY</Variable>
+            <Variable>gLightPosZ</Variable>
+            <Variable>gLightDirX</Variable>
+            <Variable>gLightDirY</Variable>
+            <Variable>gLightDirZ</Variable>
+            <Variable>gLightFallOff</Variable>
+            <Variable>gLightConeScale</Variable>
+            <Variable>gLightConeOffset</Variable>
+            <Variable>gLightColR</Variable>
+            <Variable>gLightColG</Variable>
+            <Variable>gLightColB</Variable>
+            <Variable>gLightAmbient0</Variable>
+            <Variable>gLightAmbient1</Variable>
+            <Variable>gLightAmbientDir0</Variable>
+            <Variable>gLightAmbientDir1</Variable>
+            <Variable>gLightPointColR</Variable>
+            <Variable>gLightPointColG</Variable>
+            <Variable>gLightPointColB</Variable>
+            <Variable>gLightPointPosX</Variable>
+            <Variable>gLightPointPosY</Variable>
+            <Variable>gLightPointPosZ</Variable>
+            <Variable>gLightDir2X</Variable>
+            <Variable>gLightDir2Y</Variable>
+            <Variable>gLightDir2Z</Variable>
+            <Variable>gLightConeScale2</Variable>
+            <Variable>gLightConeOffset2</Variable>
+            <Variable>gLightPointFallOff</Variable>
+            <Variable>gDistFadeParams</Variable>
+            <Variable>gAdrenoFXVars</Variable>
+            <Variable>globalScalars</Variable>
+            <Variable>globalScalars2</Variable>
+            <Variable>globalScalars3</Variable>
+            <Variable>globalScalars4</Variable>
+            <Variable>globalFogParams</Variable>
+            <Variable>globalFogColor</Variable>
+            <Variable>globalFogOffsetN</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>globalDayNightEffects</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorShift</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>colorize</Variable>
+            <Variable>globalUmScalars</Variable>
+            <Variable>gToneMapScalers</Variable>
+            <Variable>gAmbientOcclusionEffect</Variable>
+            <Variable>gWaterGlobals</Variable>
+            <Variable>ColorCorrectTopScreenEdge</Variable>
+            <Variable>ColorCorrectBottomOffsetScreenEdge</Variable>
+            <Variable>gScreenSpaceTessFactors</Variable>
+            <Variable>gTessFactors</Variable>
+            <Variable>gFrustumPlaneEquation_Left</Variable>
+            <Variable>gFrustumPlaneEquation_Right</Variable>
+            <Variable>gFrustumPlaneEquation_Top</Variable>
+            <Variable>gFrustumPlaneEquation_Bottom</Variable>
+            <Variable>gTessParameters</Variable>
+            <Variable>TextureSampler_layer0</Variable>
+            <Variable>TextureSampler_layer1</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_matrices" Slot="0" />
+            <Buffer Name="direction_light" Slot="10" />
+            <Buffer Name="omni_light" Slot="2" />
+            <Buffer Name="rage_globals" Slot="5" />
+          </Buffers>
+        </Shader>
+        <Shader Name="PS_TexturedUnlit" OffsetBy1="false" File="../win32_50/terrain_va_2lyr/PS_TexturedUnlit.hlsl" DataType="hlsl" Model="5.0" Length="6372">
+          <Variables>
+            <Variable>gWorld</Variable>
+            <Variable>gWorldView</Variable>
+            <Variable>gWorldViewProj</Variable>
+            <Variable>gViewInverse</Variable>
+            <Variable>gDepthFxParams</Variable>
+            <Variable>gDirectionalLight</Variable>
+            <Variable>gDirectionalColour</Variable>
+            <Variable>gLightPosX</Variable>
+            <Variable>gLightPosY</Variable>
+            <Variable>gLightPosZ</Variable>
+            <Variable>gLightDirX</Variable>
+            <Variable>gLightDirY</Variable>
+            <Variable>gLightDirZ</Variable>
+            <Variable>gLightFallOff</Variable>
+            <Variable>gLightConeScale</Variable>
+            <Variable>gLightConeOffset</Variable>
+            <Variable>gLightColR</Variable>
+            <Variable>gLightColG</Variable>
+            <Variable>gLightColB</Variable>
+            <Variable>gLightAmbient0</Variable>
+            <Variable>gLightAmbient1</Variable>
+            <Variable>gLightAmbientDir0</Variable>
+            <Variable>gLightAmbientDir1</Variable>
+            <Variable>gLightPointColR</Variable>
+            <Variable>gLightPointColG</Variable>
+            <Variable>gLightPointColB</Variable>
+            <Variable>gLightPointPosX</Variable>
+            <Variable>gLightPointPosY</Variable>
+            <Variable>gLightPointPosZ</Variable>
+            <Variable>gLightDir2X</Variable>
+            <Variable>gLightDir2Y</Variable>
+            <Variable>gLightDir2Z</Variable>
+            <Variable>gLightConeScale2</Variable>
+            <Variable>gLightConeOffset2</Variable>
+            <Variable>gLightPointFallOff</Variable>
+            <Variable>gDistFadeParams</Variable>
+            <Variable>gAdrenoFXVars</Variable>
+            <Variable>globalScalars</Variable>
+            <Variable>globalScalars2</Variable>
+            <Variable>globalScalars3</Variable>
+            <Variable>globalScalars4</Variable>
+            <Variable>globalFogParams</Variable>
+            <Variable>globalFogColor</Variable>
+            <Variable>globalFogOffsetN</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>globalDayNightEffects</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorShift</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>colorize</Variable>
+            <Variable>globalUmScalars</Variable>
+            <Variable>gToneMapScalers</Variable>
+            <Variable>gAmbientOcclusionEffect</Variable>
+            <Variable>gWaterGlobals</Variable>
+            <Variable>ColorCorrectTopScreenEdge</Variable>
+            <Variable>ColorCorrectBottomOffsetScreenEdge</Variable>
+            <Variable>gScreenSpaceTessFactors</Variable>
+            <Variable>gTessFactors</Variable>
+            <Variable>gFrustumPlaneEquation_Left</Variable>
+            <Variable>gFrustumPlaneEquation_Right</Variable>
+            <Variable>gFrustumPlaneEquation_Top</Variable>
+            <Variable>gFrustumPlaneEquation_Bottom</Variable>
+            <Variable>gTessParameters</Variable>
+            <Variable>TextureSampler_layer0</Variable>
+            <Variable>TextureSampler_layer1</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_matrices" Slot="0" />
+            <Buffer Name="direction_light" Slot="10" />
+            <Buffer Name="omni_light" Slot="2" />
+            <Buffer Name="rage_globals" Slot="5" />
+          </Buffers>
+        </Shader>
+      </Shaders>
+    </Group>
+    <Group Stage="Compute" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+    <Group Stage="Domain" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+    <Group Stage="Geometry" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+    <Group Stage="Hull" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+  </ShaderGroups>
+  <CBuffers1>
+    <CBuffer Name="rage_matrices" Size="256" VS="0" PS="0" CS="0" DS="0" GS="0" HS="0" />
+    <CBuffer Name="direction_light" Size="48" VS="10" PS="10" CS="10" DS="10" GS="10" HS="10" />
+    <CBuffer Name="omni_light" Size="480" VS="2" PS="2" CS="2" DS="2" GS="2" HS="2" />
+    <CBuffer Name="rage_globals" Size="464" VS="5" PS="5" CS="5" DS="5" GS="5" HS="5" />
+  </CBuffers1>
+  <Variables1>
+    <Variable Type="Float4x4" Count="0" Slot="0" Group="3" FirstName="gWorld" SecondName="World" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1032736383" />
+    <Variable Type="Float4x4" Count="0" Slot="4" Group="3" FirstName="gWorldView" SecondName="WorldView" Offset="64" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1032736383" />
+    <Variable Type="Float4x4" Count="0" Slot="8" Group="3" FirstName="gWorldViewProj" SecondName="WorldViewProjection" Offset="128" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1032736383" />
+    <Variable Type="Float4x4" Count="0" Slot="12" Group="3" FirstName="gViewInverse" SecondName="ViewInverse" Offset="192" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1032736383" />
+    <Variable Type="Float4" Count="0" Slot="18" Group="2" FirstName="gDepthFxParams" SecondName="DepthFxParams" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1065075776">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="19" Group="2" FirstName="gDirectionalLight" SecondName="DirectionalLight" Offset="16" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1065075776" />
+    <Variable Type="Float4" Count="0" Slot="20" Group="2" FirstName="gDirectionalColour" SecondName="DirectionalColour" Offset="32" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1065075776" />
+    <Variable Type="Float4" Count="0" Slot="21" Group="2" FirstName="gLightPosX" SecondName="LightPositionX" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="22" Group="2" FirstName="gLightPosY" SecondName="LightPositionY" Offset="16" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="23" Group="2" FirstName="gLightPosZ" SecondName="LightPositionZ" Offset="32" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="24" Group="2" FirstName="gLightDirX" SecondName="LightDirX" Offset="48" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="25" Group="2" FirstName="gLightDirY" SecondName="LightDirY" Offset="64" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="26" Group="2" FirstName="gLightDirZ" SecondName="LightDirZ" Offset="80" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="27" Group="2" FirstName="gLightFallOff" SecondName="LightFallOff" Offset="96" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="28" Group="2" FirstName="gLightConeScale" SecondName="LightConeScale" Offset="112" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="29" Group="2" FirstName="gLightConeOffset" SecondName="LightConeOffset" Offset="128" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="30" Group="2" FirstName="gLightColR" SecondName="LightColR" Offset="144" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="31" Group="2" FirstName="gLightColG" SecondName="LightColG" Offset="160" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="32" Group="2" FirstName="gLightColB" SecondName="LightColB" Offset="176" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="33" Group="2" FirstName="gLightAmbient0" SecondName="LightAmbientColor0" Offset="192" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621">
+      <Annotations>
+        <Annotation Name="UIWidget" Type="string" Value="Ambient Light Color 0" />
+        <Annotation Name="Space" Type="string" Value="material" />
+      </Annotations>
+      <Values>0;0;0;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="34" Group="2" FirstName="gLightAmbient1" SecondName="LightAmbientColor1" Offset="208" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621">
+      <Annotations>
+        <Annotation Name="UIWidget" Type="string" Value="Ambient Light Color 1" />
+        <Annotation Name="Space" Type="string" Value="material" />
+      </Annotations>
+      <Values>0;0;0;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="72" Group="2" FirstName="gLightAmbientDir0" SecondName="LightAmbientDir0" Offset="224" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621">
+      <Values>0;0;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="73" Group="2" FirstName="gLightAmbientDir1" SecondName="LightAmbientDir1" Offset="240" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="626293621">
+      <Values>0;0;-1;0.5</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="76" Group="2" FirstName="gLightPointColR" SecondName="LightPointColR" Offset="0" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="77" Group="2" FirstName="gLightPointColG" SecondName="LightPointColG" Offset="16" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="78" Group="2" FirstName="gLightPointColB" SecondName="LightPointColB" Offset="32" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="79" Group="2" FirstName="gLightPointPosX" SecondName="LightPointPositionX" Offset="48" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="80" Group="2" FirstName="gLightPointPosY" SecondName="LightPointPositionY" Offset="64" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="81" Group="2" FirstName="gLightPointPosZ" SecondName="LightPointPositionZ" Offset="80" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="82" Group="2" FirstName="gLightDir2X" SecondName="LightDir2X" Offset="96" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="83" Group="2" FirstName="gLightDir2Y" SecondName="LightDir2Y" Offset="112" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="84" Group="2" FirstName="gLightDir2Z" SecondName="LightDir2Z" Offset="128" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="85" Group="2" FirstName="gLightConeScale2" SecondName="LightConeScale2" Offset="144" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="86" Group="2" FirstName="gLightConeOffset2" SecondName="LightConeOffset2" Offset="160" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="87" Group="2" FirstName="gLightPointFallOff" SecondName="LightPointFallOff" Offset="176" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621" />
+    <Variable Type="Float4" Count="0" Slot="97" Group="2" FirstName="gDistFadeParams" SecondName="gDistFadeParams" Offset="192" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621">
+      <Values>0;0;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="68" Group="2" FirstName="gAdrenoFXVars" SecondName="gAdrenoFXVars" Offset="208" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="626293621">
+      <Values>0;0;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="35" Group="3" FirstName="globalScalars" SecondName="globalScalars" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="36" Group="3" FirstName="globalScalars2" SecondName="globalScalars2" Offset="16" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="49" Group="3" FirstName="globalScalars3" SecondName="globalScalars3" Offset="32" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="51" Group="3" FirstName="globalScalars4" SecondName="globalScalars4" Offset="48" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="37" Group="3" FirstName="globalFogParams" SecondName="globalFogParams" Offset="64" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1600;9000000;0.00999999978;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="38" Group="3" FirstName="globalFogColor" SecondName="globalFogColor" Offset="80" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="40" Group="3" FirstName="globalFogOffsetN" SecondName="globalFogOffsetN" Offset="96" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>0;0;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="50" Group="3" FirstName="globalFogColorN" SecondName="globalFogColorN" Offset="112" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="41" Group="3" FirstName="globalScreenSize" SecondName="globalScreenSize" Offset="128" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="42" Group="3" FirstName="globalDayNightEffects" SecondName="globalDayNightEffects" Offset="144" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;0;1;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="43" Group="3" FirstName="ColorCorrectTopAndPedReflectScale" SecondName="ColorCorrectTopAndPedReflectScale" Offset="160" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="44" Group="3" FirstName="ColorCorrectBottomOffset" SecondName="ColorCorrectBottomOffset" Offset="176" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="45" Group="3" FirstName="ColorShift" SecondName="ColorShift" Offset="192" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="46" Group="3" FirstName="deSatContrastGamma" SecondName="deSatContrastGamma" Offset="208" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="75" Group="3" FirstName="deSatContrastGammaIFX" SecondName="deSatContrastGammaIFX" Offset="224" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="47" Group="3" FirstName="colorize" SecondName="Colorize" Offset="240" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="48" Group="3" FirstName="globalUmScalars" SecondName="globalUmScalars" Offset="0" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>0;0;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="65" Group="3" FirstName="gToneMapScalers" SecondName="ToneMapScalers" Offset="16" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="63" Group="3" FirstName="gAmbientOcclusionEffect" SecondName="globalAOEffectScale" Offset="32" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="64" Group="3" FirstName="gWaterGlobals" SecondName="WaterGlobals" Offset="48" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="66" Group="3" FirstName="ColorCorrectTopScreenEdge" SecondName="ColorCorrectTopScreenEdge" Offset="64" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="67" Group="3" FirstName="ColorCorrectBottomOffsetScreenEdge" SecondName="ColorCorrectBottomOffsetScreenEdge" Offset="80" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="32" Group="3" FirstName="gScreenSpaceTessFactors" SecondName="gScreenSpaceTessFactors" Offset="96" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>3;3;1.5;0.0666666701</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="33" Group="3" FirstName="gTessFactors" SecondName="gTessFactors" Offset="112" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>3;0.25;1;5</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="34" Group="3" FirstName="gFrustumPlaneEquation_Left" SecondName="gFrustumPlaneEquation_Left" Offset="128" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="35" Group="3" FirstName="gFrustumPlaneEquation_Right" SecondName="gFrustumPlaneEquation_Right" Offset="144" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="36" Group="3" FirstName="gFrustumPlaneEquation_Top" SecondName="gFrustumPlaneEquation_Top" Offset="160" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="37" Group="3" FirstName="gFrustumPlaneEquation_Bottom" SecondName="gFrustumPlaneEquation_Bottom" Offset="176" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="38" Group="3" FirstName="gTessParameters" SecondName="gTessParameters" Offset="192" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>5;0.100000001;0.5;0.200000003</Values>
+    </Variable>
+  </Variables1>
+  <CBuffers2>
+    <CBuffer Name="CacheTerrainVA" Size="16" VS="4" PS="3" CS="3" DS="3" GS="3" HS="3" />
+  </CBuffers2>
+  <Variables2>
+    <Variable Type="Texture" Count="0" Slot="0" Group="2" FirstName="TextureSampler_layer0" SecondName="DiffuseTexture_layer0" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Annotations>
+        <Annotation Name="UIName" Type="string" Value="Diffuse Texture Layer 1" />
+      </Annotations>
+      <Values>0;1;1;1;2;1;6;2;5;3;4;2</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="1" Group="2" FirstName="TextureSampler_layer1" SecondName="DiffuseTexture_layer1" Offset="1" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Annotations>
+        <Annotation Name="UIName" Type="string" Value="Diffuse Texture Layer 2" />
+      </Annotations>
+      <Values>0;1;1;1;2;1;6;2;5;3;4;2</Values>
+    </Variable>
+    <Variable Type="Float3" Count="0" Slot="206" Group="1" FirstName="materialDiffuse" SecondName="MaterialDiffuse" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="194387259">
+      <Annotations>
+        <Annotation Name="UIWidget" Type="string" Value="slider" />
+        <Annotation Name="UIMin" Type="float" Value="0" />
+        <Annotation Name="UIMax" Type="float" Value="200" />
+        <Annotation Name="UIStep" Type="float" Value="0.00999999978" />
+        <Annotation Name="UIName" Type="string" Value="diffuse color" />
+      </Annotations>
+      <Values>1;1;1</Values>
+    </Variable>
+  </Variables2>
+  <Techniques>
+    <Technique Name="deferred_draw">
+      <Pass VS="0" PS="1" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="16" Value="4" />
+          <Param Type="19" Value="7" />
+          <Param Type="20" Value="15" />
+          <Param Type="21" Value="15" />
+          <Param Type="22" Value="15" />
+        </Params>
+      </Pass>
+    </Technique>
+    <Technique Name="deferred_drawskinned">
+      <Pass VS="0" PS="1" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="19" Value="7" />
+          <Param Type="20" Value="15" />
+          <Param Type="21" Value="15" />
+          <Param Type="22" Value="15" />
+          <Param Type="16" Value="4" />
+        </Params>
+      </Pass>
+    </Technique>
+    <Technique Name="draw">
+      <Pass VS="1" PS="2" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="1" />
+        </Params>
+      </Pass>
+    </Technique>
+    <Technique Name="drawskinned">
+      <Pass VS="1" PS="2" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="1" />
+        </Params>
+      </Pass>
+    </Technique>
+    <Technique Name="unlit_draw">
+      <Pass VS="1" PS="3" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="1" />
+        </Params>
+      </Pass>
+    </Technique>
+    <Technique Name="unlit_drawskinned">
+      <Pass VS="1" PS="3" CS="0" DS="0" GS="0" HS="0">
+        <Params>
+          <Param Type="10" Value="1" />
+        </Params>
+      </Pass>
+    </Technique>
+  </Techniques>
+</Effect>

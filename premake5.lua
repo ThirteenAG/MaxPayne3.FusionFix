@@ -184,13 +184,9 @@ workspace "MaxPayne3.FusionFix"
    end
 
 
-   -- Temporal anti-aliasing (source/antialiasing.ixx): source/aa, with DLAA and FSR through FusionFixHub's upscaler
-   -- bridge (FusionFixUtils upscaler/) and the graphics API, DXVK and D3D9On12 interop of source/upscaler.
-   -- Its shaders are committed compiled (ps_3_0 for the Direct3D 9 renderer, ps_5_0 in fxc's compatibility mode for
-   -- Direct3D 11) with source/resources/shaders.lock, embedded by source/aa/AntiAliasing.rc and
-   -- source/aa/AntiAliasingD3D11.rc; tools/compileshaders.ps1 compiles only the ones whose source, includes or fxc
-   -- arguments changed.
-   files { "source/aa/AntiAliasingD3D11.rc", "source/aa/AntiAliasing.rc", "source/aa/*.hpp", "source/aa/*.inl" }
+   -- Temporal motion vectors and resolve, with DLAA/FSR through the upscaler bridge.
+   files { "source/aa/*.hpp", "source/aa/*.inl" }
+   files { "source/resources/temporal/Temporal.rc" }
    files { "source/upscaler/*.hpp" }
    table.insert(prebuildShaderCommands, 'powershell -NoProfile -ExecutionPolicy Bypass -File "../tools/compileshaders.ps1"')
 

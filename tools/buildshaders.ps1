@@ -10,6 +10,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $out = Join-Path $root 'data\update\common\shaders'
 $source = Join-Path $root 'shaders\fixedshaders'
+$temporal = Join-Path $root 'shaders\temporal'
 $cache = Join-Path $root 'build\shadertool\hlsl-cache'
 
 $tool = Join-Path $root 'bin\tools\mp3shadertool.exe'
@@ -28,11 +29,15 @@ if ($warm -and (Test-Path $cache) -and @(Get-ChildItem $cache -Filter '*.cso' -E
 if ($warm) {
     & $tool warm-hlsl $source --hlsl-cache $cache
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    & $tool warm-hlsl $temporal --hlsl-cache $cache
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
 Remove-Item -Recurse -Force $out -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force $out | Out-Null
 & $tool build-tree $source $out --hlsl-cache $cache
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& $tool build-tree $temporal $out --hlsl-cache $cache
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $files = @(Get-ChildItem -Recurse -File $out -Filter '*.fxc')
@@ -43,6 +48,8 @@ if ($Verify) {
     $temp = Join-Path $root 'build\shadertool\verify-output'
     Remove-Item -Recurse -Force $temp -ErrorAction SilentlyContinue
     & $tool build-tree $source $temp --hlsl-cache $cache
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    & $tool build-tree $temporal $temp --hlsl-cache $cache
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     $tempManifest = Join-Path $root 'build\shadertool\verify-temp.txt'
     $outManifest = Join-Path $root 'build\shadertool\verify-data.txt'

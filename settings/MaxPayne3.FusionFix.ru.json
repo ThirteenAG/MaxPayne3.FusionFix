@@ -42,7 +42,7 @@
   "smaa": "SMAA",
   "smaa.edges": "Показ границ",
   "antialiasing": "Сглаживание",
-  "antialiasing.description": "Для TAA нужен DirectX 11 или 9, для DLAA и FSR — DirectX 11; во всех случаях MSAA игры должен быть выключен. Для DLAA и FSR также нужны апскейлеры FusionFixHub.",
+  "antialiasing.description": "Для TAA, DLAA и FSR нужен DirectX 11 с выключенным MSAA игры. Для DLAA и FSR также нужны апскейлеры FusionFixHub.",
   "aasharpness": "Резкость сглаживания",
   "aasharpness.description": "Повышает резкость изображения после TAA, DLAA или FSR. 0 — выключено.",
   "intelchecks": "Пропустить проверки GPU Intel",
@@ -63,5 +63,10 @@
   "menu.apply.description": "Устанавливает соответствующие настройки по выбранному пресету.",
   "menu.apply.confirm": "Выберите ещё раз для подтверждения. Некоторые изменения вступят в силу при следующем запуске игры.",
   "menu.disabled": "Недоступно при текущих настройках.",
-  "menu.savefailed": "Не удалось сохранить файл настроек. Изменения остаются в памяти."
+  "menu.savefailed": "Не удалось сохранить файл настроек. Изменения остаются в памяти.",
+  "hdr.white": "Уровень белого HDR",
+  "hdr.peak": "Пиковая яркость HDR",
+  "hdr.description": "Нативный HDR. Требуются HDR-дисплей с включённым HDR Windows, DirectX 11 и выключенный MSAA. Нужен перезапуск.",
+  "hdr.white.description": "Яркость обычного белого и интерфейса.",
+  "hdr.peak.description": "Укажите пиковую яркость вашего экрана."
 }

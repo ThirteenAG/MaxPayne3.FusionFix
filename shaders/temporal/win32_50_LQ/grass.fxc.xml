@@ -1,0 +1,561 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Effect Format="modern" VertexType="113">
+  <ShaderGroups>
+    <Group Stage="Vertex" RawCount="4" OffsetBy1="false" Name="" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+        <Shader Name="VS_Transform" OffsetBy1="false" File="../win32_50/grass/VS_Transform.hlsl" DataType="hlsl" Model="5.0" Length="6188">
+          <Variables>
+            <Variable>gWorld</Variable>
+            <Variable>gWorldView</Variable>
+            <Variable>gWorldViewProj</Variable>
+            <Variable>gViewInverse</Variable>
+            <Variable>globalScalars</Variable>
+            <Variable>globalScalars2</Variable>
+            <Variable>globalScalars3</Variable>
+            <Variable>globalScalars4</Variable>
+            <Variable>globalFogParams</Variable>
+            <Variable>globalFogColor</Variable>
+            <Variable>globalFogOffsetN</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>globalDayNightEffects</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorShift</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>colorize</Variable>
+            <Variable>globalUmScalars</Variable>
+            <Variable>gToneMapScalers</Variable>
+            <Variable>gAmbientOcclusionEffect</Variable>
+            <Variable>gWaterGlobals</Variable>
+            <Variable>ColorCorrectTopScreenEdge</Variable>
+            <Variable>ColorCorrectBottomOffsetScreenEdge</Variable>
+            <Variable>gScreenSpaceTessFactors</Variable>
+            <Variable>gTessFactors</Variable>
+            <Variable>gFrustumPlaneEquation_Left</Variable>
+            <Variable>gFrustumPlaneEquation_Right</Variable>
+            <Variable>gFrustumPlaneEquation_Top</Variable>
+            <Variable>gFrustumPlaneEquation_Bottom</Variable>
+            <Variable>gTessParameters</Variable>
+            <Variable>matGrassTransform</Variable>
+            <Variable>plantColor</Variable>
+            <Variable>groundColor</Variable>
+            <Variable>vecCameraPos</Variable>
+            <Variable>vecPlayerPos</Variable>
+            <Variable>_dimensionLOD2</Variable>
+            <Variable>_vecCollParams</Variable>
+            <Variable>_vecVehCollB</Variable>
+            <Variable>_vecVehCollM</Variable>
+            <Variable>_vecVehCollR</Variable>
+            <Variable>fadeAlphaDistUmTimer</Variable>
+            <Variable>fadeAlphaLOD1Dist</Variable>
+            <Variable>fadeAlphaLOD2Dist</Variable>
+            <Variable>uMovementParams</Variable>
+            <Variable>_fakedGrassNormal</Variable>
+            <Variable>bVehCollEnabled</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_matrices" Slot="0" />
+            <Buffer Name="rage_globals" Slot="5" />
+            <Buffer Name="grasscollide" Slot="7" />
+            <Buffer Name="PlanetAttributes" Slot="4" />
+          </Buffers>
+        </Shader>
+        <Shader Name="VS_TransformLOD1" OffsetBy1="false" File="../win32_50/grass/VS_TransformLOD1.hlsl" DataType="hlsl" Model="5.0" Length="2788">
+          <Variables>
+            <Variable>gWorld</Variable>
+            <Variable>gWorldView</Variable>
+            <Variable>gWorldViewProj</Variable>
+            <Variable>gViewInverse</Variable>
+            <Variable>matGrassTransform</Variable>
+            <Variable>plantColor</Variable>
+            <Variable>groundColor</Variable>
+            <Variable>vecCameraPos</Variable>
+            <Variable>vecPlayerPos</Variable>
+            <Variable>_dimensionLOD2</Variable>
+            <Variable>_vecCollParams</Variable>
+            <Variable>_vecVehCollB</Variable>
+            <Variable>_vecVehCollM</Variable>
+            <Variable>_vecVehCollR</Variable>
+            <Variable>fadeAlphaDistUmTimer</Variable>
+            <Variable>fadeAlphaLOD1Dist</Variable>
+            <Variable>fadeAlphaLOD2Dist</Variable>
+            <Variable>uMovementParams</Variable>
+            <Variable>_fakedGrassNormal</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_matrices" Slot="0" />
+            <Buffer Name="PlanetAttributes" Slot="4" />
+          </Buffers>
+        </Shader>
+        <Shader Name="VS_TransformLOD2" OffsetBy1="false" File="../win32_50/grass/VS_TransformLOD2.hlsl" DataType="hlsl" Model="5.0" Length="3236">
+          <Variables>
+            <Variable>gWorld</Variable>
+            <Variable>gWorldView</Variable>
+            <Variable>gWorldViewProj</Variable>
+            <Variable>gViewInverse</Variable>
+            <Variable>matGrassTransform</Variable>
+            <Variable>plantColor</Variable>
+            <Variable>groundColor</Variable>
+            <Variable>vecCameraPos</Variable>
+            <Variable>vecPlayerPos</Variable>
+            <Variable>_dimensionLOD2</Variable>
+            <Variable>_vecCollParams</Variable>
+            <Variable>_vecVehCollB</Variable>
+            <Variable>_vecVehCollM</Variable>
+            <Variable>_vecVehCollR</Variable>
+            <Variable>fadeAlphaDistUmTimer</Variable>
+            <Variable>fadeAlphaLOD1Dist</Variable>
+            <Variable>fadeAlphaLOD2Dist</Variable>
+            <Variable>uMovementParams</Variable>
+            <Variable>_fakedGrassNormal</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_matrices" Slot="0" />
+            <Buffer Name="PlanetAttributes" Slot="4" />
+          </Buffers>
+        </Shader>
+        <Shader Name="VS_blit" OffsetBy1="false" File="../win32_50/grass/VS_blit.hlsl" DataType="hlsl" Model="5.0" Length="1692">
+          <Variables>
+            <Variable>matGrassTransform</Variable>
+            <Variable>plantColor</Variable>
+            <Variable>groundColor</Variable>
+            <Variable>vecCameraPos</Variable>
+            <Variable>vecPlayerPos</Variable>
+            <Variable>_dimensionLOD2</Variable>
+            <Variable>_vecCollParams</Variable>
+            <Variable>_vecVehCollB</Variable>
+            <Variable>_vecVehCollM</Variable>
+            <Variable>_vecVehCollR</Variable>
+            <Variable>fadeAlphaDistUmTimer</Variable>
+            <Variable>fadeAlphaLOD1Dist</Variable>
+            <Variable>fadeAlphaLOD2Dist</Variable>
+            <Variable>uMovementParams</Variable>
+            <Variable>_fakedGrassNormal</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="PlanetAttributes" Slot="4" />
+          </Buffers>
+        </Shader>
+      </Shaders>
+    </Group>
+    <Group Stage="Pixel" RawCount="7" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+        <Shader Name="PS_DeferredTextured" OffsetBy1="false" File="../win32_50/grass/PS_DeferredTextured.hlsl" DataType="hlsl" Model="5.0" Length="3416">
+          <Variables>
+            <Variable>globalScalars</Variable>
+            <Variable>globalScalars2</Variable>
+            <Variable>globalScalars3</Variable>
+            <Variable>globalScalars4</Variable>
+            <Variable>globalFogParams</Variable>
+            <Variable>globalFogColor</Variable>
+            <Variable>globalFogOffsetN</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>globalDayNightEffects</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorShift</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>colorize</Variable>
+            <Variable>globalUmScalars</Variable>
+            <Variable>gToneMapScalers</Variable>
+            <Variable>gAmbientOcclusionEffect</Variable>
+            <Variable>gWaterGlobals</Variable>
+            <Variable>ColorCorrectTopScreenEdge</Variable>
+            <Variable>ColorCorrectBottomOffsetScreenEdge</Variable>
+            <Variable>gScreenSpaceTessFactors</Variable>
+            <Variable>gTessFactors</Variable>
+            <Variable>gFrustumPlaneEquation_Left</Variable>
+            <Variable>gFrustumPlaneEquation_Right</Variable>
+            <Variable>gFrustumPlaneEquation_Top</Variable>
+            <Variable>gFrustumPlaneEquation_Bottom</Variable>
+            <Variable>gTessParameters</Variable>
+            <Variable>TextureGrassSampler</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_globals" Slot="5" />
+          </Buffers>
+        </Shader>
+        <Shader Name="PS_DeferredTexturedLOD" OffsetBy1="false" File="../win32_50/grass/PS_DeferredTexturedLOD.hlsl" DataType="hlsl" Model="5.0" Length="3416">
+          <Variables>
+            <Variable>globalScalars</Variable>
+            <Variable>globalScalars2</Variable>
+            <Variable>globalScalars3</Variable>
+            <Variable>globalScalars4</Variable>
+            <Variable>globalFogParams</Variable>
+            <Variable>globalFogColor</Variable>
+            <Variable>globalFogOffsetN</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>globalDayNightEffects</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorShift</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>colorize</Variable>
+            <Variable>globalUmScalars</Variable>
+            <Variable>gToneMapScalers</Variable>
+            <Variable>gAmbientOcclusionEffect</Variable>
+            <Variable>gWaterGlobals</Variable>
+            <Variable>ColorCorrectTopScreenEdge</Variable>
+            <Variable>ColorCorrectBottomOffsetScreenEdge</Variable>
+            <Variable>gScreenSpaceTessFactors</Variable>
+            <Variable>gTessFactors</Variable>
+            <Variable>gFrustumPlaneEquation_Left</Variable>
+            <Variable>gFrustumPlaneEquation_Right</Variable>
+            <Variable>gFrustumPlaneEquation_Top</Variable>
+            <Variable>gFrustumPlaneEquation_Bottom</Variable>
+            <Variable>gTessParameters</Variable>
+            <Variable>TextureGrassSampler</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_globals" Slot="5" />
+          </Buffers>
+        </Shader>
+        <Shader Name="PS_DeferredTexturedAlphaStipple" OffsetBy1="false" File="../win32_50/grass/PS_DeferredTexturedAlphaStipple.hlsl" DataType="hlsl" Model="5.0" Length="3416">
+          <Variables>
+            <Variable>globalScalars</Variable>
+            <Variable>globalScalars2</Variable>
+            <Variable>globalScalars3</Variable>
+            <Variable>globalScalars4</Variable>
+            <Variable>globalFogParams</Variable>
+            <Variable>globalFogColor</Variable>
+            <Variable>globalFogOffsetN</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>globalDayNightEffects</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorShift</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>colorize</Variable>
+            <Variable>globalUmScalars</Variable>
+            <Variable>gToneMapScalers</Variable>
+            <Variable>gAmbientOcclusionEffect</Variable>
+            <Variable>gWaterGlobals</Variable>
+            <Variable>ColorCorrectTopScreenEdge</Variable>
+            <Variable>ColorCorrectBottomOffsetScreenEdge</Variable>
+            <Variable>gScreenSpaceTessFactors</Variable>
+            <Variable>gTessFactors</Variable>
+            <Variable>gFrustumPlaneEquation_Left</Variable>
+            <Variable>gFrustumPlaneEquation_Right</Variable>
+            <Variable>gFrustumPlaneEquation_Top</Variable>
+            <Variable>gFrustumPlaneEquation_Bottom</Variable>
+            <Variable>gTessParameters</Variable>
+            <Variable>TextureGrassSampler</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_globals" Slot="5" />
+          </Buffers>
+        </Shader>
+        <Shader Name="PS_DeferredTexturedAlphaTest" OffsetBy1="false" File="../win32_50/grass/PS_DeferredTexturedAlphaTest.hlsl" DataType="hlsl" Model="5.0" Length="3416">
+          <Variables>
+            <Variable>globalScalars</Variable>
+            <Variable>globalScalars2</Variable>
+            <Variable>globalScalars3</Variable>
+            <Variable>globalScalars4</Variable>
+            <Variable>globalFogParams</Variable>
+            <Variable>globalFogColor</Variable>
+            <Variable>globalFogOffsetN</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>globalDayNightEffects</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorShift</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>colorize</Variable>
+            <Variable>globalUmScalars</Variable>
+            <Variable>gToneMapScalers</Variable>
+            <Variable>gAmbientOcclusionEffect</Variable>
+            <Variable>gWaterGlobals</Variable>
+            <Variable>ColorCorrectTopScreenEdge</Variable>
+            <Variable>ColorCorrectBottomOffsetScreenEdge</Variable>
+            <Variable>gScreenSpaceTessFactors</Variable>
+            <Variable>gTessFactors</Variable>
+            <Variable>gFrustumPlaneEquation_Left</Variable>
+            <Variable>gFrustumPlaneEquation_Right</Variable>
+            <Variable>gFrustumPlaneEquation_Top</Variable>
+            <Variable>gFrustumPlaneEquation_Bottom</Variable>
+            <Variable>gTessParameters</Variable>
+            <Variable>TextureGrassSampler</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_globals" Slot="5" />
+          </Buffers>
+        </Shader>
+        <Shader Name="PS_TexturedUnlit" OffsetBy1="false" File="../win32_50/grass/PS_TexturedUnlit.hlsl" DataType="hlsl" Model="5.0" Length="2844">
+          <Variables>
+            <Variable>globalScalars</Variable>
+            <Variable>globalScalars2</Variable>
+            <Variable>globalScalars3</Variable>
+            <Variable>globalScalars4</Variable>
+            <Variable>globalFogParams</Variable>
+            <Variable>globalFogColor</Variable>
+            <Variable>globalFogOffsetN</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>globalDayNightEffects</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorShift</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>colorize</Variable>
+            <Variable>globalUmScalars</Variable>
+            <Variable>gToneMapScalers</Variable>
+            <Variable>gAmbientOcclusionEffect</Variable>
+            <Variable>gWaterGlobals</Variable>
+            <Variable>ColorCorrectTopScreenEdge</Variable>
+            <Variable>ColorCorrectBottomOffsetScreenEdge</Variable>
+            <Variable>gScreenSpaceTessFactors</Variable>
+            <Variable>gTessFactors</Variable>
+            <Variable>gFrustumPlaneEquation_Left</Variable>
+            <Variable>gFrustumPlaneEquation_Right</Variable>
+            <Variable>gFrustumPlaneEquation_Top</Variable>
+            <Variable>gFrustumPlaneEquation_Bottom</Variable>
+            <Variable>gTessParameters</Variable>
+            <Variable>DiffuseSampler</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_globals" Slot="5" />
+          </Buffers>
+        </Shader>
+        <Shader Name="PS_BlitFakedGbuf" OffsetBy1="false" File="../win32_50/grass/PS_BlitFakedGbuf.hlsl" DataType="hlsl" Model="5.0" Length="2764">
+          <Variables>
+            <Variable>globalScalars</Variable>
+            <Variable>globalScalars2</Variable>
+            <Variable>globalScalars3</Variable>
+            <Variable>globalScalars4</Variable>
+            <Variable>globalFogParams</Variable>
+            <Variable>globalFogColor</Variable>
+            <Variable>globalFogOffsetN</Variable>
+            <Variable>globalFogColorN</Variable>
+            <Variable>globalScreenSize</Variable>
+            <Variable>globalDayNightEffects</Variable>
+            <Variable>ColorCorrectTopAndPedReflectScale</Variable>
+            <Variable>ColorCorrectBottomOffset</Variable>
+            <Variable>ColorShift</Variable>
+            <Variable>deSatContrastGamma</Variable>
+            <Variable>deSatContrastGammaIFX</Variable>
+            <Variable>colorize</Variable>
+            <Variable>globalUmScalars</Variable>
+            <Variable>gToneMapScalers</Variable>
+            <Variable>gAmbientOcclusionEffect</Variable>
+            <Variable>gWaterGlobals</Variable>
+            <Variable>ColorCorrectTopScreenEdge</Variable>
+            <Variable>ColorCorrectBottomOffsetScreenEdge</Variable>
+            <Variable>gScreenSpaceTessFactors</Variable>
+            <Variable>gTessFactors</Variable>
+            <Variable>gFrustumPlaneEquation_Left</Variable>
+            <Variable>gFrustumPlaneEquation_Right</Variable>
+            <Variable>gFrustumPlaneEquation_Top</Variable>
+            <Variable>gFrustumPlaneEquation_Bottom</Variable>
+            <Variable>gTessParameters</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_globals" Slot="5" />
+          </Buffers>
+        </Shader>
+      </Shaders>
+    </Group>
+    <Group Stage="Compute" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+    <Group Stage="Domain" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+    <Group Stage="Geometry" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+    <Group Stage="Hull" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+  </ShaderGroups>
+  <CBuffers1>
+    <CBuffer Name="rage_matrices" Size="256" VS="0" PS="0" CS="0" DS="0" GS="0" HS="0" />
+    <CBuffer Name="rage_globals" Size="464" VS="5" PS="5" CS="5" DS="5" GS="5" HS="5" />
+    <CBuffer Name="grasscollide" Size="16" VS="7" PS="7" CS="7" DS="7" GS="7" HS="7" />
+  </CBuffers1>
+  <Variables1>
+    <Variable Type="Float4x4" Count="0" Slot="0" Group="1" FirstName="gWorld" SecondName="World" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1032736383" />
+    <Variable Type="Float4x4" Count="0" Slot="4" Group="1" FirstName="gWorldView" SecondName="WorldView" Offset="64" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1032736383" />
+    <Variable Type="Float4x4" Count="0" Slot="8" Group="1" FirstName="gWorldViewProj" SecondName="WorldViewProjection" Offset="128" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1032736383" />
+    <Variable Type="Float4x4" Count="0" Slot="12" Group="1" FirstName="gViewInverse" SecondName="ViewInverse" Offset="192" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1032736383" />
+    <Variable Type="Float4" Count="0" Slot="35" Group="3" FirstName="globalScalars" SecondName="globalScalars" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="36" Group="3" FirstName="globalScalars2" SecondName="globalScalars2" Offset="16" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="49" Group="3" FirstName="globalScalars3" SecondName="globalScalars3" Offset="32" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="51" Group="3" FirstName="globalScalars4" SecondName="globalScalars4" Offset="48" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="37" Group="3" FirstName="globalFogParams" SecondName="globalFogParams" Offset="64" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1600;9000000;0.00999999978;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="38" Group="3" FirstName="globalFogColor" SecondName="globalFogColor" Offset="80" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="40" Group="3" FirstName="globalFogOffsetN" SecondName="globalFogOffsetN" Offset="96" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>0;0;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="50" Group="3" FirstName="globalFogColorN" SecondName="globalFogColorN" Offset="112" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="41" Group="3" FirstName="globalScreenSize" SecondName="globalScreenSize" Offset="128" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="42" Group="3" FirstName="globalDayNightEffects" SecondName="globalDayNightEffects" Offset="144" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;0;1;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="43" Group="3" FirstName="ColorCorrectTopAndPedReflectScale" SecondName="ColorCorrectTopAndPedReflectScale" Offset="160" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="44" Group="3" FirstName="ColorCorrectBottomOffset" SecondName="ColorCorrectBottomOffset" Offset="176" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="45" Group="3" FirstName="ColorShift" SecondName="ColorShift" Offset="192" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="46" Group="3" FirstName="deSatContrastGamma" SecondName="deSatContrastGamma" Offset="208" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="75" Group="3" FirstName="deSatContrastGammaIFX" SecondName="deSatContrastGammaIFX" Offset="224" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="47" Group="3" FirstName="colorize" SecondName="Colorize" Offset="240" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="48" Group="3" FirstName="globalUmScalars" SecondName="globalUmScalars" Offset="0" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>0;0;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="65" Group="3" FirstName="gToneMapScalers" SecondName="ToneMapScalers" Offset="16" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="63" Group="3" FirstName="gAmbientOcclusionEffect" SecondName="globalAOEffectScale" Offset="32" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>1;1;1;1</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="64" Group="3" FirstName="gWaterGlobals" SecondName="WaterGlobals" Offset="48" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="66" Group="3" FirstName="ColorCorrectTopScreenEdge" SecondName="ColorCorrectTopScreenEdge" Offset="64" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="67" Group="3" FirstName="ColorCorrectBottomOffsetScreenEdge" SecondName="ColorCorrectBottomOffsetScreenEdge" Offset="80" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="32" Group="3" FirstName="gScreenSpaceTessFactors" SecondName="gScreenSpaceTessFactors" Offset="96" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>3;3;1.5;0.0666666701</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="33" Group="3" FirstName="gTessFactors" SecondName="gTessFactors" Offset="112" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>3;0.25;1;5</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="34" Group="3" FirstName="gFrustumPlaneEquation_Left" SecondName="gFrustumPlaneEquation_Left" Offset="128" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="35" Group="3" FirstName="gFrustumPlaneEquation_Right" SecondName="gFrustumPlaneEquation_Right" Offset="144" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="36" Group="3" FirstName="gFrustumPlaneEquation_Top" SecondName="gFrustumPlaneEquation_Top" Offset="160" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="37" Group="3" FirstName="gFrustumPlaneEquation_Bottom" SecondName="gFrustumPlaneEquation_Bottom" Offset="176" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674" />
+    <Variable Type="Float4" Count="0" Slot="38" Group="3" FirstName="gTessParameters" SecondName="gTessParameters" Offset="192" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="256486674">
+      <Values>5;0.100000001;0.5;0.200000003</Values>
+    </Variable>
+    <Variable Type="Boolean" Count="0" Slot="10" Group="1" FirstName="bVehCollEnabled" SecondName="bVehCollEnabled0" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="163970777">
+      <Values>0</Values>
+    </Variable>
+  </Variables1>
+  <CBuffers2>
+    <CBuffer Name="PlanetAttributes" Size="288" VS="4" PS="8" CS="8" DS="8" GS="8" HS="8" />
+  </CBuffers2>
+  <Variables2>
+    <Variable Type="Texture" Count="0" Slot="0" Group="2" FirstName="DiffuseSampler" SecondName="DiffuseTex" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Annotations>
+        <Annotation Name="UIName" Type="string" Value="Diffuse Texture" />
+      </Annotations>
+      <Values>6;2;5;2;4;2</Values>
+    </Variable>
+    <Variable Type="Float4x4" Count="0" Slot="64" Group="1" FirstName="matGrassTransform" SecondName="matGrassTransform0" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199" />
+    <Variable Type="Float4" Count="0" Slot="68" Group="1" FirstName="plantColor" SecondName="plantColor0" Offset="64" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199" />
+    <Variable Type="Float4" Count="0" Slot="69" Group="1" FirstName="groundColor" SecondName="groundColor0" Offset="80" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199" />
+    <Variable Type="Float3" Count="0" Slot="70" Group="1" FirstName="vecCameraPos" SecondName="vecCameraPos0" Offset="96" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199">
+      <Values>0;0;0</Values>
+    </Variable>
+    <Variable Type="Float3" Count="0" Slot="71" Group="1" FirstName="vecPlayerPos" SecondName="vecPlayerPos0" Offset="112" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199">
+      <Values>0;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="72" Group="1" FirstName="_dimensionLOD2" SecondName="dimensionLOD20" Offset="128" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199">
+      <Values>0;0;0;0</Values>
+    </Variable>
+    <Variable Type="Float2" Count="0" Slot="73" Group="1" FirstName="_vecCollParams" SecondName="vecCollParams0" Offset="144" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199">
+      <Values>0.5625;1.77777779</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="84" Group="1" FirstName="_vecVehCollB" SecondName="vecVehCollB0" Offset="160" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199">
+      <Values>0;0;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="85" Group="1" FirstName="_vecVehCollM" SecondName="vecVehCollM0" Offset="176" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199">
+      <Values>0;0;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="86" Group="1" FirstName="_vecVehCollR" SecondName="vecVehCollR0" Offset="192" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199">
+      <Values>0;0;0;0</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="87" Group="1" FirstName="fadeAlphaDistUmTimer" SecondName="fadeAlphaDistUmTimer0" Offset="208" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199" />
+    <Variable Type="Float4" Count="0" Slot="88" Group="1" FirstName="fadeAlphaLOD1Dist" SecondName="fadeAlphaLOD1Dist0" Offset="224" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199" />
+    <Variable Type="Float4" Count="0" Slot="89" Group="1" FirstName="fadeAlphaLOD2Dist" SecondName="fadeAlphaLOD2Dist0" Offset="240" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1185873199" />
+    <Variable Type="Float4" Count="0" Slot="90" Group="1" FirstName="uMovementParams" SecondName="uMovementParams0" Offset="0" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="1185873199">
+      <Values>0.0500000007;0.0500000007;0.212500006;0.212500006</Values>
+    </Variable>
+    <Variable Type="Float4" Count="0" Slot="91" Group="1" FirstName="_fakedGrassNormal" SecondName="fakedGrassNormal0" Offset="16" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="1185873199">
+      <Annotations>
+        <Annotation Name="nostrip" Type="int" Value="1" />
+      </Annotations>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="1" Group="2" FirstName="TextureGrassSampler" SecondName="grassTexture0" Offset="1" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>0;1;1;1;2;1;6;1;5;2;4;2</Values>
+    </Variable>
+  </Variables2>
+  <Techniques>
+    <Technique Name="deferred_draw">
+      <Pass VS="0" PS="1" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+    <Technique Name="deferredLOD0_draw">
+      <Pass VS="0" PS="1" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+    <Technique Name="deferredLOD1_draw">
+      <Pass VS="1" PS="2" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+    <Technique Name="deferredLOD2_draw">
+      <Pass VS="2" PS="2" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+    <Technique Name="deferred_drawskinned">
+      <Pass VS="0" PS="1" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+    <Technique Name="deferredalphastipple_draw">
+      <Pass VS="0" PS="3" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+    <Technique Name="deferredalphastipple_drawskinned">
+      <Pass VS="0" PS="3" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+    <Technique Name="deferredalphaclip_draw">
+      <Pass VS="0" PS="4" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+    <Technique Name="deferredalphaclip_drawskinned">
+      <Pass VS="0" PS="4" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+    <Technique Name="draw">
+      <Pass VS="0" PS="5" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+    <Technique Name="unlit_draw">
+      <Pass VS="0" PS="5" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+    <Technique Name="blitFakedGBuf">
+      <Pass VS="3" PS="6" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+  </Techniques>
+</Effect>
