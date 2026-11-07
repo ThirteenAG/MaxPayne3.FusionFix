@@ -70,5 +70,9 @@
   "hdr.white.description": "Brilho do branco normal e da interface.",
   "hdr.peak.description": "Defina o brilho máximo da sua tela.",
   "antialiasing.msaa": "Desative o MSAA do jogo para usar TAA, DLAA ou FSR.",
-  "msaa.locked": "Fica desativado enquanto TAA, DLAA ou FSR estiver selecionado."
+  "msaa.locked": "Fica desativado enquanto TAA, DLAA ou FSR estiver selecionado.",
+  "fpslimit": "Limite de quadros",
+  "fpslimit.description": "Limita a taxa de quadros. Taxa de atualização segue a tela em que o jogo está.",
+  "fpslimit.unlimited": "Ilimitado",
+  "fpslimit.refreshrate": "Taxa de atualização"
 }

@@ -70,5 +70,9 @@
   "hdr.white.description": "通常の白とインターフェースの明るさ。",
   "hdr.peak.description": "ディスプレイの最大輝度に合わせて設定します。",
   "antialiasing.msaa": "TAA、DLAA、FSRを使うにはゲームのMSAAをオフにしてください。",
-  "msaa.locked": "TAA、DLAA、FSRを選択中はオフのままです。"
+  "msaa.locked": "TAA、DLAA、FSRを選択中はオフのままです。",
+  "fpslimit": "フレームレート上限",
+  "fpslimit.description": "フレームレートを制限します。リフレッシュレートはゲームを表示中のディスプレイに合わせます。",
+  "fpslimit.unlimited": "無制限",
+  "fpslimit.refreshrate": "リフレッシュレート"
 }

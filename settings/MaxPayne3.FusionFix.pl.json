@@ -70,5 +70,9 @@
   "hdr.white.description": "Jasność zwykłej bieli i interfejsu.",
   "hdr.peak.description": "Ustaw szczytową jasność ekranu.",
   "antialiasing.msaa": "Wyłącz MSAA gry, aby używać TAA, DLAA lub FSR.",
-  "msaa.locked": "Pozostaje wyłączone, gdy wybrano TAA, DLAA lub FSR."
+  "msaa.locked": "Pozostaje wyłączone, gdy wybrano TAA, DLAA lub FSR.",
+  "fpslimit": "Limit klatek",
+  "fpslimit.description": "Ogranicza liczbę klatek na sekundę. Częstotliwość odświeżania dopasowuje się do ekranu z grą.",
+  "fpslimit.unlimited": "Bez limitu",
+  "fpslimit.refreshrate": "Częstotliwość odświeżania"
 }

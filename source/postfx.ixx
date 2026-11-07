@@ -16,6 +16,7 @@ import postfxdx9;
 import postfxdx11;
 import antialiasing;
 import hdr;
+import framelimit;
 
 // ===========================================================================
 // Post processing for every renderer Max Payne 3 can run on:
@@ -142,19 +143,17 @@ public:
             ppPostFXDevice = *hook::get_pattern<IUnknown**>("68 ? ? ? ? 68 ? ? ? ? 8B D7 83 CA 10", 1);
             ppPostFXSwapChain = *hook::get_pattern<IUnknown**>("A1 ? ? ? ? 8B 08 53 8D 54 24 14 52 50", 1);
 
-            // sub_6D71A0 ends the draw lists of the scene, G-buffer and reflection phases; the pattern is the scene
-            // phase's (CRenderPhaseDrawScene, before the HUD)
+            // sub_6D71A0 ends the draw lists of the scene, G-buffer and reflection phases (water, mirror and the
+            // others); the pattern is the scene phase's (CRenderPhaseDrawScene, before the HUD). Only that call
+            // gets SMAA and the blur: the other phases end while the back buffer still holds the previous frame.
             auto pattern = hook::pattern("68 ? ? ? ? E8 ? ? ? ? 8B 15 ? ? ? ? 8B 0D ? ? ? ? 8B 04 95 ? ? ? ? 83 C4 08 03 C1");
             static auto pPhaseEnd = *pattern.get_first<void(__cdecl*)()>(1);
-            static auto BeforeUIHook = safetyhook::create_mid(pPhaseEnd, [](SafetyHookContext& ctx)
-            {
-                CPostFX::Render(POSTFX_STAGE_SMAA | POSTFX_STAGE_BLUR);
-            });
 
             // Finish temporal frame state before the HUD.
             static void(__cdecl* SceneEnd)() = []()
             {
                 AntiAliasing::EndFrame();
+                CPostFX::Render(POSTFX_STAGE_SMAA | POSTFX_STAGE_BLUR);
                 pPhaseEnd();
                 // The dev-only automation plugin's grab before the HUD (inert unless it registered)
                 asi_automation_frames::Fire(ASI_AUTOMATION_STAGE_BEFORE_UI, CPostFX::GetCommonSwapChain());
@@ -167,6 +166,7 @@ public:
                 CPostFX::Render(POSTFX_STAGE_GAMMA);
                 asi_automation_frames::Fire(ASI_AUTOMATION_STAGE_AFTER_UI, CPostFX::GetCommonSwapChain());
                 MP3Overlay::Present(static_cast<IDXGISwapChain*>(CPostFX::GetCommonSwapChain()));
+                FrameLimit::BeforePresent();
             });
 
             pattern = hook::pattern("8B 07 F7 D9 1B C9 F7 D1 23 0D ? ? ? ? 51 52 FF D0 8B F8 81 FF ? ? ? ? 74");
@@ -175,6 +175,7 @@ public:
                 CPostFX::Render(POSTFX_STAGE_GAMMA);
                 asi_automation_frames::Fire(ASI_AUTOMATION_STAGE_AFTER_UI, CPostFX::GetCommonSwapChain());
                 MP3Overlay::Present(static_cast<IDXGISwapChain*>(CPostFX::GetCommonSwapChain()));
+                FrameLimit::BeforePresent();
             });
 
             pattern = hook::pattern("6A ? 51 55 53 52");
@@ -200,6 +201,7 @@ public:
                     asi_automation_frames::Fire(ASI_AUTOMATION_STAGE_AFTER_UI, pDevice);
                     pDevice->Release();
                 }
+                FrameLimit::BeforePresent();
             });
         };
 

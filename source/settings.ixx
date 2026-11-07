@@ -17,7 +17,7 @@ export enum Pref
     PREF_DEVICECHANGE, PREF_HUDASPECTRATIOCONSTRAINT, PREF_CUSTOMFOV,
     PREF_CONSOLEGAMMA, PREF_ANTIALIASING, PREF_AASHARPNESS,
     PREF_SKIPINTELVENDORCHECKS, PREF_CONFINECURSOR, PREF_CUTSCENESKIP, PREF_UNLOCKSPRINTLOOK,
-    PREF_HDR, PREF_HDRWHITE, PREF_HDRPEAK, COUNT,
+    PREF_HDR, PREF_HDRWHITE, PREF_HDRPEAK, PREF_FPSLIMIT, COUNT,
 };
 
 // The settings are described in settings/MaxPayne3.FusionFix.json, which the build embeds
@@ -40,7 +40,7 @@ export class CSettings
         "MAIN.DisableDeviceChangeEvent", "MAIN.HudAspectRatioConstraint", "MAIN.CustomFOV",
         "MAIN.ConsoleGamma", "MAIN.AntiAliasing", "MAIN.AntiAliasingSharpness",
         "MAIN.SkipIntelVendorChecks", "MAIN.ConfineCursor", "MAIN.CutsceneSkip", "MAIN.UnlockSprintLook",
-        "MAIN.HDR", "MAIN.HDRPaperWhite", "MAIN.HDRPeakBrightness",
+        "MAIN.HDR", "MAIN.HDRPaperWhite", "MAIN.HDRPeakBrightness", "MAIN.FPSLimit",
     };
     // References into the plugin's values, which follow every change from menus and editors
     static inline std::array<const int*, COUNT> ints{};

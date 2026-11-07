@@ -1,7 +1,7 @@
 module;
 
 #include <common.hxx>
-#include <d3d11.h>
+#include <d3d11_1.h>
 
 export module postfxdx11;
 
@@ -138,6 +138,10 @@ export namespace PostFX11
 
     inline ID3D11Device* pDevice = nullptr;
     inline ID3D11DeviceContext* pContext = nullptr;
+    // The passes run in a state object of their own: every binding of the game stays as it was, also those the
+    // game's renderer keeps track of itself
+    inline ID3D11DeviceContext1* pContext1 = nullptr;
+    inline ID3DDeviceContextState* pContextState = nullptr;
     inline D3D_FEATURE_LEVEL featureLevel = (D3D_FEATURE_LEVEL)0;
     inline bool bInitialized = false;
 
@@ -255,6 +259,8 @@ export namespace PostFX11
     {
         ReleaseShaders();
         ReleaseDeviceObjects();
+        SafeRelease(pContextState);
+        SafeRelease(pContext1);
         SafeRelease(pContext);
         SafeRelease(pDevice);
         bInitialized = false;
@@ -547,6 +553,15 @@ export namespace PostFX11
 
         pDevice->GetImmediateContext(&pContext);
         featureLevel = pDevice->GetFeatureLevel();
+
+        ID3D11Device1* pDevice1 = nullptr;
+        if (SUCCEEDED(pDevice->QueryInterface(__uuidof(ID3D11Device1), (void**)&pDevice1)) &&
+            SUCCEEDED(pContext->QueryInterface(__uuidof(ID3D11DeviceContext1), (void**)&pContext1)))
+        {
+            const UINT flags = (pDevice->GetCreationFlags() & D3D11_CREATE_DEVICE_SINGLETHREADED) ? D3D11_1_CREATE_DEVICE_CONTEXT_STATE_SINGLETHREADED : 0;
+            pDevice1->CreateDeviceContextState(flags, &featureLevel, 1, D3D11_SDK_VERSION, __uuidof(ID3D11Device), nullptr, &pContextState);
+        }
+        SafeRelease(pDevice1);
 
         if (!LoadShaders(featureLevel) || !CreateDeviceObjects())
         {
@@ -1003,6 +1018,18 @@ export namespace PostFX11
 
         if (!GetBackBuffer(pObject, &pBackBuffer, &pBackBufferView, info) || !EnsureResources(info, options))
             return;
+
+        if (pContextState)
+        {
+            ID3DDeviceContextState* pPrevious = nullptr;
+            pContext1->SwapDeviceContextState(pContextState, &pPrevious);
+            pContext->ClearState();
+            RenderEffects(pBackBuffer, pBackBufferView, info.sampleCount, options, uStages);
+            pContext->ClearState();
+            pContext1->SwapDeviceContextState(pPrevious, nullptr);
+            SafeRelease(pPrevious);
+            return;
+        }
 
         SavedState state{};
         SaveState(state);

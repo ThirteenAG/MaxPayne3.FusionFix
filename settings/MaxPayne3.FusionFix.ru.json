@@ -70,5 +70,9 @@
   "hdr.white.description": "Яркость обычного белого и интерфейса.",
   "hdr.peak.description": "Укажите пиковую яркость вашего экрана.",
   "antialiasing.msaa": "Отключите MSAA игры, чтобы использовать TAA, DLAA или FSR.",
-  "msaa.locked": "Остаётся выключенным, пока выбран TAA, DLAA или FSR."
+  "msaa.locked": "Остаётся выключенным, пока выбран TAA, DLAA или FSR.",
+  "fpslimit": "Ограничение FPS",
+  "fpslimit.description": "Ограничивает частоту кадров. «Частота обновления» берётся от дисплея, на котором идёт игра.",
+  "fpslimit.unlimited": "Без ограничения",
+  "fpslimit.refreshrate": "Частота обновления"
 }

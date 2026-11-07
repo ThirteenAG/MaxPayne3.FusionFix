@@ -53,6 +53,7 @@ namespace FusionMenu
     // One row of a page. Values cross as text, like the runtime interface of ASI Settings.
     struct Option
     {
+        std::string id;                 // the setting's id, empty for rows that aren't settings
         std::string label;
         std::string help;
         std::vector<Choice> choices;
@@ -359,6 +360,7 @@ bool BuildOption(const Snapshot& snap, const asi_settings::LoadedPlugin& plugin,
 
     auto& texts = plugin.file.texts;
     const std::string id = setting.id;
+    option.id = id;
     option.label = texts.Resolve(setting.label);
     option.help = texts.Resolve(setting.description);
     option.numeric = !setting.StringValued();
@@ -1217,17 +1219,29 @@ template<size_t P> int __fastcall BuildPage(UI screen, void*, UI previous)
     // keep their separators above and below, as on the stock page.
     if (footer != stockRows.end())
         while (footer != stockRows.begin() && !Virtual<UI>(*(footer - 1), 716)) --footer;
-    auto addOptions = [&]
+    // Rows placed next to a stock row of the same kind come after it, the others after the last stock setting
+    struct Placement { NativePage page; std::string_view setting; std::string_view after; };
+    static constexpr Placement placements[] = { { NativePage::Graphics, "MAIN.FPSLimit", ".VSyncText" } };
+    auto placedAfter = [&](const FusionMenu::Option& option) -> std::string_view
+    {
+        for (auto& placement : placements)
+            if (placement.page == page.page && placement.setting == option.id)
+                for (auto row : stockRows)
+                    if (std::string_view(Virtual<const char*>(row, 84)).ends_with(placement.after)) return placement.after;
+        return {};
+    };
+    auto addOptions = [&](std::string_view after)
     {
         for (size_t i = 0; i < content->rows.size(); ++i)
-            if (content->rows[i].option) AddRow(screen, state, *content->rows[i].option, i, dictionary);
+            if (content->rows[i].option && placedAfter(*content->rows[i].option) == after)
+                AddRow(screen, state, *content->rows[i].option, i, dictionary);
     };
 
     // Reparent through the native container APIs, so clipping and focus targets
     // are installed by UIScrollingStackLayout rather than copied by hand.
     for (auto it = stockRows.begin(); it != stockRows.end(); ++it)
     {
-        if (it == footer) addOptions();
+        if (it == footer) addOptions({});
         auto row = *it;
         const auto id = Virtual<uint32_t>(row, 88);
         // Attaching sends the row's clicks to the scrolling layout. Rows that sent them to
@@ -1237,10 +1251,16 @@ template<size_t P> int __fastcall BuildPage(UI screen, void*, UI previous)
         Virtual(row, 104, Virtual<uint32_t>(scroll, 88));
         Virtual(scroll, 616, id);
         if (clickTarget) Virtual(row, 532, clickTarget);
+        for (auto& placement : placements)
+            if (placement.page == page.page && std::string_view(Virtual<const char*>(row, 84)).ends_with(placement.after))
+            {
+                addOptions(placement.after);
+                break;
+            }
     }
     // Keep the stock selection sound callback on the new inner stack.
     std::memcpy(static_cast<char*>(stack) + 264, static_cast<char*>(oldStack) + 264, 20);
-    if (footer == stockRows.end()) addOptions();
+    if (footer == stockRows.end()) addOptions({});
 
     Field<UI>(screen, page.stack) = stack;
     Field<UI>(screen, 232) = stack;

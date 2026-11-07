@@ -70,6 +70,7 @@ Menu labels and descriptions follow the game language in all ten supported langu
 
 - **ConsoleGamma**, emulates the gamma curve of the console versions, 1 is the Xbox 360 preset, 2 is the PlayStation 3 preset. Works on every renderer the game supports (DirectX 9, 10, 10.1 and 11), the preset can be switched at any time
 - **SMAA**, adds enhanced subpixel morphological antialiasing as a post-processing effect
+- **FPSLimit**, limits the frame rate: Unlimited, the refresh rate of the display or 30 to 1000 FPS, in **SETTINGS -> GRAPHICS** right after VSync
 - **CheckForUpdates**, off by default: when on, looks up the newest version at fusionfix.io when the game starts and tells you in the game; with FusionFixHub in the game folder, its update page opens when you close the game
 
 High polling-rate mouse movement uses the full accumulated input each frame, preserving sensitivity without an extra wrapper.

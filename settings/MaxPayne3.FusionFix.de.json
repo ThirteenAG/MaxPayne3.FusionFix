@@ -70,5 +70,9 @@
   "hdr.white.description": "Helligkeit von normalem Weiß und der Oberfläche.",
   "hdr.peak.description": "Auf die maximale Helligkeit des Bildschirms einstellen.",
   "antialiasing.msaa": "Für TAA, DLAA oder FSR das MSAA des Spiels ausschalten.",
-  "msaa.locked": "Bleibt aus, solange TAA, DLAA oder FSR gewählt ist."
+  "msaa.locked": "Bleibt aus, solange TAA, DLAA oder FSR gewählt ist.",
+  "fpslimit": "Bildratenbegrenzung",
+  "fpslimit.description": "Begrenzt die Bildrate. Bildwiederholrate richtet sich nach dem Bildschirm, auf dem das Spiel läuft.",
+  "fpslimit.unlimited": "Unbegrenzt",
+  "fpslimit.refreshrate": "Bildwiederholrate"
 }

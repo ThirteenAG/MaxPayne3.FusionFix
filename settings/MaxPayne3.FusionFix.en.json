@@ -70,5 +70,9 @@
   "hdr.white.description": "Brightness of ordinary white and the interface.",
   "hdr.peak.description": "Set this to the peak brightness of your display.",
   "antialiasing.msaa": "Turn the game's MSAA off to use TAA, DLAA or FSR.",
-  "msaa.locked": "Stays off while TAA, DLAA or FSR is selected."
+  "msaa.locked": "Stays off while TAA, DLAA or FSR is selected.",
+  "fpslimit": "Frame rate limit",
+  "fpslimit.description": "Limits the frame rate. Refresh Rate follows the display the game is on.",
+  "fpslimit.unlimited": "Unlimited",
+  "fpslimit.refreshrate": "Refresh Rate"
 }

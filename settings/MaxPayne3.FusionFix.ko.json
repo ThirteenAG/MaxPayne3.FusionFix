@@ -70,5 +70,9 @@
   "hdr.white.description": "일반 흰색과 인터페이스의 밝기입니다.",
   "hdr.peak.description": "디스플레이의 최대 밝기로 설정하세요.",
   "antialiasing.msaa": "TAA, DLAA, FSR을 사용하려면 게임의 MSAA를 끄세요.",
-  "msaa.locked": "TAA, DLAA, FSR을 선택한 동안에는 꺼진 상태로 유지됩니다."
+  "msaa.locked": "TAA, DLAA, FSR을 선택한 동안에는 꺼진 상태로 유지됩니다.",
+  "fpslimit": "프레임 제한",
+  "fpslimit.description": "프레임 속도를 제한합니다. 주사율은 게임이 표시된 디스플레이를 따릅니다.",
+  "fpslimit.unlimited": "무제한",
+  "fpslimit.refreshrate": "주사율"
 }
