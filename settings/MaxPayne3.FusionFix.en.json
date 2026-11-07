@@ -68,5 +68,7 @@
   "hdr.peak": "HDR peak brightness",
   "hdr.description": "Native HDR output. Needs an HDR display with Windows HDR on, DirectX 11 and MSAA off.",
   "hdr.white.description": "Brightness of ordinary white and the interface.",
-  "hdr.peak.description": "Set this to the peak brightness of your display."
+  "hdr.peak.description": "Set this to the peak brightness of your display.",
+  "antialiasing.msaa": "Turn the game's MSAA off to use TAA, DLAA or FSR.",
+  "msaa.locked": "Stays off while TAA, DLAA or FSR is selected."
 }

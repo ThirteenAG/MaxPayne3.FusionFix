@@ -68,5 +68,7 @@
   "hdr.peak": "Szczytowa jasność HDR",
   "hdr.description": "Natywny HDR. Wymaga ekranu HDR z włączonym HDR w Windows, DirectX 11 i wyłączonego MSAA.",
   "hdr.white.description": "Jasność zwykłej bieli i interfejsu.",
-  "hdr.peak.description": "Ustaw szczytową jasność ekranu."
+  "hdr.peak.description": "Ustaw szczytową jasność ekranu.",
+  "antialiasing.msaa": "Wyłącz MSAA gry, aby używać TAA, DLAA lub FSR.",
+  "msaa.locked": "Pozostaje wyłączone, gdy wybrano TAA, DLAA lub FSR."
 }

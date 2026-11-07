@@ -68,5 +68,7 @@
   "hdr.peak": "HDR最大輝度",
   "hdr.description": "ネイティブHDR出力。Windows HDRが有効なHDRディスプレイ、DirectX 11、MSAAの無効化が必要です。",
   "hdr.white.description": "通常の白とインターフェースの明るさ。",
-  "hdr.peak.description": "ディスプレイの最大輝度に合わせて設定します。"
+  "hdr.peak.description": "ディスプレイの最大輝度に合わせて設定します。",
+  "antialiasing.msaa": "TAA、DLAA、FSRを使うにはゲームのMSAAをオフにしてください。",
+  "msaa.locked": "TAA、DLAA、FSRを選択中はオフのままです。"
 }

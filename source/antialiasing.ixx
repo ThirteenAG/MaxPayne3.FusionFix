@@ -7,9 +7,11 @@ module;
 export module antialiasing;
 
 import common;
+import comvars;
 import settings;
 import postfxcommon;
 import temporal;
+import menu;
 
 namespace
 {
@@ -65,6 +67,13 @@ namespace
     Parameters Constants;
     Jitter FrameOffset, SceneOffset;
     uint32_t* ViewportSlot{};
+
+    // The game's MSAA, also when it's chosen on the Graphics page and not applied yet: the temporal modes need it off
+    bool GameMSAA()
+    {
+        const uint32_t samples = nMSAASamples;
+        return samples > 1 || nMSAAChoice > 0;
+    }
 
     bool SameLens(const float* projection, const Matrix& camera)
     {
@@ -249,7 +258,7 @@ namespace
         std::array<ComPtr<ID3D11PixelShader>, 6> Shaders;
         ComPtr<ID3D11Buffer> Parameters;
         ComPtr<ID3D11SamplerState> Point, Linear;
-        Target11 Scene, History[2], Depth[2], Motion, BridgeColor, BridgeOutput;
+        Target11 Scene, History[2], Depth[2];
         UINT Width{}, Height{}, Index{};
         DXGI_FORMAT Format{};
         bool Complete{};
@@ -268,7 +277,7 @@ namespace
                 SUCCEEDED(Device->CreateShaderResourceView(target.Texture.Get(), nullptr, &target.View));
         }
 
-        bool Initialize(ID3D11Device* device, UINT width, UINT height, DXGI_FORMAT format, bool bridge)
+        bool Initialize(ID3D11Device* device, UINT width, UINT height, DXGI_FORMAT format)
         {
             if (!Complete || Device.Get() != device || Width != width || Height != height || Format != format)
                 *this = {};
@@ -315,17 +324,7 @@ namespace
                     return false;
                 Complete = true;
             }
-            if (!State || !History[1].Texture)
-                return false;
-            if (bridge && (!BridgeOutput.View || !BridgeColor.View || !Motion.View))
-            {
-                Motion = {};
-                BridgeColor = {};
-                BridgeOutput = {};
-                return MakeTarget(Motion, DXGI_FORMAT_R16G16_FLOAT) && MakeTarget(BridgeColor, DXGI_FORMAT_R16G16B16A16_FLOAT) &&
-                    MakeTarget(BridgeOutput, DXGI_FORMAT_R16G16B16A16_FLOAT);
-            }
-            return true;
+            return State && History[1].Texture;
         }
 
         ComPtr<ID3D11ShaderResourceView> View(ID3D11Texture2D* texture, bool depth)
@@ -392,19 +391,11 @@ namespace
             ID3D11SamplerState* samplers[]{ Point.Get(), Linear.Get() };
             Context->PSSetSamplers(0, 2, samplers);
             bool bridged{};
+            auto& upscaler = Bridge::TheUpscaler11();
             if (mode == DLAA || mode == FSR)
             {
                 Bridge::Config().LowDynamicRange = mode == DLAA;
-                Constants.Pixel[2] = mode == DLAA ? 1.0f : 0.0f;
-                Context->UpdateSubresource(Parameters.Get(), 0, nullptr, &Constants, 0, 0);
-                Pass(BridgeColor.Target.Get(), 3, Scene.View.Get(), nullptr, nullptr, nullptr, nullptr);
-                Pass(Depth[Index].Target.Get(), 2, nullptr, nullptr, depthView.Get(), nullptr, nullptr);
-                Pass(Motion.Target.Get(), 1, nullptr, motionView.Get(), depthView.Get(), nullptr, nullptr);
                 Bridge::UpscalerFrame11 frame;
-                frame.Color = BridgeColor.Texture.Get();
-                frame.Depth = Depth[Index].Texture.Get();
-                frame.Motion = Motion.Texture.Get();
-                frame.Output = BridgeOutput.Texture.Get();
                 frame.Width = Width;
                 frame.Height = Height;
                 frame.JitterPixels = Current.Offset;
@@ -413,7 +404,17 @@ namespace
                 frame.CameraFovY = Current.Fov;
                 frame.FrameTimeMs = Previous.Valid ? std::clamp(static_cast<float>(Current.Time - Previous.Time), 1.0f, 100.0f) : 16.6f;
                 frame.Reset = !valid;
-                bridged = Bridge::TheUpscaler11().Evaluate(mode == DLAA ? Backend::DLSS : Backend::FSR, frame);
+                if (upscaler.Prepare(mode == DLAA ? Backend::DLSS : Backend::FSR, frame))
+                {
+                    // The hub's inputs are drawn straight into the textures it shares
+                    auto& shared = upscaler.bridge.targets;
+                    Constants.Pixel[2] = mode == DLAA ? 1.0f : 0.0f;
+                    Context->UpdateSubresource(Parameters.Get(), 0, nullptr, &Constants, 0, 0);
+                    Pass(shared[size_t(Bridge::Protocol::Texture::Color)], 3, Scene.View.Get(), nullptr, nullptr, nullptr, nullptr);
+                    Pass(shared[size_t(Bridge::Protocol::Texture::Depth)], 2, nullptr, nullptr, depthView.Get(), nullptr, nullptr);
+                    Pass(shared[size_t(Bridge::Protocol::Texture::Motion)], 1, nullptr, motionView.Get(), depthView.Get(), nullptr, nullptr);
+                    bridged = upscaler.Evaluate(frame);
+                }
             }
             if (!bridged)
             {
@@ -423,7 +424,7 @@ namespace
             }
             Constants.Pixel[2] = bridged && mode == DLAA ? 1.0f : 0.0f;
             Context->UpdateSubresource(Parameters.Get(), 0, nullptr, &Constants, 0, 0);
-            Pass(outputView.Get(), 4, bridged ? BridgeOutput.View.Get() : History[Index].View.Get(), nullptr, nullptr, nullptr, nullptr, Scene.View.Get());
+            Pass(outputView.Get(), 4, bridged ? upscaler.bridge.output : History[Index].View.Get(), nullptr, nullptr, nullptr, nullptr, Scene.View.Get());
             Pass(Depth[Index].Target.Get(), 5, nullptr, nullptr, depthView.Get(), nullptr, nullptr);
             Context->SwapDeviceContextState(previousState.Get(), nullptr);
             LastBridged = bridged;
@@ -480,7 +481,7 @@ namespace
         if (!resolve || mode < TAA || !Ready || !Matched || Current.Serial == Previous.Serial)
             return;
         motion.Attach(TemporalMotion::AcquireTexture11());
-        if (!motion || !Modern.Initialize(device.Get(), description.Width, description.Height, description.Format, mode != TAA))
+        if (!motion || !Modern.Initialize(device.Get(), description.Width, description.Height, description.Format))
             return;
         auto valid = ValidHistory(mode);
         SetConstants(valid);
@@ -567,20 +568,24 @@ public:
                 ++RenderSerial;
                 Render11(FusionFixSettings.GetInt(PREF_ANTIALIASING), true);
             });
+            nMSAASamples.SetAddress(*hook::get_pattern<uint32_t*>("A1 ? ? ? ? 3B C3 74 20 83 F8 01", 1));
             SettingsPlugin().Availability("MAIN.AntiAliasing", [](std::string_view value)
             {
                 if (value == "3")
-                    return Ready.load();
+                    return Ready && !GameMSAA();
                 if (value == "4")
-                    return Ready && Bridge::TheUpscaler11().IsAvailable(Backend::DLSS);
+                    return Ready && !GameMSAA() && Bridge::TheUpscaler11().IsAvailable(Backend::DLSS);
                 if (value == "5")
-                    return Ready && Bridge::TheUpscaler11().IsAvailable(Backend::FSR);
+                    return Ready && !GameMSAA() && Bridge::TheUpscaler11().IsAvailable(Backend::FSR);
                 return true;
+            }, []
+            {
+                return GameMSAA() ? FusionFixText("antialiasing.msaa") : std::string();
             });
             static auto refresh = []()
             {
                 static uint32_t generation = UINT32_MAX;
-                auto current = AvailabilityGeneration.load() + Bridge::TheUpscaler11().generation.load();
+                auto current = AvailabilityGeneration.load() + Bridge::TheUpscaler11().generation.load() + (GameMSAA() ? 0x80000000u : 0);
                 if (generation != current)
                 {
                     generation = current;

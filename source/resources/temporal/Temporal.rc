@@ -7,3 +7,4 @@
 315 RCDATA "Output.cso"
 316 RCDATA "HistoryDepth.cso"
 320 RCDATA "HDROutput.cso"
+321 RCDATA "SdrCopy.cso"

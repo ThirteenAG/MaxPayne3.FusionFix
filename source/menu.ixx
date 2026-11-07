@@ -16,6 +16,7 @@ module;
 
 export module menu;
 import common;
+import comvars;
 import settings;
 
 namespace FusionMenu
@@ -60,6 +61,7 @@ namespace FusionMenu
         std::function<std::string()> get;
         std::function<void(const std::string&)> set;
         std::function<bool()> enabled;  // enabledIf of the setting, none when always enabled
+        std::function<std::string()> reason; // why values can't be chosen now, empty when they can
         bool numeric = true;
         Control control = Control::Choices;
         int decimalPlaces = 0;
@@ -155,8 +157,10 @@ const char* Text(const std::string& text)
     }
     return entry.token.c_str();
 }
+void* gameText = nullptr;
 const wchar_t* __fastcall GetMenuText(void* text, void*, const char* key)
 {
+    gameText = text;
     if (key && std::strncmp(key, "FFMENU_", 7) == 0)
     {
         std::lock_guard lock(textMutex);
@@ -341,8 +345,10 @@ std::optional<NativePage> NativePageOf(const asi_settings::Page& page)
 // A row for a setting, built from its description: bool and choice settings, and numbers and
 // text with special values or suggestions, use the list control; numbers with a range use the
 // slider. Settings this menu can't show remain in editors and the file.
+// everyValue: the lists of the game's pages, which aren't built again while they're shown, keep the values that can't be
+// chosen now; selecting skips them
 bool BuildOption(const Snapshot& snap, const asi_settings::LoadedPlugin& plugin, const asi_settings::Setting& setting,
-    const std::vector<asi_settings::Slot>& slots, FusionMenu::Option& option, std::string& signature)
+    const std::vector<asi_settings::Slot>& slots, FusionMenu::Option& option, std::string& signature, bool everyValue)
 {
     using asi_settings::Type;
     auto api = plugin.api;
@@ -361,9 +367,15 @@ bool BuildOption(const Snapshot& snap, const asi_settings::LoadedPlugin& plugin,
     option.set = [api, id](const std::string& value) { api->Set(id.c_str(), value.c_str()); };
     if (setting.enabledIf)
         option.enabled = [&plugin, condition = *setting.enabledIf] { return Evaluate(condition, ReadSlots(plugin)); };
+    if (HasFunction(api, offsetof(AsiSettingsApi, GetState)) && api->GetState)
+        option.reason = [api, id]
+        {
+            char reason[512]{};
+            return api->GetState(id.c_str(), reason, sizeof(reason)) >= 0 ? std::string(reason) : std::string();
+        };
 
     // Menus offer only the values usable now (SPEC.md, Availability)
-    const auto usable = UsableValues(api, id);
+    const auto usable = everyValue ? std::nullopt : UsableValues(api, id);
     auto add = [&](const asi_settings::json::Value& value, std::string text)
     {
         const auto valueText = asi_settings::detail::JsonToText(value);
@@ -534,7 +546,7 @@ void AddPageRows(const Snapshot& snap, const PageRef& ref, bool full, PageConten
             continue;
         }
         FusionMenu::Option option;
-        if (!BuildOption(snap, plugin, *setting, slots, option, content.signature)) continue;
+        if (!BuildOption(snap, plugin, *setting, slots, option, content.signature, !full)) continue;
         content.rows.push_back({&content.options.emplace_back(std::move(option)), nullptr});
         any = true;
     }
@@ -706,8 +718,16 @@ struct Screen
     std::shared_ptr<Snapshot> snapshot;
     std::shared_ptr<PageContent> content;
     HelpFit fit;
+    UI msaa = nullptr;    // the Graphics page's MSAA list and its row
+    UI msaaRow = nullptr;
 };
 std::unordered_map<UI, Screen> screens;
+
+// The game's MSAA stays off while temporal anti-aliasing is in effect
+bool MSAALocked()
+{
+    return FusionFixSettings.GetInt(PREF_ANTIALIASING) >= 3;
+}
 
 void ScaleHelp(Screen& state, float scale)
 {
@@ -1228,6 +1248,9 @@ template<size_t P> int __fastcall BuildPage(UI screen, void*, UI previous)
     AnchorHelp(state.help, header, scroll);
     if (page.page == NativePage::Graphics)
     {
+        state.msaa = Field<UI>(screen, 300);
+        for (auto row : stockRows)
+            if (std::string_view(Virtual<const char*>(row, 84)).ends_with(".MSAAQualityText")) state.msaaRow = row;
         auto memoryTitle = Field<UI>(screen, 364);
         Virtual(memoryTitle, 296);
         Anchor(memoryTitle, 6, scroll, 18, 4.0f, 20.0f);
@@ -1257,6 +1280,7 @@ template<size_t P> int __fastcall ClosePage(UI screen, void*)
     // destroy the owning wrapper, including all rows, lists and the inner stack.
     Field<UI>(screen, page.stack) = found->second.scroll;
     Field<UI>(screen, 232) = nullptr;
+    if (found->second.msaa) nMSAAChoice = -1;
     screens.erase(found);
     return page.close.thiscall<int>(screen);
 }
@@ -1288,19 +1312,40 @@ void __fastcall UpdateList(UI list, void*)
     updateHook.thiscall<void>(list);
     for (auto& [owner, state] : screens)
     {
+        if (list == state.msaa)
+        {
+            // The temporal anti-aliasing modes need the game's MSAA off: it stays off while one of them is in effect
+            int choice = Field<int>(list, 228);
+            if (MSAALocked() && choice != 0)
+            {
+                SelectChoice(list, 0);
+                choice = 0;
+            }
+            nMSAAChoice = choice;
+            break;
+        }
         auto found = state.lists.find(list);
         if (found == state.lists.end()) continue;
         auto& binding = found->second;
         int position = Field<int>(list, 228);
         if (position != binding.shown)
         {
-            if (position == static_cast<int>(binding.option->choices.size()))
+            const int count = static_cast<int>(binding.option->choices.size());
+            if (position == count)
             {
                 position = binding.shown == position - 1 ? 0 : position - 1;
                 SelectChoice(list, position);
             }
-            binding.option->Select(position);
-            binding.shown = position;
+            // Values that can't be chosen now are passed over in the direction of the change
+            const int listed = position;
+            const int step = position == (binding.shown + 1) % count ? 1 : count - 1;
+            for (int tries = 0; tries < count && position != binding.option->Position(); ++tries)
+            {
+                binding.option->Select(position);
+                if (position != binding.option->Position()) position = (position + step) % count;
+            }
+            // The list still shows a value that was passed over
+            binding.shown = position == listed ? position : -1;
         }
         auto desired = binding.option->Position();
         if (desired != binding.shown)
@@ -1331,6 +1376,22 @@ void HandleChanges()
     for (auto owner : rebuild) RebuildFusionPage(owner);
 }
 
+// The help of the game's MSAA row while it's locked: the game's own text and why
+std::string LockedMSAAHelp(const Screen& state)
+{
+    std::string text;
+    if (gameText)
+        if (auto help = gxtHook.thiscall<const wchar_t*>(gameText, "HELP235"); help && *help)
+        {
+            const auto length = static_cast<int>(std::wcslen(help));
+            text.resize(WideCharToMultiByte(CP_UTF8, 0, help, length, nullptr, 0, nullptr, nullptr));
+            WideCharToMultiByte(CP_UTF8, 0, help, length, text.data(), static_cast<int>(text.size()), nullptr, nullptr);
+            if (!text.empty() && !std::strchr(".!?", text.back())) text += ".";
+            text += " ";
+        }
+    return text + state.snapshot->Host("msaa.locked");
+}
+
 void UpdateHelp()
 {
     HandleChanges();
@@ -1346,12 +1407,15 @@ void UpdateHelp()
             auto& option = *binding->second.option;
             auto text = option.help;
             if (!option.Enabled()) text += (text.empty() ? "" : " ") + state.snapshot->Host("menu.disabled");
+            else if (auto reason = option.reason ? option.reason() : std::string(); !reason.empty()) text += (text.empty() ? "" : " ") + reason;
             if (auto options = optionsScreens.find(owner); options != optionsScreens.end() && options->second.open && !options->second.canSave)
                 text = state.snapshot->Host("menu.savefailed");
             ShowHelp(state, text);
         }
         else if (auto action = SelectedAction(state, selected))
             ShowHelp(state, action->help ? action->help() : std::string());
+        else if (selected && selected == state.msaaRow && MSAALocked())
+            ShowHelp(state, LockedMSAAHelp(state));
         else ResetHelp(state);
         Field<uint8_t>(state.help, 474) = 0;
     }

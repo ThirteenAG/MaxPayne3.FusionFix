@@ -1,6 +1,7 @@
 module;
 
 #include <common.hxx>
+#include <atomic>
 
 export module comvars;
 
@@ -11,6 +12,11 @@ export RECT gRect;
 export void* (__fastcall* getNativeAddress)(uintptr_t*, uint32_t, uint32_t);
 export uintptr_t* nativeHandlerPtrAddress;
 export constexpr auto gLastControllerTextureIndex = 7;
+
+// The game's MSAA sample count in use (1 when off), and the Graphics page's MSAA choice before it's applied
+// (the list position, 0 = Off) while that page is open, -1 otherwise
+export GameRef<uint32_t> nMSAASamples;
+export std::atomic<int> nMSAAChoice{ -1 };
 
 export enum eControllerButtons
 {

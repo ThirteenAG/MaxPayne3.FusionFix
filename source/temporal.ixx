@@ -274,6 +274,8 @@ namespace
 
     void STDMETHODCALLTYPE CopyBuffer(ID3D11DeviceContext* context, ID3D11Resource* destination, ID3D11Resource* source)
     {
+        if (HDR::CopyToSdr(destination, 0, 0, source, nullptr))
+            return;
         CopyConstants(destination, source, 0, nullptr);
         CopyResource(context, destination, source);
     }
@@ -281,6 +283,8 @@ namespace
     void STDMETHODCALLTYPE CopyBufferRegion(ID3D11DeviceContext* context, ID3D11Resource* destination, UINT subresource,
         UINT x, UINT y, UINT z, ID3D11Resource* source, UINT sourceSubresource, const D3D11_BOX* box)
     {
+        if (!subresource && !sourceSubresource && !z && HDR::CopyToSdr(destination, x, y, source, box))
+            return;
         CopyConstants(destination, source, x, box);
         CopySubresourceRegion(context, destination, subresource, x, y, z, source, sourceSubresource, box);
     }

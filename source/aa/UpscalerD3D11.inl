@@ -13,6 +13,9 @@ public:
     ID3D11Device5* device = nullptr;
     ID3D11DeviceContext4* context = nullptr;
     std::array<ID3D11Texture2D*, TextureCount> textures{};
+    // The plugin's passes draw the inputs straight into the shared textures and read the output from there
+    std::array<ID3D11RenderTargetView*, InputCount> targets{};
+    ID3D11ShaderResourceView* output = nullptr;
     ID3D11Fence* fence = nullptr;
 
     static constexpr DXGI_FORMAT Formats[TextureCount] =
@@ -44,6 +47,9 @@ public:
 
     void ReleaseImports()
     {
+        for (auto& target : targets)
+            SafeRelease(target);
+        SafeRelease(output);
         for (auto& texture : textures)
             SafeRelease(texture);
         SafeRelease(fence);
@@ -72,6 +78,39 @@ public:
                 return false;
             }
         }
+        for (size_t i = 0; i < textures.size(); ++i)
+        {
+            D3D11_TEXTURE2D_DESC desc{};
+            textures[i]->GetDesc(&desc);
+            if (desc.Format != Formats[i] || desc.Width != w || desc.Height != h || desc.SampleDesc.Count != 1)
+            {
+                Log("Bridge: shared texture %u has an unexpected layout", static_cast<uint32_t>(i));
+                ReleaseImports();
+                return false;
+            }
+        }
+        for (size_t i = 0; i < targets.size(); ++i)
+        {
+            D3D11_TEXTURE2D_DESC desc{};
+            textures[i]->GetDesc(&desc);
+            auto hr = (desc.BindFlags & D3D11_BIND_RENDER_TARGET) ? device->CreateRenderTargetView(textures[i], nullptr, &targets[i]) : E_INVALIDARG;
+            if (FAILED(hr))
+            {
+                Log("Bridge: shared texture %u can't be drawn to (bind flags 0x%X, 0x%08X)", static_cast<uint32_t>(i), desc.BindFlags, static_cast<uint32_t>(hr));
+                ReleaseImports();
+                return false;
+            }
+        }
+        D3D11_TEXTURE2D_DESC outputDesc{};
+        textures[OutputIndex]->GetDesc(&outputDesc);
+        auto viewResult = (outputDesc.BindFlags & D3D11_BIND_SHADER_RESOURCE) ? device->CreateShaderResourceView(textures[OutputIndex], nullptr, &output) : E_INVALIDARG;
+        if (FAILED(viewResult))
+        {
+            Log("Bridge: the shared output can't be read (bind flags 0x%X, 0x%08X)", outputDesc.BindFlags, static_cast<uint32_t>(viewResult));
+            ReleaseImports();
+            return false;
+        }
+
         auto fenceHandle = reinterpret_cast<HANDLE>(shared.FenceHandle);
         auto hr = fenceHandle ? device->OpenSharedFence(fenceHandle, IID_PPV_ARGS(&fence)) : E_HANDLE;
         if (FAILED(hr) || !fence)
@@ -86,43 +125,26 @@ public:
         return true;
     }
 
-    bool Matches(ID3D11Texture2D* texture, size_t index) const
+    // The inputs drawn so far go to the hub
+    bool SubmitInputs(uint64_t signalValue)
     {
-        D3D11_TEXTURE2D_DESC desc{};
-        texture->GetDesc(&desc);
-        return desc.Format == Formats[index] && desc.Width == width && desc.Height == height && desc.SampleDesc.Count == 1;
-    }
-
-    bool SubmitInputs(ID3D11Texture2D* const (&inputs)[InputCount], uint64_t signalValue)
-    {
-        for (size_t i = 0; i < InputCount; ++i)
-            if (inputs[i] && !Matches(inputs[i], i))
-                return false;
-
-        for (size_t i = 0; i < InputCount; ++i)
-            if (inputs[i])
-                context->CopyResource(textures[i], inputs[i]);
         if (FAILED(context->Signal(fence, signalValue)))
             return false;
         context->Flush();
         return true;
     }
 
-    bool SubmitOutput(ID3D11Texture2D* target, uint64_t waitValue)
+    // What the game draws next waits for the hub's output
+    bool WaitOutput(uint64_t waitValue)
     {
-        if (!Matches(target, OutputIndex) || FAILED(context->Wait(fence, waitValue)))
-            return false;
-        context->CopyResource(target, textures[OutputIndex]);
-        return true;
+        return SUCCEEDED(context->Wait(fence, waitValue));
     }
 };
 
+// The shared inputs: colour R16G16B16A16_FLOAT, depth R32_FLOAT (standard [0, 1]), motion R16G16_FLOAT (previous -
+// current in texture coordinates); the output R16G16B16A16_FLOAT
 struct UpscalerFrame11
 {
-    ID3D11Texture2D* Color = nullptr;       // R16G16B16A16_FLOAT
-    ID3D11Texture2D* Depth = nullptr;       // R32_FLOAT, standard [0, 1] depth
-    ID3D11Texture2D* Motion = nullptr;      // R16G16_FLOAT, previous - current in texture coordinates
-    ID3D11Texture2D* Output = nullptr;      // R16G16B16A16_FLOAT
     uint32_t Width = 0;
     uint32_t Height = 0;
     Jitter JitterPixels;
@@ -224,9 +246,10 @@ public:
         return backend == Backend::DLSS ? dlssAvailable.load() : fsrAvailable.load();
     }
 
-    bool Evaluate(Backend backend, const UpscalerFrame11& frame)
+    // Configures the hub for the frame's backend and size: true when the shared textures can be drawn to
+    bool Prepare(Backend backend, const UpscalerFrame11& frame)
     {
-        if (state != State::Ready || !IsAvailable(backend) || !frame.Color || !frame.Depth || !frame.Motion || !frame.Output)
+        if (state != State::Ready || !IsAvailable(backend))
             return false;
 
         auto backendId = static_cast<uint32_t>(backend);
@@ -270,18 +293,18 @@ public:
             configureFailed = false;
             fenceValue = 0;
         }
-        else if (configureFailed)
-        {
-            return false;
-        }
+        return !configureFailed;
+    }
 
+    // Hands the inputs drawn after Prepare to the hub; true when the output is ready for what the game draws next
+    bool Evaluate(const UpscalerFrame11& frame)
+    {
         auto inputValue = ++fenceValue;
         auto outputValue = ++fenceValue;
 
-        ID3D11Texture2D* const inputs[InputCount] = { frame.Color, frame.Depth, frame.Motion, nullptr };
-        if (!bridge.SubmitInputs(inputs, inputValue))
+        if (!bridge.SubmitInputs(inputValue))
         {
-            Log("Bridge: the inputs couldn't be copied");
+            Log("Bridge: the inputs couldn't be handed over");
             configureFailed = true;
             return false;
         }
@@ -312,7 +335,7 @@ public:
             return false;
         }
 
-        return bridge.SubmitOutput(frame.Output, outputValue);
+        return bridge.WaitOutput(outputValue);
     }
 };
 

@@ -68,5 +68,7 @@
   "hdr.peak": "Brillo máximo HDR",
   "hdr.description": "Salida HDR nativa. Requiere una pantalla HDR con HDR de Windows activado, DirectX 11 y MSAA desactivado.",
   "hdr.white.description": "Brillo del blanco normal y de la interfaz.",
-  "hdr.peak.description": "Ajusta al brillo máximo de tu pantalla."
+  "hdr.peak.description": "Ajusta al brillo máximo de tu pantalla.",
+  "antialiasing.msaa": "Desactiva el MSAA del juego para usar TAA, DLAA o FSR.",
+  "msaa.locked": "Sigue desactivado mientras TAA, DLAA o FSR esté seleccionado."
 }

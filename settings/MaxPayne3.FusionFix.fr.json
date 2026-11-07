@@ -68,5 +68,7 @@
   "hdr.peak": "Luminosité maximale HDR",
   "hdr.description": "Sortie HDR native. Écran HDR avec HDR Windows activé, DirectX 11 et MSAA désactivé requis.",
   "hdr.white.description": "Luminosité du blanc ordinaire et de l’interface.",
-  "hdr.peak.description": "Réglez sur la luminosité maximale de votre écran."
+  "hdr.peak.description": "Réglez sur la luminosité maximale de votre écran.",
+  "antialiasing.msaa": "Désactivez le MSAA du jeu pour utiliser TAA, DLAA ou FSR.",
+  "msaa.locked": "Reste désactivé tant que TAA, DLAA ou FSR est sélectionné."
 }

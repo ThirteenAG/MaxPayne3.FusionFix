@@ -30,3 +30,14 @@ float4 HDROutput(float4 position : SV_Position, float2 uv : TEXCOORD0) : SV_Targ
     }
     return float4(linearColor * Output.x, 1);
 }
+
+cbuffer CopyParameters : register(b1)
+{
+    int4 CopyOffset; // xy: source minus destination pixel
+};
+
+// The game copies its back buffer into 8-bit targets of the format it asked for: the same values, clipped like there
+float4 SdrCopy(float4 position : SV_Position) : SV_Target
+{
+    return saturate(Composite.Load(int3(int2(position.xy) + CopyOffset.xy, 0)));
+}

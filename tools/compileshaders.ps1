@@ -20,6 +20,7 @@ $fxc = Join-Path $fxcDir "fxc.exe"
 # convenience, not committed), Flags: more fxc options. The post processing shaders are compiled by premake5.lua.
 $shaders = @(
     @{ Src = "shaders/temporal/HDR.hlsl"; T = "ps_5_0"; E = "HDROutput"; Fo = "source/resources/temporal/HDROutput.cso" }
+    @{ Src = "shaders/temporal/HDR.hlsl"; T = "ps_5_0"; E = "SdrCopy"; Fo = "source/resources/temporal/SdrCopy.cso" }
     @{ Src = "shaders/temporal/Temporal.hlsl"; T = "vs_4_0"; E = "Fullscreen"; Fo = "source/resources/temporal/Fullscreen.cso" }
     foreach ($name in @("Resolve", "BridgeMotion", "CopyDepth", "BridgeColor", "Output", "HistoryDepth"))
     {

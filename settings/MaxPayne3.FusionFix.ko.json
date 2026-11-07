@@ -68,5 +68,7 @@
   "hdr.peak": "HDR 최대 밝기",
   "hdr.description": "네이티브 HDR 출력. Windows HDR이 켜진 HDR 디스플레이, DirectX 11, MSAA 비활성화가 필요합니다.",
   "hdr.white.description": "일반 흰색과 인터페이스의 밝기입니다.",
-  "hdr.peak.description": "디스플레이의 최대 밝기로 설정하세요."
+  "hdr.peak.description": "디스플레이의 최대 밝기로 설정하세요.",
+  "antialiasing.msaa": "TAA, DLAA, FSR을 사용하려면 게임의 MSAA를 끄세요.",
+  "msaa.locked": "TAA, DLAA, FSR을 선택한 동안에는 꺼진 상태로 유지됩니다."
 }

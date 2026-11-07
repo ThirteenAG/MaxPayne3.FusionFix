@@ -68,5 +68,7 @@
   "hdr.peak": "Пиковая яркость HDR",
   "hdr.description": "Нативный HDR. Требуются HDR-дисплей с включённым HDR Windows, DirectX 11 и выключенный MSAA.",
   "hdr.white.description": "Яркость обычного белого и интерфейса.",
-  "hdr.peak.description": "Укажите пиковую яркость вашего экрана."
+  "hdr.peak.description": "Укажите пиковую яркость вашего экрана.",
+  "antialiasing.msaa": "Отключите MSAA игры, чтобы использовать TAA, DLAA или FSR.",
+  "msaa.locked": "Остаётся выключенным, пока выбран TAA, DLAA или FSR."
 }

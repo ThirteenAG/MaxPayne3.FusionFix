@@ -31,8 +31,8 @@ namespace
     ComPtr<ID3D11Texture2D> Copy;
     ComPtr<ID3D11ShaderResourceView> View;
     ComPtr<ID3D11VertexShader> Vertex;
-    ComPtr<ID3D11PixelShader> Pixel;
-    ComPtr<ID3D11Buffer> Parameters;
+    ComPtr<ID3D11PixelShader> Pixel, CopyPixel;
+    ComPtr<ID3D11Buffer> Parameters, CopyParameters;
     ComPtr<ID3D11RenderTargetView> Target;
     ID3D11Texture2D* TargetTexture{};
 
@@ -43,8 +43,10 @@ namespace
         View.Reset();
         Copy.Reset();
         Parameters.Reset();
+        CopyParameters.Reset();
         Vertex.Reset();
         Pixel.Reset();
+        CopyPixel.Reset();
         State.Reset();
         Context.Reset();
         Device.Reset();
@@ -175,13 +177,14 @@ namespace
         UINT size{};
         auto module = GetPostFXModuleHandle(&Initialize);
         if (!LoadPostFXResource(module, 300, &code, &size) || FAILED(Device->CreateVertexShader(code, size, nullptr, &Vertex)) ||
-            !LoadPostFXResource(module, 320, &code, &size) || FAILED(Device->CreatePixelShader(code, size, nullptr, &Pixel)))
+            !LoadPostFXResource(module, 320, &code, &size) || FAILED(Device->CreatePixelShader(code, size, nullptr, &Pixel)) ||
+            !LoadPostFXResource(module, 321, &code, &size) || FAILED(Device->CreatePixelShader(code, size, nullptr, &CopyPixel)))
             return false;
         D3D11_BUFFER_DESC buffer{};
         buffer.ByteWidth = 16;
         buffer.Usage = D3D11_USAGE_DEFAULT;
         buffer.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        if (FAILED(Device->CreateBuffer(&buffer, nullptr, &Parameters)))
+        if (FAILED(Device->CreateBuffer(&buffer, nullptr, &Parameters)) || FAILED(Device->CreateBuffer(&buffer, nullptr, &CopyParameters)))
             return false;
         description.BindFlags = D3D11_BIND_SHADER_RESOURCE;
         description.MiscFlags = description.CPUAccessFlags = 0;
@@ -231,6 +234,71 @@ namespace
         Context->SwapDeviceContextState(previous.Get(), nullptr);
     }
 
+    DXGI_FORMAT SdrTarget(DXGI_FORMAT format)
+    {
+        switch (format)
+        {
+        case DXGI_FORMAT_R8G8B8A8_TYPELESS:
+        case DXGI_FORMAT_R8G8B8A8_UNORM:
+        case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+            return DXGI_FORMAT_R8G8B8A8_UNORM;
+        case DXGI_FORMAT_B8G8R8A8_TYPELESS:
+        case DXGI_FORMAT_B8G8R8A8_UNORM:
+        case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+            return DXGI_FORMAT_B8G8R8A8_UNORM;
+        default:
+            return DXGI_FORMAT_UNKNOWN;
+        }
+    }
+
+    // The game makes some targets in the back buffer format it asked for and copies the back buffer into them, for
+    // example the picture the painkiller flash fades from. A copy between different formats does nothing, so with the
+    // scRGB chain the same picture is drawn into them instead.
+    bool CopyToSdr(ID3D11Resource* destination, UINT x, UINT y, ID3D11Resource* source, const D3D11_BOX* box)
+    {
+        if (!Chain || !CopyPixel)
+            return false;
+        D3D11_RESOURCE_DIMENSION a{}, b{};
+        destination->GetType(&a);
+        source->GetType(&b);
+        if (a != D3D11_RESOURCE_DIMENSION_TEXTURE2D || b != D3D11_RESOURCE_DIMENSION_TEXTURE2D)
+            return false;
+        D3D11_TEXTURE2D_DESC target{}, picture{};
+        static_cast<ID3D11Texture2D*>(destination)->GetDesc(&target);
+        static_cast<ID3D11Texture2D*>(source)->GetDesc(&picture);
+        const auto format = SdrTarget(target.Format);
+        if (picture.Format != DXGI_FORMAT_R16G16B16A16_FLOAT || format == DXGI_FORMAT_UNKNOWN || !(target.BindFlags & D3D11_BIND_RENDER_TARGET) ||
+            !(picture.BindFlags & D3D11_BIND_SHADER_RESOURCE) || target.SampleDesc.Count != 1 || picture.SampleDesc.Count != 1)
+            return false;
+        D3D11_BOX region = box ? *box : D3D11_BOX{ 0, 0, 0, picture.Width, picture.Height, 1 };
+        region.right = std::min({ region.right, picture.Width, region.left + (target.Width > x ? target.Width - x : 0) });
+        region.bottom = std::min({ region.bottom, picture.Height, region.top + (target.Height > y ? target.Height - y : 0) });
+        if (region.right <= region.left || region.bottom <= region.top)
+            return true;
+        ComPtr<ID3D11RenderTargetView> output;
+        ComPtr<ID3D11ShaderResourceView> input;
+        D3D11_RENDER_TARGET_VIEW_DESC view{ format, D3D11_RTV_DIMENSION_TEXTURE2D };
+        if (FAILED(Device->CreateRenderTargetView(destination, &view, &output)) || FAILED(Device->CreateShaderResourceView(source, nullptr, &input)))
+            return false;
+        const int offset[4]{ int(region.left) - int(x), int(region.top) - int(y), 0, 0 };
+        ComPtr<ID3DDeviceContextState> previous;
+        Context->SwapDeviceContextState(State.Get(), &previous);
+        Context->ClearState();
+        D3D11_VIEWPORT viewport{ float(x), float(y), float(region.right - region.left), float(region.bottom - region.top), 0, 1 };
+        Context->RSSetViewports(1, &viewport);
+        Context->OMSetRenderTargets(1, output.GetAddressOf(), nullptr);
+        Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        Context->VSSetShader(Vertex.Get(), nullptr, 0);
+        Context->PSSetShader(CopyPixel.Get(), nullptr, 0);
+        Context->PSSetShaderResources(0, 1, input.GetAddressOf());
+        Context->UpdateSubresource(CopyParameters.Get(), 0, nullptr, offset, 0, 0);
+        Context->PSSetConstantBuffers(1, 1, CopyParameters.GetAddressOf());
+        Context->Draw(3, 0);
+        Context->ClearState();
+        Context->SwapDeviceContextState(previous.Get(), nullptr);
+        return true;
+    }
+
     HRESULT STDMETHODCALLTYPE Present(IDXGISwapChain* chain, UINT interval, UINT flags)
     {
         ComPtr<ID3D11RenderTargetView> targets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT];
@@ -270,6 +338,11 @@ export namespace HDR
     void CheckDisplay()
     {
         ::CheckDisplay();
+    }
+
+    bool CopyToSdr(ID3D11Resource* destination, UINT x, UINT y, ID3D11Resource* source, const D3D11_BOX* box)
+    {
+        return ::CopyToSdr(destination, x, y, source, box);
     }
 
     bool Active()
