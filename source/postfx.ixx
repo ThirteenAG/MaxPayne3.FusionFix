@@ -43,7 +43,7 @@ public:
     {
         const int nSmaa = AntiAliasing::SmaaMode(); // 0 off, 1 on, 2 on with the edge view
 
-        Options.nConsoleGamma = HDR::Active() ? 0 : FusionFixSettings.GetInt(PREF_CONSOLEGAMMA);
+        Options.nConsoleGamma = FusionFixSettings.GetInt(PREF_CONSOLEGAMMA);
         Options.bSmaa = nSmaa != 0;
         Options.bSmaaDebug = nSmaa == 2;
     }

@@ -121,7 +121,7 @@
       "enabledIf": { "setting": "MAIN.HDR", "in": [ 1 ] }
     },
     {
-      "id": "MAIN.HDRPeakBrightness", "type": "float", "default": 1000, "min": 200, "max": 10000, "step": 50, "decimals": 0, "unit": "nits",
+      "id": "MAIN.HDRPeakBrightness", "type": "float", "default": 1000, "min": 200, "max": 4000, "step": 50, "decimals": 0, "unit": "nits",
       "label": "@hdr.peak", "description": "@hdr.peak.description", "page": "display", "control": [ "slider" ],
       "enabledIf": { "setting": "MAIN.HDR", "in": [ 1 ] }
     },

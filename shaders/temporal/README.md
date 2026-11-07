@@ -41,12 +41,15 @@ profile through relative paths in the container XML. Temporal AA requires the
 DX11 renderer and MSAA off. Multisample and stereo profiles are excluded.
 
 HDR uses an FP16 flip-model swap chain with linear scRGB presentation. The
-game composites its scene and interface before the final output conversion;
-paper white and peak brightness are saved in the plugin settings. HDR can only
-be chosen on the DirectX 11 renderer with the game window on a display in
-Windows HDR mode; otherwise the game starts with its SDR swap chain. A display
-that leaves HDR mode during the session receives clamped SDR color in linear
-scRGB.
+game composites its scene and interface exactly like in SDR, only nothing clips
+at 1.0. The last pass of the frame decodes that with gamma 2.2, the display the
+game is graded for, so paper white is the game's white and only values above
+it reach towards the peak brightness; the roll-off scales by the brightest
+channel, which keeps the hue. The game's contrast, brightness and console gamma
+stay in effect because they run before this pass. HDR can be chosen on the
+DirectX 11 renderer with the game window on a display in Windows HDR mode. The
+swap chain is made when any display is in that mode, so the window can move; on
+a display without it the pass outputs the original SDR picture.
 
 TAA, DLAA and FSR resolve the linear scene buffer that the game's post
 processing reads, after the subsample-alpha combine. Subsample-alpha and
@@ -54,5 +57,4 @@ stippled transparency keep the game's original patterns. DLSS receives the colou
 reversible max-channel compression, which keeps small highlights; FSR receives
 linear HDR colour. Bloom, tone mapping, menu compositing and
 the interface run afterwards. The swap-chain image is never fed back through
-temporal AA. SDR and HDR presentation share this linear scene resolve; the SDR
-console gamma presets are bypassed while HDR output is active.
+temporal AA. SDR and HDR presentation share this linear scene resolve.

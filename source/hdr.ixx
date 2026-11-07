@@ -16,10 +16,7 @@ namespace
 {
     using Microsoft::WRL::ComPtr;
     IDXGISwapChain* Chain{};
-    std::atomic<bool> OutputHDR{};
-    uint64_t LastOutputCheck{};
     HWND Window{};
-    HMONITOR Monitor{};
     std::atomic<bool> Direct3D11{}, DisplayHDR{};
     uint64_t LastDisplayCheck{};
     HMONITOR DisplayMonitor{};
@@ -46,22 +43,19 @@ namespace
         Device.Reset();
     }
 
-    void UpdateOutput(IDXGISwapChain* chain)
+    // Whether the display of the window and whether any display is in HDR mode (Windows HDR on). The outputs of every
+    // adapter count: on a hybrid GPU the game's adapter doesn't own the display.
+    struct DisplayState
     {
-        Monitor = MonitorFromWindow(Window, MONITOR_DEFAULTTONEAREST);
-        ComPtr<IDXGIOutput> output;
-        ComPtr<IDXGIOutput6> modern;
-        DXGI_OUTPUT_DESC1 description{};
-        OutputHDR = SUCCEEDED(chain->GetContainingOutput(&output)) && SUCCEEDED(output.As(&modern)) &&
-            SUCCEEDED(modern->GetDesc1(&description)) && description.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
-    }
+        bool Window{}, Any{};
+    };
 
-    // Whether the display of the window is in HDR mode (Windows HDR on)
-    bool WindowOnHDR(HWND window)
+    DisplayState ReadDisplays(HWND window)
     {
+        DisplayState state;
         DisplayMonitor = MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST);
         if ((!DisplayFactory || !DisplayFactory->IsCurrent()) && FAILED(CreateDXGIFactory1(IID_PPV_ARGS(DisplayFactory.ReleaseAndGetAddressOf()))))
-            return false;
+            return state;
         ComPtr<IDXGIAdapter1> adapter;
         for (UINT a = 0; DisplayFactory->EnumAdapters1(a, &adapter) != DXGI_ERROR_NOT_FOUND; ++a)
         {
@@ -70,11 +64,14 @@ namespace
             {
                 ComPtr<IDXGIOutput6> modern;
                 DXGI_OUTPUT_DESC1 description{};
-                if (SUCCEEDED(output.As(&modern)) && SUCCEEDED(modern->GetDesc1(&description)) && description.Monitor == DisplayMonitor)
-                    return description.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+                if (FAILED(output.As(&modern)) || FAILED(modern->GetDesc1(&description)) ||
+                    description.ColorSpace != DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020)
+                    continue;
+                state.Any = true;
+                state.Window |= description.Monitor == DisplayMonitor;
             }
         }
-        return false;
+        return state;
     }
 
     // HDR can be chosen on the DirectX 11 renderer with the game window on an HDR display
@@ -105,7 +102,7 @@ namespace
         // The factory goes stale when the displays change, Windows HDR included
         if (MonitorFromWindow(Window, MONITOR_DEFAULTTONEAREST) == DisplayMonitor && DisplayFactory && DisplayFactory->IsCurrent())
             return;
-        const bool hdr = WindowOnHDR(Window);
+        const bool hdr = ReadDisplays(Window).Window;
         if (DisplayHDR.exchange(hdr) != hdr)
             SettingsPlugin().Refresh("MAIN.HDR");
     }
@@ -164,7 +161,7 @@ namespace
         ComPtr<ID3D11RenderTargetView> target;
         if (FAILED(Device->CreateRenderTargetView(output.Get(), nullptr, &target)))
             return;
-        const bool enabled = OutputHDR && FusionFixSettings.GetInt(PREF_HDR) != 0;
+        const bool enabled = DisplayHDR && FusionFixSettings.GetInt(PREF_HDR) != 0;
         const float white = enabled ? std::clamp(FusionFixSettings.GetFloat(PREF_HDRWHITE), 80.0f, 500.0f) : 80.0f;
         const float peak = std::max(white, FusionFixSettings.GetFloat(PREF_HDRPEAK));
         float parameters[]{ white / 80.0f, peak / white, enabled ? 1.0f : 0.0f, 0 };
@@ -196,12 +193,6 @@ namespace
         const bool render = chain == Chain && !(flags & DXGI_PRESENT_TEST);
         if (render)
         {
-            const auto now = GetTickCount64();
-            if (now - LastOutputCheck > 1000 || MonitorFromWindow(Window, MONITOR_DEFAULTTONEAREST) != Monitor)
-            {
-                UpdateOutput(chain);
-                LastOutputCheck = now;
-            }
             Render(chain);
             if (Context)
             {
@@ -237,27 +228,28 @@ export namespace HDR
 
     bool Active()
     {
-        if (Chain && MonitorFromWindow(Window, MONITOR_DEFAULTTONEAREST) != Monitor)
-            UpdateOutput(Chain);
-        return Chain && OutputHDR && FusionFixSettings.GetInt(PREF_HDR);
+        return Chain && DisplayHDR && FusionFixSettings.GetInt(PREF_HDR);
     }
 
     void Shutdown()
     {
         Chain = nullptr;
-        OutputHDR = false;
         Release();
         DisplayFactory.Reset();
     }
 
     bool Prepare(const D3D_FEATURE_LEVEL* levels, UINT count, DXGI_SWAP_CHAIN_DESC& description)
     {
+        // The player's choice, before availability can change the value in effect
+        static const bool wanted = FusionFixSettings.GetInt(PREF_HDR) != 0;
         Window = description.OutputWindow;
         Direct3D11 = !count || levels[0] >= D3D_FEATURE_LEVEL_11_0;
-        DisplayHDR = WindowOnHDR(Window);
+        const auto displays = ReadDisplays(Window);
+        DisplayHDR = displays.Window;
         LastDisplayCheck = GetTickCount64();
         ApplyAvailability();
-        if (!FusionFixSettings.GetInt(PREF_HDR) || !Supported() || description.SampleDesc.Count != 1)
+        // Any HDR display: the window can start on another display and move, the output follows it
+        if (!wanted || !Direct3D11 || !displays.Any || description.SampleDesc.Count != 1)
             return false;
         description.BufferDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
         description.BufferCount = std::max(2u, description.BufferCount);
@@ -281,7 +273,6 @@ export namespace HDR
         DXGI_SWAP_CHAIN_DESC description{};
         chain->GetDesc(&description);
         Window = description.OutputWindow;
-        UpdateOutput(chain);
         if (!PresentHook)
         {
             auto table = *reinterpret_cast<void***>(chain);
