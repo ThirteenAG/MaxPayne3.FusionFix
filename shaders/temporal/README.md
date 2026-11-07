@@ -4,6 +4,10 @@ These containers were copied from MaxPayne3.FusionShaders. Only deferred
 geometry programs are changed; the remaining programs are included because
 the compiler rebuilds complete containers.
 
+The generator corrects known decompilation errors of the reference set, each
+checked against the original bytecode, in every program it writes, for example
+the plant collision sphere radius that grass reads from the w component.
+
 Vertex shaders evaluate the previous clip position using previous draw
 constants. Pixel shaders store previous-minus-current UV motion in a separate
 R16G16F target. The game's four G-buffer outputs remain unchanged, including

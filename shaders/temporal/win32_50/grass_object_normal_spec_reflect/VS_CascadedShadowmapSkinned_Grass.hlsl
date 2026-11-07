@@ -151,7 +151,7 @@ VS_OUT main(VS_IN i)
 			r3 = asfloat(r0.xyz) + -(r4.xyz);
 			r2.z = asint(dot(r3.xyz, r3.xyz));
 			r2.z = asint(sqrt(asfloat(r2.z)));
-			r2.z = asint(-(asfloat(r2.z)) + g_vCollisionSpheres[r1.w].x);
+			r2.z = asint(-(asfloat(r2.z)) + g_vCollisionSpheres[r1.w].w);
 			r2.z = asint(max(asfloat(r2.z), 0));
 			r2.z = asint(asfloat(r0.w) * asfloat(r2.z));
 			r3 = r3.xyz + float3(0.00000999999975, 0.00000999999975, 0.00000999999975);

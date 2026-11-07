@@ -66,7 +66,7 @@
   "menu.savefailed": "Impossibile salvare il file delle impostazioni. Le modifiche restano in memoria.",
   "hdr.white": "Bianco di riferimento HDR",
   "hdr.peak": "Luminosità massima HDR",
-  "hdr.description": "Uscita HDR nativa. Richiede uno schermo HDR con HDR di Windows attivo, DirectX 11 e MSAA disattivato. Riavvio necessario.",
+  "hdr.description": "Uscita HDR nativa. Richiede uno schermo HDR con HDR di Windows attivo, DirectX 11 e MSAA disattivato.",
   "hdr.white.description": "Luminosità del bianco normale e dell’interfaccia.",
   "hdr.peak.description": "Imposta la luminosità massima dello schermo."
 }

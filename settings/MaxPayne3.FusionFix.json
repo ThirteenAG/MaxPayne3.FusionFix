@@ -113,7 +113,7 @@
     },
     {
       "id": "MAIN.HDR", "type": "bool", "default": 0,
-      "label": "HDR", "description": "@hdr.description", "page": "display", "control": [ "switch", "cycler" ], "apply": "restart"
+      "label": "HDR", "description": "@hdr.description", "page": "display", "control": [ "switch", "cycler" ]
     },
     {
       "id": "MAIN.HDRPaperWhite", "type": "float", "default": 200, "min": 80, "max": 500, "step": 10, "decimals": 0, "unit": "nits",

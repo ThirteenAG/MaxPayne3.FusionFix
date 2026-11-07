@@ -66,7 +66,7 @@
   "menu.savefailed": "Could not save the settings file. Changes remain in memory.",
   "hdr.white": "HDR paper white",
   "hdr.peak": "HDR peak brightness",
-  "hdr.description": "Native HDR output. Needs an HDR display with Windows HDR on, DirectX 11 and MSAA off. Restart required.",
+  "hdr.description": "Native HDR output. Needs an HDR display with Windows HDR on, DirectX 11 and MSAA off.",
   "hdr.white.description": "Brightness of ordinary white and the interface.",
   "hdr.peak.description": "Set this to the peak brightness of your display."
 }

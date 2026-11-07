@@ -66,7 +66,7 @@
   "menu.savefailed": "Die Einstellungsdatei konnte nicht gespeichert werden. Änderungen bleiben im Arbeitsspeicher.",
   "hdr.white": "HDR-Papierweiß",
   "hdr.peak": "HDR-Spitzenhelligkeit",
-  "hdr.description": "Native HDR-Ausgabe. Benötigt ein HDR-Display mit Windows-HDR, DirectX 11 und deaktiviertes MSAA. Neustart erforderlich.",
+  "hdr.description": "Native HDR-Ausgabe. Benötigt ein HDR-Display mit Windows-HDR, DirectX 11 und deaktiviertes MSAA.",
   "hdr.white.description": "Helligkeit von normalem Weiß und der Oberfläche.",
   "hdr.peak.description": "Auf die maximale Helligkeit des Bildschirms einstellen."
 }

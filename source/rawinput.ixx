@@ -95,6 +95,27 @@ class RawInput
         MouseMotion::UseImmediateState(context.esp, *mouseState);
     }
 
+    // The camera multiplies each frame's mouse movement by the frame time, so the same movement turned the camera
+    // less the higher the frame rate. Scaled to a 60 fps frame, the turn depends only on the movement.
+    static inline bool (__fastcall* ReadCameraInput)(void*, void*, uint8_t*, float*, float*, float*) = nullptr;
+    static inline uint8_t* (__cdecl* GetPlayerControls)(int) = nullptr;
+    static inline GameRef<float> fCameraTimeStep;
+
+    static bool __fastcall ReadCameraMouse(void* camera, void* edx, uint8_t* controls, float* amount, float* x, float* y)
+    {
+        const bool result = ReadCameraInput(camera, edx, controls, amount, x, y);
+        auto state = GetPlayerControls(0);
+        if ((state[7658] || state[7656]) && fCameraTimeStep > 0.0f)
+        {
+            // This step is twice the frame time, 1/30 s at 60 fps
+            const float scale = 1.0f / (30.0f * fCameraTimeStep);
+            *amount *= scale;
+            *x *= scale;
+            *y *= scale;
+        }
+        return result;
+    }
+
 public:
     RawInput()
     {
@@ -107,6 +128,12 @@ public:
                 mouseState = *mouse.get_first<DIMOUSESTATE2*>(1);
                 mouseMotionHook = safetyhook::create_mid(mouse.get_first(52), ReadMouseMotion);
             }
+
+            auto camera = hook::pattern("8B CE E8 ? ? ? ? 8A 4E 41 F3 0F 10 44 24 08 C0 E0 07 80 E1 7F 0A C1 6A 00 88 46 41 F3 0F 11 44 24 3C E8 ? ? ? ? 83 C4 04 80 B8 EA 1D 00 00 00").get_first<uint8_t>();
+            ReadCameraInput = reinterpret_cast<decltype(ReadCameraInput)>(injector::GetBranchDestination(camera + 2).as_int());
+            GetPlayerControls = reinterpret_cast<decltype(GetPlayerControls)>(injector::GetBranchDestination(camera + 35).as_int());
+            fCameraTimeStep.SetAddress(*hook::get_pattern<float*>("F6 06 01 F3 0F 10 0D ? ? ? ? F3 0F 59 4C 24 3C", 7));
+            injector::MakeCALL(camera + 2, ReadCameraMouse, true);
 
             // Main menu cursor acceleration, was 1.6
             static float f1 = 1.0f;

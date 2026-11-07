@@ -1,7 +1,7 @@
 Texture2D<float4> Composite : register(t0);
 cbuffer Parameters : register(b0)
 {
-    float4 Output; // x: paper white / 80 nits, y: peak / paper white, z: HDR enabled
+    float4 Output; // x: paper white or SDR white / 80 nits, y: peak / paper white, z: HDR enabled
 };
 
 float3 DecodeSRGB(float3 color)
@@ -13,9 +13,9 @@ float4 HDROutput(float4 position : SV_Position, float2 uv : TEXCOORD0) : SV_Targ
 {
     float3 color = max(Composite.Load(int3(position.xy, 0)).rgb, 0);
 
-    // An SDR display: the desktop encodes scRGB with sRGB, so this is the original picture
+    // HDR off: the original picture, at the brightness Windows gives SDR content on this display
     if (Output.z == 0)
-        return float4(DecodeSRGB(saturate(color)), 1);
+        return float4(DecodeSRGB(saturate(color)) * Output.x, 1);
 
     // The game is graded for a 2.2 display, the piecewise sRGB curve would lift its dark scenes
     float3 linearColor = pow(color, 2.2);

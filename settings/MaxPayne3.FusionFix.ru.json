@@ -66,7 +66,7 @@
   "menu.savefailed": "Не удалось сохранить файл настроек. Изменения остаются в памяти.",
   "hdr.white": "Уровень белого HDR",
   "hdr.peak": "Пиковая яркость HDR",
-  "hdr.description": "Нативный HDR. Требуются HDR-дисплей с включённым HDR Windows, DirectX 11 и выключенный MSAA. Нужен перезапуск.",
+  "hdr.description": "Нативный HDR. Требуются HDR-дисплей с включённым HDR Windows, DirectX 11 и выключенный MSAA.",
   "hdr.white.description": "Яркость обычного белого и интерфейса.",
   "hdr.peak.description": "Укажите пиковую яркость вашего экрана."
 }

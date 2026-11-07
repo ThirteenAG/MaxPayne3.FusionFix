@@ -132,10 +132,23 @@ namespace
         return SceneTarget && *SceneTarget ? *reinterpret_cast<ID3D11Texture2D**>(static_cast<uint8_t*>(*SceneTarget) + 0x38) : nullptr;
     }
 
+    // The game writes mapped constants with aligned SSE stores
+    template<typename T>
+    struct Aligned16
+    {
+        using value_type = T;
+        Aligned16() = default;
+        template<typename U> Aligned16(const Aligned16<U>&) {}
+        T* allocate(size_t count) { return static_cast<T*>(::operator new(count * sizeof(T), std::align_val_t{ 16 })); }
+        void deallocate(T* pointer, size_t) { ::operator delete(pointer, std::align_val_t{ 16 }); }
+        template<typename U> bool operator==(const Aligned16<U>&) const { return true; }
+    };
+
     struct BufferContents
     {
-        std::vector<uint8_t> Bytes;
-        const void* Mapped{};
+        std::vector<uint8_t, Aligned16<uint8_t>> Bytes;
+        void* Mapped{};
+        bool Redirected{};
         bool Valid{};
     };
 
@@ -178,7 +191,15 @@ namespace
         {
             std::lock_guard lock(BufferMutex);
             if (auto found = Buffers.find(resource); found != Buffers.end())
-                found->second.Mapped = mapped->pData;
+            {
+                // Discarded contents are written to the copy and uploaded at Unmap: reading the mapped
+                // memory back is uncached and slow
+                auto& contents = found->second;
+                contents.Mapped = mapped->pData;
+                contents.Redirected = type == D3D11_MAP_WRITE_DISCARD;
+                if (contents.Redirected)
+                    mapped->pData = contents.Bytes.data();
+            }
         }
         return result;
     }
@@ -190,8 +211,12 @@ namespace
             if (auto found = Buffers.find(resource); found != Buffers.end() && found->second.Mapped)
             {
                 auto& contents = found->second;
-                std::memcpy(contents.Bytes.data(), contents.Mapped, contents.Bytes.size());
+                if (contents.Redirected)
+                    std::memcpy(contents.Mapped, contents.Bytes.data(), contents.Bytes.size());
+                else
+                    std::memcpy(contents.Bytes.data(), contents.Mapped, contents.Bytes.size());
                 contents.Mapped = nullptr;
+                contents.Redirected = false;
                 contents.Valid = true;
             }
         }
@@ -459,14 +484,15 @@ namespace
             description.Usage = D3D11_USAGE_DYNAMIC;
             description.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
             description.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-            if (FAILED(device->CreateBuffer(&description, nullptr, &buffer)))
+            // The original methods: these uploads need no tracked copy
+            if (FAILED(CreateBuffer(device.Get(), &description, nullptr, &buffer)))
                 return {};
         }
         D3D11_MAPPED_SUBRESOURCE mapped{};
-        if (FAILED(context->Map(buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+        if (FAILED(Map(context, buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
             return {};
         std::memcpy(mapped.pData, bytes.data(), bytes.size());
-        context->Unmap(buffer.Get(), 0);
+        Unmap(context, buffer.Get(), 0);
         return buffer;
     }
 
@@ -574,10 +600,47 @@ namespace
         }
     };
 
+    // Whether the game's G-buffer is bound: motion and the previous constants only concern its draws
+    bool GBufferBound{};
+    void (STDMETHODCALLTYPE* SetTargets)(ID3D11DeviceContext*, UINT, ID3D11RenderTargetView* const*, ID3D11DepthStencilView*){};
+    void (STDMETHODCALLTYPE* SetTargetsAndViews)(ID3D11DeviceContext*, UINT, ID3D11RenderTargetView* const*, ID3D11DepthStencilView*,
+        UINT, UINT, ID3D11UnorderedAccessView* const*, const UINT*){};
+    void (STDMETHODCALLTYPE* ClearState)(ID3D11DeviceContext*){};
+
+    void TrackTargets(UINT count, ID3D11RenderTargetView* const* views)
+    {
+        GBufferBound = false;
+        if (count <= 3 || !views || !views[3])
+            return;
+        ComPtr<ID3D11Resource> resource;
+        views[3]->GetResource(&resource);
+        GBufferBound = resource.Get() == NativeGBuffer();
+    }
+
+    void STDMETHODCALLTYPE SetRenderTargets(ID3D11DeviceContext* context, UINT count, ID3D11RenderTargetView* const* views, ID3D11DepthStencilView* depth)
+    {
+        TrackTargets(count, views);
+        SetTargets(context, count, views, depth);
+    }
+
+    void STDMETHODCALLTYPE SetRenderTargetsAndViews(ID3D11DeviceContext* context, UINT count, ID3D11RenderTargetView* const* views,
+        ID3D11DepthStencilView* depth, UINT first, UINT unordered, ID3D11UnorderedAccessView* const* access, const UINT* initial)
+    {
+        if (count != D3D11_KEEP_RENDER_TARGETS_AND_DEPTH_STENCIL)
+            TrackTargets(count, views);
+        SetTargetsAndViews(context, count, views, depth, first, unordered, access, initial);
+    }
+
+    void STDMETHODCALLTYPE ResetState(ID3D11DeviceContext* context)
+    {
+        GBufferBound = false;
+        ClearState(context);
+    }
+
     SavedDraw11 PrepareDraw11(ID3D11DeviceContext* context, UINT count, UINT start, UINT instances)
     {
         SavedDraw11 saved;
-        if (ResolvedSceneFrame == Frame)
+        if (!GBufferBound || ResolvedSceneFrame == Frame)
             return saved;
         if (!Enabled || !TargetReady)
         {
@@ -938,6 +1001,9 @@ namespace
             HookMethod(table, 13, Draw, VertexDraw);
             HookMethod(table, 20, DrawIndexedInstanced, IndexedInstancedDraw);
             HookMethod(table, 21, DrawInstanced, InstancedDraw);
+            HookMethod(table, 33, SetTargets, SetRenderTargets);
+            HookMethod(table, 34, SetTargetsAndViews, SetRenderTargetsAndViews);
+            HookMethod(table, 110, ClearState, ResetState);
         }
     }
 

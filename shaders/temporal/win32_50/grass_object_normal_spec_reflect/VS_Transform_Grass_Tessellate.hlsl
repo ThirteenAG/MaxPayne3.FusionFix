@@ -178,7 +178,7 @@ TemporalVertexResult TemporalCurrent(VS_IN i)
 			r3.xyz = asfloat(r0.xyz) + -(r4.xyz);
 			r2.w = asint(dot(r3.xyz, r3.xyz));
 			r2.w = asint(sqrt(asfloat(r2.w)));
-			r2.w = asint(-(asfloat(r2.w)) + g_vCollisionSpheres[r2.z].x);
+			r2.w = asint(-(asfloat(r2.w)) + g_vCollisionSpheres[r2.z].w);
 			r2.w = asint(max(asfloat(r2.w), 0));
 			r2.w = asint(asfloat(r0.w) * asfloat(r2.w));
 			r3.xyz = r3.xyz + float3(0.00000999999975, 0.00000999999975, 0.00000999999975);
@@ -287,7 +287,7 @@ TemporalVertexResult TemporalVertexPrevious(VS_IN i)
 			r3.xyz = asfloat(r0.xyz) + -(r4.xyz);
 			r2.w = asint(dot(r3.xyz, r3.xyz));
 			r2.w = asint(sqrt(asfloat(r2.w)));
-			r2.w = asint(-(asfloat(r2.w)) + Temporal_b7_o16_g_vCollisionSpheres[r2.z].x);
+			r2.w = asint(-(asfloat(r2.w)) + Temporal_b7_o16_g_vCollisionSpheres[r2.z].w);
 			r2.w = asint(max(asfloat(r2.w), 0));
 			r2.w = asint(asfloat(r0.w) * asfloat(r2.w));
 			r3.xyz = r3.xyz + float3(0.00000999999975, 0.00000999999975, 0.00000999999975);

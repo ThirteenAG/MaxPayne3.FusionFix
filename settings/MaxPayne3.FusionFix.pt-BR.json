@@ -66,7 +66,7 @@
   "menu.savefailed": "Não foi possível salvar o arquivo de configurações. As alterações permanecem na memória.",
   "hdr.white": "Branco de referência HDR",
   "hdr.peak": "Brilho máximo HDR",
-  "hdr.description": "Saída HDR nativa. Requer uma tela HDR com HDR do Windows ativado, DirectX 11 e MSAA desativado. Reinicie o jogo.",
+  "hdr.description": "Saída HDR nativa. Requer uma tela HDR com HDR do Windows ativado, DirectX 11 e MSAA desativado.",
   "hdr.white.description": "Brilho do branco normal e da interface.",
   "hdr.peak.description": "Defina o brilho máximo da sua tela."
 }

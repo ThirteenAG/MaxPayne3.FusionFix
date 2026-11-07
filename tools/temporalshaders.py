@@ -6,6 +6,23 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 
+# Decompilation errors of the reference set, checked against the original bytecode
+CORRECTIONS = [
+    # Plant collision spheres keep their radius in w
+    (re.compile(r'(g_vCollisionSpheres\[[^\]]+\])\.x\b'), r'\1.w'),
+]
+
+
+def repair(source):
+    for pattern, replacement in CORRECTIONS:
+        source = pattern.sub(replacement, source)
+    return source
+
+
+def read(path):
+    return repair(Path(path).read_text(encoding='utf8'))
+
+
 def structure(source, name, field):
     pattern = rf'(struct {name}\s*\{{)(.*?)(\n\}};)'
     source, count = re.subn(pattern, lambda m: m[1] + m[2] + '\n\t' + field + m[3], source, flags=re.S)
@@ -254,7 +271,7 @@ def prepare(reference, destination, profiles):
             passes = [p for p in all_passes if p.get('PS') in pixels]
             passes = [p for p in passes if int(p.get('PS', '0')) and re.search(
                 r':\s*SV_Target3\s*;',
-                (xml.parent / groups['Pixel'][int(p.get('PS')) - 1].get('File')).read_text(encoding='utf8'))]
+                read(xml.parent / groups['Pixel'][int(p.get('PS')) - 1].get('File')))]
             if not passes:
                 continue
             if any(int(p.get('GS', '0')) for p in passes):
@@ -264,20 +281,20 @@ def prepare(reference, destination, profiles):
                 for index in sorted({int(p.get(key)) - (stage != 'Vertex') for p in passes if stage == 'Vertex' or int(p.get(key, '0'))}):
                     path = groups[stage][index].get('File')
                     try:
-                        source = (xml.parent / path).read_text(encoding='utf8')
+                        source = read(xml.parent / path)
                         if stage == 'Pixel':
                             available = None
                             for p in passes:
                                 if int(p.get('PS')) - 1 != index:
                                     continue
                                 before = groups['Domain'][int(p.get('DS')) - 1] if int(p.get('DS', '0')) else groups['Vertex'][int(p.get('VS'))]
-                                output_semantics = semantics((xml.parent / before.get('File')).read_text(encoding='utf8'))
+                                output_semantics = semantics(read(xml.parent / before.get('File')))
                                 available = output_semantics if available is None else available & output_semantics
                             source = prune_pixel_inputs(source, available)
                         tessellated = stage == 'Vertex' and any(int(p.get('VS')) == index and int(p.get('DS', '0')) for p in passes)
                         if stage == 'Domain':
                             hull_index = next(int(p.get('HS')) - 1 for p in passes if int(p.get('DS', '0')) - 1 == index)
-                            hull_source = (xml.parent / groups['Hull'][hull_index].get('File')).read_text(encoding='utf8')
+                            hull_source = read(xml.parent / groups['Hull'][hull_index].get('File'))
                             pixel_sources = [shaders[groups['Pixel'][int(p.get('PS')) - 1].get('File')] for p in passes if int(p.get('DS', '0')) - 1 == index]
                             shaders[path] = domain(source, hull_source, pixel_sources, prior_attributes(hull_source, 'HS_IN'))
                         elif stage == 'Hull':
@@ -286,7 +303,7 @@ def prepare(reference, destination, profiles):
                             hull_source = None
                             if tessellated:
                                 hull_index = next(int(p.get('HS')) - 1 for p in passes if int(p.get('VS')) == index and int(p.get('HS', '0')))
-                                hull_source = (xml.parent / groups['Hull'][hull_index].get('File')).read_text(encoding='utf8')
+                                hull_source = read(xml.parent / groups['Hull'][hull_index].get('File'))
                             shaders[path] = vertex(source, hull_source) if stage == 'Vertex' else transform(source)
                     except (ValueError, TypeError, KeyError) as error:
                         raise ValueError(f'{xml.parent / path}: {error}') from error
@@ -295,7 +312,7 @@ def prepare(reference, destination, profiles):
             for shader in groups['Pixel']:
                 path = shader.get('File')
                 if Path(path).stem == 'PS_BlitFakedGbuf':
-                    source = (xml.parent / path).read_text(encoding='utf8')
+                    source = read(xml.parent / path)
                     output = re.search(r'(\w+)\s+main\(', source)[1]
                     source = structure(source, output, 'float2 temporalVelocity : SV_Target4;')
                     shaders[path] = source.replace('return o;', 'o.temporalVelocity = float2(2, 2);\n\treturn o;')
@@ -309,7 +326,7 @@ def prepare(reference, destination, profiles):
                         path = shader.get('File')
                         source = shaders.get(path)
                         if source is None:
-                            source = (xml.parent / path).read_text(encoding='utf8')
+                            source = read(xml.parent / path)
                         shared = destination / base_profile / path
                         if shared.exists() and shared.read_text(encoding='utf8') == source:
                             shader.set('File', f'../{base_profile}/{path}')
@@ -322,7 +339,9 @@ def prepare(reference, destination, profiles):
                 total[0] += 1
                 continue
             def copy_missing(source, target):
-                if not Path(target).exists():
+                if Path(source).suffix == '.hlsl' and read(source) != Path(source).read_text(encoding='utf8'):
+                    Path(target).write_text(read(source), encoding='utf8')
+                elif not Path(target).exists():
                     shutil.copy2(source, target)
                 return target
             shutil.copytree(xml.parent / folder, target / folder, dirs_exist_ok=True, copy_function=copy_missing)

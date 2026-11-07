@@ -66,7 +66,7 @@
   "menu.savefailed": "設定ファイルを保存できません。変更はメモリ内に保持されます。",
   "hdr.white": "HDR基準白輝度",
   "hdr.peak": "HDR最大輝度",
-  "hdr.description": "ネイティブHDR出力。Windows HDRが有効なHDRディスプレイ、DirectX 11、MSAAの無効化が必要です。再起動が必要です。",
+  "hdr.description": "ネイティブHDR出力。Windows HDRが有効なHDRディスプレイ、DirectX 11、MSAAの無効化が必要です。",
   "hdr.white.description": "通常の白とインターフェースの明るさ。",
   "hdr.peak.description": "ディスプレイの最大輝度に合わせて設定します。"
 }

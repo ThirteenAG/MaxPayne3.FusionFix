@@ -5,6 +5,8 @@ module;
 #include <dxgi1_6.h>
 #include <wrl/client.h>
 #include <atomic>
+#include <vector>
+#include <thread>
 
 export module hdr;
 
@@ -17,7 +19,8 @@ namespace
     using Microsoft::WRL::ComPtr;
     IDXGISwapChain* Chain{};
     HWND Window{};
-    std::atomic<bool> Direct3D11{}, DisplayHDR{};
+    std::atomic<bool> Direct3D11{}, DisplayHDR{}, Unavailable{};
+    std::atomic<float> SdrWhite{ 80.0f };
     uint64_t LastDisplayCheck{};
     HMONITOR DisplayMonitor{};
     ComPtr<IDXGIFactory1> DisplayFactory;
@@ -30,9 +33,13 @@ namespace
     ComPtr<ID3D11VertexShader> Vertex;
     ComPtr<ID3D11PixelShader> Pixel;
     ComPtr<ID3D11Buffer> Parameters;
+    ComPtr<ID3D11RenderTargetView> Target;
+    ID3D11Texture2D* TargetTexture{};
 
     void Release()
     {
+        Target.Reset();
+        TargetTexture = nullptr;
         View.Reset();
         Copy.Reset();
         Parameters.Reset();
@@ -74,10 +81,39 @@ namespace
         return state;
     }
 
-    // HDR can be chosen on the DirectX 11 renderer with the game window on an HDR display
+    // Brightness of SDR white that Windows uses on the window's display while HDR is on
+    float ReadSdrWhite(HWND window)
+    {
+        MONITORINFOEXW monitor{};
+        monitor.cbSize = sizeof(monitor);
+        if (!GetMonitorInfoW(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST), &monitor))
+            return 80.0f;
+        UINT32 pathCount{}, modeCount{};
+        if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &pathCount, &modeCount) != ERROR_SUCCESS)
+            return 80.0f;
+        std::vector<DISPLAYCONFIG_PATH_INFO> paths(pathCount);
+        std::vector<DISPLAYCONFIG_MODE_INFO> modes(modeCount);
+        if (QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &pathCount, paths.data(), &modeCount, modes.data(), nullptr) != ERROR_SUCCESS)
+            return 80.0f;
+        for (UINT32 i = 0; i < pathCount; ++i)
+        {
+            DISPLAYCONFIG_SOURCE_DEVICE_NAME source{};
+            source.header = { DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME, sizeof(source), paths[i].sourceInfo.adapterId, paths[i].sourceInfo.id };
+            if (DisplayConfigGetDeviceInfo(&source.header) != ERROR_SUCCESS || wcscmp(source.viewGdiDeviceName, monitor.szDevice))
+                continue;
+            DISPLAYCONFIG_SDR_WHITE_LEVEL white{};
+            white.header = { DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL, sizeof(white), paths[i].targetInfo.adapterId, paths[i].targetInfo.id };
+            if (DisplayConfigGetDeviceInfo(&white.header) == ERROR_SUCCESS)
+                return white.SDRWhiteLevel * 80.0f / 1000.0f;
+        }
+        return 80.0f;
+    }
+
+    // HDR can be chosen on the DirectX 11 renderer with the game window on an HDR display, when the game started with
+    // the scRGB swap chain
     bool Supported()
     {
-        return Direct3D11 && DisplayHDR;
+        return Direct3D11 && DisplayHDR && !Unavailable;
     }
 
     // The choice stays in effect until the renderer is known: Prepare reads it, and DirectX 9 never calls Prepare
@@ -99,6 +135,11 @@ namespace
         if (!Window || now - LastDisplayCheck < 1000)
             return;
         LastDisplayCheck = now;
+        // With HDR off the picture follows the desktop's SDR brightness, which can change at any time. Reading it
+        // takes long enough to stall a frame, so it is read beside the game.
+        static std::atomic<bool> reading{};
+        if (Chain && DisplayHDR && !FusionFixSettings.GetInt(PREF_HDR) && !reading.exchange(true))
+            std::thread([window = Window] { SdrWhite = ReadSdrWhite(window); reading = false; }).detach();
         // The factory goes stale when the displays change, Windows HDR included
         if (MonitorFromWindow(Window, MONITOR_DEFAULTTONEAREST) == DisplayMonitor && DisplayFactory && DisplayFactory->IsCurrent())
             return;
@@ -158,11 +199,16 @@ namespace
         ComPtr<ID3D11Texture2D> output;
         if (FAILED(chain->GetBuffer(0, IID_PPV_ARGS(&output))) || !Initialize(chain, output.Get()))
             return;
-        ComPtr<ID3D11RenderTargetView> target;
-        if (FAILED(Device->CreateRenderTargetView(output.Get(), nullptr, &target)))
-            return;
+        // A flip-model chain returns the same texture for the current buffer every frame
+        if (TargetTexture != output.Get())
+        {
+            Target.Reset();
+            if (FAILED(Device->CreateRenderTargetView(output.Get(), nullptr, &Target)))
+                return;
+            TargetTexture = output.Get();
+        }
         const bool enabled = DisplayHDR && FusionFixSettings.GetInt(PREF_HDR) != 0;
-        const float white = enabled ? std::clamp(FusionFixSettings.GetFloat(PREF_HDRWHITE), 80.0f, 500.0f) : 80.0f;
+        const float white = enabled ? std::clamp(FusionFixSettings.GetFloat(PREF_HDRWHITE), 80.0f, 500.0f) : DisplayHDR ? SdrWhite.load() : 80.0f;
         const float peak = std::max(white, FusionFixSettings.GetFloat(PREF_HDRPEAK));
         float parameters[]{ white / 80.0f, peak / white, enabled ? 1.0f : 0.0f, 0 };
         ComPtr<ID3DDeviceContextState> previous;
@@ -173,7 +219,7 @@ namespace
         output->GetDesc(&description);
         D3D11_VIEWPORT viewport{ 0, 0, float(description.Width), float(description.Height), 0, 1 };
         Context->RSSetViewports(1, &viewport);
-        Context->OMSetRenderTargets(1, target.GetAddressOf(), nullptr);
+        Context->OMSetRenderTargets(1, Target.GetAddressOf(), nullptr);
         Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         Context->VSSetShader(Vertex.Get(), nullptr, 0);
         Context->PSSetShader(Pixel.Get(), nullptr, 0);
@@ -240,17 +286,18 @@ export namespace HDR
 
     bool Prepare(const D3D_FEATURE_LEVEL* levels, UINT count, DXGI_SWAP_CHAIN_DESC& description)
     {
-        // The player's choice, before availability can change the value in effect
-        static const bool wanted = FusionFixSettings.GetInt(PREF_HDR) != 0;
         Window = description.OutputWindow;
         Direct3D11 = !count || levels[0] >= D3D_FEATURE_LEVEL_11_0;
         const auto displays = ReadDisplays(Window);
         DisplayHDR = displays.Window;
         LastDisplayCheck = GetTickCount64();
+        // Any HDR display: the window can start on another display and move, the output follows it. The scRGB chain
+        // is made whatever the setting, so that switching HDR applies at once.
+        Unavailable = !Direct3D11 || !displays.Any || description.SampleDesc.Count != 1;
         ApplyAvailability();
-        // Any HDR display: the window can start on another display and move, the output follows it
-        if (!wanted || !Direct3D11 || !displays.Any || description.SampleDesc.Count != 1)
+        if (Unavailable)
             return false;
+        SdrWhite = ReadSdrWhite(Window);
         description.BufferDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
         description.BufferCount = std::max(2u, description.BufferCount);
         description.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
@@ -261,14 +308,22 @@ export namespace HDR
     {
         ComPtr<ID3D11Device> device;
         if (FAILED(chain->GetDevice(IID_PPV_ARGS(&device))) || device->GetFeatureLevel() < D3D_FEATURE_LEVEL_11_0)
+        {
+            Unavailable = true;
+            ApplyAvailability();
             return false;
+        }
         ComPtr<IDXGISwapChain3> modern;
         UINT support{};
         if (FAILED(chain->QueryInterface(IID_PPV_ARGS(&modern))) ||
             FAILED(modern->CheckColorSpaceSupport(DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709, &support)) ||
             !(support & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT) ||
             FAILED(modern->SetColorSpace1(DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709)))
+        {
+            Unavailable = true;
+            ApplyAvailability();
             return false;
+        }
         Chain = chain;
         DXGI_SWAP_CHAIN_DESC description{};
         chain->GetDesc(&description);
