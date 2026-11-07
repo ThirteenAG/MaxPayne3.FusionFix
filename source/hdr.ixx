@@ -251,12 +251,103 @@ namespace
         }
     }
 
+    // What the copy's draw changes on the game's context. Binding a target unbinds it from the stages it's read in, so
+    // the shader resources the game had there are kept too.
+    struct CopyState
+    {
+        static constexpr UINT Resources = 16;
+        ComPtr<ID3D11RenderTargetView> Targets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT];
+        ComPtr<ID3D11DepthStencilView> Depth;
+        ComPtr<ID3D11BlendState> Blend;
+        float BlendFactor[4]{};
+        UINT SampleMask{};
+        ComPtr<ID3D11DepthStencilState> DepthState;
+        UINT StencilRef{};
+        ComPtr<ID3D11RasterizerState> Rasterizer;
+        D3D11_VIEWPORT Viewports[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE]{};
+        UINT ViewportCount = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
+        D3D11_PRIMITIVE_TOPOLOGY Topology{};
+        ComPtr<ID3D11InputLayout> Layout;
+        ComPtr<ID3D11VertexShader> VertexShader;
+        ComPtr<ID3D11HullShader> HullShader;
+        ComPtr<ID3D11DomainShader> DomainShader;
+        ComPtr<ID3D11GeometryShader> GeometryShader;
+        ComPtr<ID3D11PixelShader> PixelShader;
+        ComPtr<ID3D11ShaderResourceView> PixelResources[Resources], VertexResources[Resources];
+        ComPtr<ID3D11Buffer> PixelConstants;
+
+        template<typename T, size_t N>
+        static void Adopt(ComPtr<T> (&out)[N], T* (&raw)[N])
+        {
+            for (size_t i = 0; i < N; ++i)
+                out[i].Attach(raw[i]);
+        }
+
+        void Save(ID3D11DeviceContext* context)
+        {
+            ID3D11RenderTargetView* targets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT]{};
+            context->OMGetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, targets, &Depth);
+            Adopt(Targets, targets);
+            context->OMGetBlendState(&Blend, BlendFactor, &SampleMask);
+            context->OMGetDepthStencilState(&DepthState, &StencilRef);
+            context->RSGetState(&Rasterizer);
+            context->RSGetViewports(&ViewportCount, Viewports);
+            context->IAGetPrimitiveTopology(&Topology);
+            context->IAGetInputLayout(&Layout);
+            context->VSGetShader(&VertexShader, nullptr, nullptr);
+            context->HSGetShader(&HullShader, nullptr, nullptr);
+            context->DSGetShader(&DomainShader, nullptr, nullptr);
+            context->GSGetShader(&GeometryShader, nullptr, nullptr);
+            context->PSGetShader(&PixelShader, nullptr, nullptr);
+            ID3D11ShaderResourceView* pixel[Resources]{};
+            ID3D11ShaderResourceView* vertex[Resources]{};
+            context->PSGetShaderResources(0, Resources, pixel);
+            context->VSGetShaderResources(0, Resources, vertex);
+            Adopt(PixelResources, pixel);
+            Adopt(VertexResources, vertex);
+            context->PSGetConstantBuffers(1, 1, &PixelConstants);
+        }
+
+        void Restore(ID3D11DeviceContext* context)
+        {
+            ID3D11ShaderResourceView* pixel[Resources]{};
+            ID3D11ShaderResourceView* vertex[Resources]{};
+            for (UINT i = 0; i < Resources; ++i)
+            {
+                pixel[i] = PixelResources[i].Get();
+                vertex[i] = VertexResources[i].Get();
+            }
+            // The targets first: a resource the game reads may only be bound once it's no longer a target
+            ID3D11RenderTargetView* targets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT]{};
+            for (UINT i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+                targets[i] = Targets[i].Get();
+            ID3D11ShaderResourceView* none[Resources]{};
+            context->PSSetShaderResources(0, Resources, none);
+            context->OMSetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, targets, Depth.Get());
+            context->PSSetShaderResources(0, Resources, pixel);
+            context->VSSetShaderResources(0, Resources, vertex);
+            context->OMSetBlendState(Blend.Get(), BlendFactor, SampleMask);
+            context->OMSetDepthStencilState(DepthState.Get(), StencilRef);
+            context->RSSetState(Rasterizer.Get());
+            context->RSSetViewports(ViewportCount, Viewports);
+            context->IASetPrimitiveTopology(Topology);
+            context->IASetInputLayout(Layout.Get());
+            context->VSSetShader(VertexShader.Get(), nullptr, 0);
+            context->HSSetShader(HullShader.Get(), nullptr, 0);
+            context->DSSetShader(DomainShader.Get(), nullptr, 0);
+            context->GSSetShader(GeometryShader.Get(), nullptr, 0);
+            context->PSSetShader(PixelShader.Get(), nullptr, 0);
+            context->PSSetConstantBuffers(1, 1, PixelConstants.GetAddressOf());
+        }
+    };
+
     // The game makes some targets in the back buffer format it asked for and copies the back buffer into them, for
     // example the picture the painkiller flash fades from. A copy between different formats does nothing, so with the
-    // scRGB chain the same picture is drawn into them instead.
+    // scRGB chain the same picture is drawn into them instead. Only copies from the back buffer: other copies between
+    // these formats do nothing in the original game either.
     bool CopyToSdr(ID3D11Resource* destination, UINT x, UINT y, ID3D11Resource* source, const D3D11_BOX* box)
     {
-        if (!Chain || !CopyPixel)
+        if (!Chain || !CopyPixel || !TargetTexture || source != TargetTexture)
             return false;
         D3D11_RESOURCE_DIMENSION a{}, b{};
         destination->GetType(&a);
@@ -281,21 +372,28 @@ namespace
         if (FAILED(Device->CreateRenderTargetView(destination, &view, &output)) || FAILED(Device->CreateShaderResourceView(source, nullptr, &input)))
             return false;
         const int offset[4]{ int(region.left) - int(x), int(region.top) - int(y), 0, 0 };
-        ComPtr<ID3DDeviceContextState> previous;
-        Context->SwapDeviceContextState(State.Get(), &previous);
-        Context->ClearState();
+        // The copy comes in the middle of the game's frame: only the state the draw changes is put back. Swapping the
+        // whole context state there leaves characters unlit now and then.
+        CopyState saved;
+        saved.Save(Context.Get());
         D3D11_VIEWPORT viewport{ float(x), float(y), float(region.right - region.left), float(region.bottom - region.top), 0, 1 };
         Context->RSSetViewports(1, &viewport);
+        Context->RSSetState(nullptr);
         Context->OMSetRenderTargets(1, output.GetAddressOf(), nullptr);
+        Context->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+        Context->OMSetDepthStencilState(nullptr, 0);
         Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        Context->IASetInputLayout(nullptr);
         Context->VSSetShader(Vertex.Get(), nullptr, 0);
+        Context->HSSetShader(nullptr, nullptr, 0);
+        Context->DSSetShader(nullptr, nullptr, 0);
+        Context->GSSetShader(nullptr, nullptr, 0);
         Context->PSSetShader(CopyPixel.Get(), nullptr, 0);
         Context->PSSetShaderResources(0, 1, input.GetAddressOf());
         Context->UpdateSubresource(CopyParameters.Get(), 0, nullptr, offset, 0, 0);
         Context->PSSetConstantBuffers(1, 1, CopyParameters.GetAddressOf());
         Context->Draw(3, 0);
-        Context->ClearState();
-        Context->SwapDeviceContextState(previous.Get(), nullptr);
+        saved.Restore(Context.Get());
         return true;
     }
 
