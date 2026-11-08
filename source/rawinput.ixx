@@ -95,26 +95,33 @@ class RawInput
         MouseMotion::UseImmediateState(context.esp, *mouseState);
     }
 
-    // The camera multiplies each frame's mouse movement by the frame time, so the same movement turned the camera
-    // less the higher the frame rate. Scaled to a 144 fps frame, the turn depends only on the movement, and the
-    // sensitivity slider covers the range players knew at high frame rates (at 60 fps even its lowest value was fast).
-    static inline bool (__fastcall* ReadCameraInput)(void*, void*, uint8_t*, float*, float*, float*) = nullptr;
+    // The camera turns by the frame's mouse movement times its time step, so the same movement turned the camera
+    // less the higher the frame rate. With the mouse, the step is replaced by a constant: the 144 fps step of the
+    // original game, which keeps the sensitivity slider in the range players knew at high frame rates.
+    static constexpr float fMouseStep = 1.0f / 72.0f;
     static inline uint8_t* (__cdecl* GetPlayerControls)(int) = nullptr;
     static inline GameRef<float> fCameraTimeStep;
+    static inline SafetyHookMid mouseStepHook;
+    static inline SafetyHookMid mouseAccelerationHook;
 
-    static bool __fastcall ReadCameraMouse(void* camera, void* edx, uint8_t* controls, float* amount, float* x, float* y)
+    static bool MouseActive()
     {
-        const bool result = ReadCameraInput(camera, edx, controls, amount, x, y);
         auto state = GetPlayerControls(0);
-        if ((state[7658] || state[7656]) && fCameraTimeStep > 0.0f)
-        {
-            // This step is twice the frame time, 1/72 s at 144 fps
-            const float scale = 1.0f / (72.0f * fCameraTimeStep);
-            *amount *= scale;
-            *x *= scale;
-            *y *= scale;
-        }
-        return result;
+        return state[7658] || state[7656];
+    }
+
+    // The turn per frame: step times the camera's own scale (its second argument)
+    static void MouseStep(SafetyHookContext& context)
+    {
+        if (MouseActive())
+            context.xmm1.f32[0] = fMouseStep * *reinterpret_cast<float*>(context.esp + 0x3C);
+    }
+
+    // Mouse acceleration curves the movement by its speed: measured per 144 fps frame like the original game
+    static void MouseAcceleration(SafetyHookContext& context)
+    {
+        if (fCameraTimeStep > 0.0f)
+            *reinterpret_cast<float*>(context.esp + 0x08) *= fMouseStep / fCameraTimeStep;
     }
 
 public:
@@ -131,10 +138,12 @@ public:
             }
 
             auto camera = hook::pattern("8B CE E8 ? ? ? ? 8A 4E 41 F3 0F 10 44 24 08 C0 E0 07 80 E1 7F 0A C1 6A 00 88 46 41 F3 0F 11 44 24 3C E8 ? ? ? ? 83 C4 04 80 B8 EA 1D 00 00 00").get_first<uint8_t>();
-            ReadCameraInput = reinterpret_cast<decltype(ReadCameraInput)>(injector::GetBranchDestination(camera + 2).as_int());
             GetPlayerControls = reinterpret_cast<decltype(GetPlayerControls)>(injector::GetBranchDestination(camera + 35).as_int());
-            fCameraTimeStep.SetAddress(*hook::get_pattern<float*>("F6 06 01 F3 0F 10 0D ? ? ? ? F3 0F 59 4C 24 3C", 7));
-            injector::MakeCALL(camera + 2, ReadCameraMouse, true);
+            auto step = hook::pattern("F6 06 01 F3 0F 10 0D ? ? ? ? F3 0F 59 4C 24 3C");
+            fCameraTimeStep.SetAddress(*step.get_first<float*>(7));
+            mouseStepHook = safetyhook::create_mid(step.get_first(17), MouseStep);
+            // Only reached with the mouse and the game's mouse acceleration on
+            mouseAccelerationHook = safetyhook::create_mid(hook::pattern("83 3D ? ? ? ? 00 75 ? F3 0F 5A 44 24 08 F2 0F 10 0D").get_first(9), MouseAcceleration);
 
             // Main menu cursor acceleration, was 1.6
             static float f1 = 1.0f;
