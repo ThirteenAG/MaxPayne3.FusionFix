@@ -96,7 +96,8 @@ class RawInput
     }
 
     // The camera multiplies each frame's mouse movement by the frame time, so the same movement turned the camera
-    // less the higher the frame rate. Scaled to a 60 fps frame, the turn depends only on the movement.
+    // less the higher the frame rate. Scaled to a 144 fps frame, the turn depends only on the movement, and the
+    // sensitivity slider covers the range players knew at high frame rates (at 60 fps even its lowest value was fast).
     static inline bool (__fastcall* ReadCameraInput)(void*, void*, uint8_t*, float*, float*, float*) = nullptr;
     static inline uint8_t* (__cdecl* GetPlayerControls)(int) = nullptr;
     static inline GameRef<float> fCameraTimeStep;
@@ -107,8 +108,8 @@ class RawInput
         auto state = GetPlayerControls(0);
         if ((state[7658] || state[7656]) && fCameraTimeStep > 0.0f)
         {
-            // This step is twice the frame time, 1/30 s at 60 fps
-            const float scale = 1.0f / (30.0f * fCameraTimeStep);
+            // This step is twice the frame time, 1/72 s at 144 fps
+            const float scale = 1.0f / (72.0f * fCameraTimeStep);
             *amount *= scale;
             *x *= scale;
             *y *= scale;
