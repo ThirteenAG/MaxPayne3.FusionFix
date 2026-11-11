@@ -67,6 +67,7 @@ namespace
     Parameters Constants;
     Jitter FrameOffset, SceneOffset;
     uint32_t* ViewportSlot{};
+    uint32_t ViewportOffset{};
 
     // The game's MSAA, also when it's chosen on the Graphics page and not applied yet: the temporal modes need it off
     bool GameMSAA()
@@ -114,7 +115,7 @@ namespace
         if (SceneResolved || Matched || !Ready || !Width || !Height)
             return;
         auto storage = reinterpret_cast<uint8_t**>(__readfsdword(0x2C))[*ViewportSlot];
-        auto viewport = *reinterpret_cast<uint8_t**>(storage + 0xA20);
+        auto viewport = *reinterpret_cast<uint8_t**>(storage + ViewportOffset);
         if (!viewport || reinterpret_cast<float*>(viewport + 0x1C0)[11] == 0)
             return;
         auto parameters = reinterpret_cast<float*>(viewport + 0x338);
@@ -606,7 +607,10 @@ public:
                 if (!command[0x480] && SelectedMode >= TAA)
                     MatchCamera(command + 16);
             });
-            ViewportSlot = *hook::pattern("8B 35 ? ? ? ? 8B 0C B0 57 8B B9 20 0A 00 00").get_first<uint32_t*>(2);
+            // The current viewport is a thread-local whose offset in the TLS block differs between builds
+            pattern = hook::pattern("8B 35 ? ? ? ? 8B 0C B0 57 8B B9 ? ? 00 00 75 14");
+            ViewportSlot = *pattern.get_first<uint32_t*>(2);
+            ViewportOffset = *pattern.get_first<uint32_t>(12);
             TemporalMotion::SetSceneCallback(SceneViewport);
             pattern = hook::pattern("68 ? ? ? ? FF D0 81 3D ? ? ? ? E8 03 00 00 8B 0D ? ? ? ? A3");
             DepthTarget = *pattern.get_first<void**>(24);

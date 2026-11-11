@@ -70,7 +70,7 @@ namespace CutsceneSkip
 
     uint8_t* Manager()
     {
-        return ppCutSceneManager ? *ppCutSceneManager : nullptr;
+        return *ppCutSceneManager;
     }
 
     void __cdecl EnableSkipHook(scrNativeCallContext* context)
@@ -121,16 +121,11 @@ namespace CutsceneSkip
         lockedSkipWait = 0;
     }
 
-    bool HookNative(uint32_t hash, void(__cdecl* hook)(scrNativeCallContext*), void(__cdecl*& original)(scrNativeCallContext*))
+    void HookNative(uint32_t hash, void(__cdecl* hook)(scrNativeCallContext*), void(__cdecl*& original)(scrNativeCallContext*))
     {
-        if (!getNativeAddress || !nativeHandlerPtrAddress)
-            return false;
         auto handler = static_cast<NativeHandler*>(getNativeAddress(nativeHandlerPtrAddress, 0, hash));
-        if (!handler || !handler->fun || handler->fun == hook)
-            return false;
         original = handler->fun;
         handler->fun = hook;
-        return true;
     }
 
     void Update()
@@ -157,42 +152,34 @@ namespace CutsceneSkip
             }
         }
 
-        if (Enabled() && pMoviePlayer && !pMoviePlayer[MovieSkippable] && Natives::IsTransitionMoviePlaying() &&
+        if (Enabled() && !pMoviePlayer[MovieSkippable] && Natives::IsTransitionMoviePlaying() &&
             Natives::GetNumberOfStreamingRequests() == 0)
             pMoviePlayer[MovieSkippable] = 1;
     }
 
     void Init()
     {
-        auto pattern = find_pattern("83 3D ? ? ? ? 00 75 28 68 00 3A 00 00");
-        if (!pattern.empty())
-            ppCutSceneManager = *pattern.get_first<uint8_t**>(2);
+        auto pattern = hook::pattern("83 3D ? ? ? ? 00 75 28 68 00 3A 00 00");
+        ppCutSceneManager = *pattern.get_first<uint8_t**>(2);
 
-        pattern = find_pattern("8B 44 24 04 50 6A 00 B9 ? ? ? ? E8 ? ? ? ? C3");
-        if (!pattern.empty())
-            pMoviePlayer = *pattern.get_first<uint8_t*>(8);
+        pattern = hook::pattern("8B 44 24 04 50 6A 00 B9 ? ? ? ? E8 ? ? ? ? C3");
+        pMoviePlayer = *pattern.get_first<uint8_t*>(8);
 
         // The game resets the skip flag to on for every cutscene
-        pattern = find_pattern<2>("C6 86 F8 39 00 00 01");
-        if (pattern.size() == 2)
-        {
-            static auto ResetHook1 = safetyhook::create_mid(pattern.get(0).get<void>(0), [](SafetyHookContext& regs) { scriptAllowsSkip = true; });
-            static auto ResetHook2 = safetyhook::create_mid(pattern.get(1).get<void>(0), [](SafetyHookContext& regs) { scriptAllowsSkip = true; });
-        }
+        pattern = hook::pattern("C6 86 F8 39 00 00 01");
+        static auto ResetHook1 = safetyhook::create_mid(pattern.count(2).get(0).get<void>(0), [](SafetyHookContext& regs) { scriptAllowsSkip = true; });
+        static auto ResetHook2 = safetyhook::create_mid(pattern.count(2).get(1).get<void>(0), [](SafetyHookContext& regs) { scriptAllowsSkip = true; });
 
-        pattern = find_pattern("56 8B F1 E8 ? ? ? ? 84 C0 0F 84 ? ? ? ? 6A 01 E8 ? ? ? ? 83 C4 04 8B C8 E8 ? ? ? ? 8A 0D ? ? ? ? 0A 0D ? ? ? ? 74 0B 80 3D ? ? ? ? 00 74 02 32 C0 80 BE F8 39 00 00 00");
-        if (ppCutSceneManager && !pattern.empty())
-        {
-            auto check = pattern.get_first<uint8_t>(0);
-            GetControls = reinterpret_cast<decltype(GetControls)>(injector::GetBranchDestination(check + 0x12).as_int());
-            IsSkipJustPressed = reinterpret_cast<decltype(IsSkipJustPressed)>(injector::GetBranchDestination(check + 0x1C).as_int());
-            pMultiplayerFlags = *reinterpret_cast<uint8_t**>(check + 0x23);
-            pFrontendActive = *reinterpret_cast<uint8_t**>(check + 0x31);
-            GetCutsceneAudio = reinterpret_cast<decltype(GetCutsceneAudio)>(injector::GetBranchDestination(check + 0x6A).as_int());
-            AudioSkipSpeech = reinterpret_cast<decltype(AudioSkipSpeech)>(injector::GetBranchDestination(check + 0x8A).as_int());
-            AudioSkipStreams = reinterpret_cast<decltype(AudioSkipStreams)>(injector::GetBranchDestination(check + 0xA3).as_int());
-            shSkipCheck = safetyhook::create_inline(check, SkipCheck);
-        }
+        pattern = hook::pattern("56 8B F1 E8 ? ? ? ? 84 C0 0F 84 ? ? ? ? 6A 01 E8 ? ? ? ? 83 C4 04 8B C8 E8 ? ? ? ? 8A 0D ? ? ? ? 0A 0D ? ? ? ? 74 0B 80 3D ? ? ? ? 00 74 02 32 C0 80 BE F8 39 00 00 00");
+        auto check = pattern.get_first<uint8_t>(0);
+        GetControls = reinterpret_cast<decltype(GetControls)>(injector::GetBranchDestination(check + 0x12).as_int());
+        IsSkipJustPressed = reinterpret_cast<decltype(IsSkipJustPressed)>(injector::GetBranchDestination(check + 0x1C).as_int());
+        pMultiplayerFlags = *reinterpret_cast<uint8_t**>(check + 0x23);
+        pFrontendActive = *reinterpret_cast<uint8_t**>(check + 0x31);
+        GetCutsceneAudio = reinterpret_cast<decltype(GetCutsceneAudio)>(injector::GetBranchDestination(check + 0x6A).as_int());
+        AudioSkipSpeech = reinterpret_cast<decltype(AudioSkipSpeech)>(injector::GetBranchDestination(check + 0x8A).as_int());
+        AudioSkipStreams = reinterpret_cast<decltype(AudioSkipStreams)>(injector::GetBranchDestination(check + 0xA3).as_int());
+        shSkipCheck = safetyhook::create_inline(check, SkipCheck);
 
         FusionFix::onGameInitEvent() += []()
         {

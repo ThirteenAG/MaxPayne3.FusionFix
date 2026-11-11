@@ -1105,7 +1105,7 @@ export namespace TemporalMotion
         QueueCallbackData = reinterpret_cast<decltype(QueueCallbackData)>(hook::pattern("8B 4C 24 04 C6 40 03 00 89 48 10 8B 0A 89 48 14 C7 40 04 ? ? ? ? EB").get_first(-86));
 
         EntityDraw<0>::Hook = safetyhook::create_inline(hook::pattern("55 8B EC 83 E4 F0 81 EC 84 04 00 00 53 56 8B F1 8B 4E 30").get_first(), EntityDraw<0>::Draw);
-        EntityDraw<1>::Hook = safetyhook::create_inline(hook::pattern("51 A1 ? ? ? ? 55 8B E9 64 8B 0D 2C 00 00 00 8B 0C 81 83 B9 7C 08 00").get_first(), EntityDraw<1>::Draw);
+        EntityDraw<1>::Hook = safetyhook::create_inline(hook::pattern("51 A1 ? ? ? ? 55 8B E9 64 8B 0D 2C 00 00 00 8B 0C 81 83 B9 ? ? 00 00 01 75").get_first(), EntityDraw<1>::Draw);
         EntityDraw<2>::Hook = safetyhook::create_inline(hook::pattern("83 EC 58 A1 ? ? ? ? 57 8B F9 F7 47 28 00 00 00 08").get_first(), EntityDraw<2>::Draw);
         EntityDraw<3>::Hook = safetyhook::create_inline(hook::pattern("51 56 8B F1 F7 86 F0 03 00 00 00 00 02 00").get_first(), EntityDraw<3>::Draw);
         ScenePhase = safetyhook::create_inline(hook::pattern("51 56 8B F1 83 BE D8 09 00 00 FF 0F 84 ? ? ? ? A1 ? ? ? ? 8B 0C").get_first(), QueueScene);

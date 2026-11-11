@@ -185,10 +185,7 @@ private:
 public:
     static sncall* GetNativeHandler(uint32_t Hash)
     {
-        if (getNativeAddress)
-            return reinterpret_cast<sncall*>(getNativeAddress(nativeHandlerPtrAddress, 0, Hash));
-
-        return nullptr;
+        return reinterpret_cast<sncall*>(getNativeAddress(nativeHandlerPtrAddress, 0, Hash));
     }
 public:
     template<uint32_t Hash, typename R, typename... Args>
@@ -226,14 +223,9 @@ public:
         auto pattern = hook::pattern(pattern_str(0x68, to_bytes(nativeHash))); // push 0x...
         auto addr = *pattern.get_first<uintptr_t>(-4);
         auto range = hook::range_pattern(addr, addr + fn_size, dest_pattern_str);
-        if (!range.empty())
-        {
-            if (dest_pattern_str.starts_with("E8"))
-                return injector::MakeCALL(range.get_first(0), fn, true).get();
-            else if (dest_pattern_str.starts_with("E9"))
-                return injector::MakeJMP(range.get_first(0), fn, true).get();
-        }
-        return injector::auto_pointer(nullptr);
+        if (dest_pattern_str.starts_with("E8"))
+            return injector::MakeCALL(range.get_first(0), fn, true).get();
+        return injector::MakeJMP(range.get_first(0), fn, true).get();
     }
 };
 

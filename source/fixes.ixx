@@ -60,6 +60,20 @@ public:
                 static auto TextNumbersFix = safetyhook::create_inline(pattern.get_first(), TextNumbers::Substitute);
             }
 
+            // The title screen is built again when the opening of a new game ends. For a profile that is signed in
+            // but offline its update then sets the help text of the Store row before the row exists, the one
+            // case it doesn't check, and the game crashes.
+            {
+                auto pattern = hook::pattern("8B 8E ? ? ? ? 68 ? ? ? ? E9 ? ? ? ? 80 BE ? ? ? ? 00 8D BE");
+                static auto nStoreRowOffset = *pattern.get_first<uint32_t>(2);
+                static auto pAfterStoreText = (uintptr_t)hook::get_pattern("8B 8E ? ? ? ? 85 C9 74 ? 84 DB 75 ? 38 1D");
+                static auto OfflineStoreTextFix = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& regs)
+                {
+                    if (!*(void**)(regs.esi + nStoreRowOffset))
+                        regs.eip = pAfterStoreText;
+                });
+            }
+
             // Disable WM_DEVICECHANGE message handler, since it pauses the game randomly for some reason
             {
                 auto pattern = hook::pattern("74 ? 83 E8 ? 0F 85 ? ? ? ? E8 ? ? ? ? 84 C0 0F 84");
@@ -116,7 +130,7 @@ public:
                 static std::string root = (std::filesystem::path(GetExeModulePath()) / "update" / "common" / "shaders").string();
                 static thread_local std::string path;
                 auto pattern = hook::pattern("8B 87 B8 00 00 00 6A 01 50 E8");
-                static auto ShaderPath = safetyhook::create_mid(pattern.get_first(6), [](SafetyHookContext& regs)
+                static auto ShaderPath = safetyhook::create_mid(pattern.count(2).get(0).get<void>(6), [](SafetyHookContext& regs)
                 {
                     constexpr std::string_view device = "common:/shaders/";
                     std::string_view name = reinterpret_cast<const char*>(regs.eax);

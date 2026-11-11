@@ -1455,88 +1455,72 @@ void UpdateHelp()
 
 void Initialize()
 {
-    try
+    GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+        reinterpret_cast<LPCWSTR>(&Initialize), &thisModule);
+    gameLanguage = *hook::get_pattern<const unsigned int*>("A1 ? ? ? ? 83 F8 09 77 43 FF 24 85 ? ? ? ? B8 ? ? ? ? C3 B8", 1);
+    auto getText = hook::get_pattern("8B 44 24 04 83 EC 40 56 8B F1 85 C0 75 34 E8 ? ? ? ? C6 44 24 04 00 8D 44 24 04");
+    auto build = hook::get_pattern("83 EC 38 53 55 56 8B F1 57 B9 ? ? ? ? E8 ? ? ? ? 68 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? 8B E8 83 FD FF");
+    auto close = hook::get_pattern("56 57 8B F1 E8 ? ? ? ? 8B 8E 20 01 00 00 33 FF 3B CF 74 12");
+    auto optionsBuild = hook::get_pattern("81 EC 34 01 00 00 53 55 56 8B F1 57 B9 ? ? ? ? E8 ? ? ? ? 8B 0D");
+    auto optionsClose = hook::get_pattern("56 8B F1 8B 8E 18 01 00 00 57 33 FF 3B CF 74 0E 8B 01 8B 10");
+    auto optionsInput = hook::get_pattern("83 EC 0C 55 56 8B F1 B9 ? ? ? ? E8 ? ? ? ? 8B E8 6A 00 6A 60 8B CD E8 ? ? ? ? F3 0F 7E 00 8B 40 08 66 0F D6 44 24 08 89 44 24 10 8B 44 24 08 83 F8 07 0F 84 CC 00 00 00");
+    auto optionsClick = hook::get_pattern("8B 44 24 04 53 56 57 50 8B F9 E8 ? ? ? ? 83 C4 04 8B F0 E8 ? ? ? ? 8B 16 8A D8");
+    auto optionsHover = hook::get_pattern("56 8B F1 8B 8E 10 01 00 00 8B 01 8B 90 00 03 00 00 FF D2 8B 10 8B C8 8B 42 58 FF D0 8B 4C 24 08");
+    inputManager = Field<UI>(optionsInput, 8);
+    GetInput = injector::GetBranchDestination(static_cast<char*>(optionsInput) + 12).get();
+    auto selectSoundCall = hook::get_pattern("FF D0 8B CF 89 87 F0 00 00 00 E8 ? ? ? ? 5F 5E 5B C2 04 00 83 F8 03", 10);
+    PlayMenuSelect = injector::GetBranchDestination(selectSoundCall).get();
+    auto backSoundCall = hook::get_pattern("8B CE C7 86 14 01 00 00 00 00 00 00 E8 ? ? ? ? 80 3D ? ? ? ? 00 74 7A", 12);
+    PlayMenuBack = injector::GetBranchDestination(backSoundCall).get();
+    ReadInput = reinterpret_cast<decltype(ReadInput)>(hook::get_pattern("83 B9 54 01 00 00 00 56 8D B1 54 01 00 00 74 17 80 B9 9C 01 00 00 00 75 0E"));
+    ConsumeInput = reinterpret_cast<decltype(ConsumeInput)>(hook::get_pattern("8A 44 24 04 56 8B F1 88 86 9C 01 00 00 84 C0 74 15"));
+    auto barUpdate = hook::get_pattern("56 8B F1 8B 86 00 01 00 00 8B 8E FC 00 00 00 8B 11 57 8B 38 8B 42 58 FF D0");
+    ConstructBar = reinterpret_cast<decltype(ConstructBar)>(hook::get_pattern("8B 44 24 08 56 6A 00 8B F1 8B 4C 24 0C 50 51 8B CE E8 ? ? ? ? 68 FF 00 00 00 68 FF 00 00 00 68 FF 00 00 00 68 FF 00 00 00 8D 8E F4 00 00 00 C7 06 ? ? ? ? E8 ? ? ? ? 68 FF 00 00 00"));
+    InitializeBar = reinterpret_cast<decltype(InitializeBar)>(hook::get_pattern("83 EC 2C 53 56 8B F1 8B 06 8B 90 74 01 00 00 57 FF D2 84 C0 0F 85"));
+    SetBar = reinterpret_cast<decltype(SetBar)>(hook::get_pattern("F3 0F 10 54 24 04 83 EC 14 56 8B F1 F3 0F 10 86 DC 00 00 00"));
+    void* builds[] = {build,
+        hook::get_pattern("81 EC 04 01 00 00 53 55 56 8B F1 33 DB 57 38 9E 61 01 00 00 74 24"),
+        hook::get_pattern("83 EC 34 55 56 8B F1 57 B9 ? ? ? ? E8 ? ? ? ? 8B 0D ? ? ? ? 6A 00"),
+        hook::get_pattern("83 EC 38 53 55 56 8B F1 57 B9 ? ? ? ? E8 ? ? ? ? 68 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? 8B 0D ? ? ? ? 6A 02 8B E8")};
+    void* closes[] = {close,
+        hook::get_pattern("56 57 8B F1 8B 06 8B 90 34 01 00 00 33 FF 57 FF D2 8B 06 8B 90 E8 01 00 00 8B CE FF D2"),
+        hook::get_pattern("56 8B F1 8B 8E 10 01 00 00 85 C9 74 28 8B 01 8B 90 2C 01 00 00 6A 00"),
+        hook::get_pattern("56 57 8B F1 E8 ? ? ? ? 8B 8E 18 01 00 00 33 FF 3B CF 74 23")};
+    auto displayReset = hook::get_pattern("56 57 8B F1 E8 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? 8B 0D ? ? ? ? 83 C4 04 68 81 EF 82 94");
+    auto update = hook::get_pattern("83 EC 0C 56 8B F1 80 BE 13 01 00 00 00 74 1C 83 BE 08 01 00 00 00 74 13");
+    auto findCall = hook::get_pattern("E8 ? ? ? ? 8B 10 8B C8 8B 82 00 03 00 00 83 C4 04 FF D0 8B D8 8B 44 24 10 83 F8 07");
+    void* find = injector::GetBranchDestination(findCall).get();
+    Allocate = reinterpret_cast<decltype(Allocate)>(hook::get_pattern("B8 10 00 00 00 8B 4C 24 04 E9 ? ? ? ? CC CC 8B 4C 24 04 8B 44 24 08 3B C8"));
+    ConstructRow = reinterpret_cast<decltype(ConstructRow)>(hook::get_pattern("8B 44 24 08 56 8B F1 8B 4C 24 08 50 51 8B CE E8 ? ? ? ? 33 C0 89 86 2C 01 00 00 89 86 34 01 00 00"));
+    ConstructList = reinterpret_cast<decltype(ConstructList)>(hook::get_pattern("8B 44 24 08 53 56 33 DB 53 8B F1 8B 4C 24 10 50 51 8B CE E8 ? ? ? ? C7 06 ? ? ? ? 33 D2 33 C0 8D 8E 18 01 00 00"));
+    ConstructScroll = reinterpret_cast<decltype(ConstructScroll)>(hook::get_pattern("8B 44 24 08 53 56 33 DB 53 8B F1 8B 4C 24 10 50 51 8B CE E8 ? ? ? ? 8D 8E D8 00 00 00 C7 06 ? ? ? ? E8 ? ? ? ? 8D 8E EC 00 00 00 E8 ? ? ? ? 0F 57 C0 88 9E 0C 01 00 00 88 9E 0D 01 00 00"));
+    InitializeList = reinterpret_cast<decltype(InitializeList)>(hook::get_pattern("83 EC 18 56 57 8B F1 8B 0D ? ? ? ? 6A 04 E8 ? ? ? ? D9 5C 24 08 8A 44 24 2C"));
+    InitializeScroll = reinterpret_cast<decltype(InitializeScroll)>(hook::get_pattern("83 EC 1C 53 55 56 33 DB 57 8B F1 38 1D ? ? ? ? 74 10 39 1D ? ? ? ? 75 0F 39 1D ? ? ? ? 75 07 68 ? ? ? ? EB 05 68 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? 8B E8 83 FD FF"));
+    AddChoice = reinterpret_cast<decltype(AddChoice)>(hook::get_pattern("8B 44 24 0C 83 EC 0C 53 56 8B F1 83 F8 FF 75 0E 8B 86 E8 00 00 00"));
+    SelectChoice = reinterpret_cast<decltype(SelectChoice)>(hook::get_pattern("0F B7 81 E0 00 00 00 66 85 C0 76 1A 0F B7 D0 8B 44 24 04 3B C2"));
+    TuningFloat = reinterpret_cast<decltype(TuningFloat)>(hook::get_pattern("8B 44 24 04 D9 04 85 ? ? ? ? C2 04 00 CC CC"));
+    TuningVector = reinterpret_cast<decltype(TuningVector)>(hook::get_pattern("8B 44 24 04 8D 04 C5 ? ? ? ? C2 04 00 CC CC"));
+    textureDictionary = Field<UI>(build, 25);
+    FindTextureDictionary = injector::GetBranchDestination(static_cast<char*>(build) + 29).get();
+    gxtHook = safetyhook::create_inline(getText, GetMenuText);
+    findHook = safetyhook::create_inline(find, FindUI);
+    updateHook = safetyhook::create_inline(update, UpdateList);
+    barUpdateHook = safetyhook::create_inline(barUpdate, UpdateBar);
+    optionsBuildHook = safetyhook::create_inline(optionsBuild, BuildOptions);
+    optionsCloseHook = safetyhook::create_inline(optionsClose, CloseOptions);
+    optionsInputHook = safetyhook::create_inline(optionsInput, OptionsInput);
+    optionsClickHook = safetyhook::create_inline(optionsClick, OptionsClick);
+    optionsHoverHook = safetyhook::create_inline(optionsHover, OptionsHover);
+    void* buildCallbacks[] = {BuildPage<0>, BuildPage<1>, BuildPage<2>, BuildPage<3>};
+    void* closeCallbacks[] = {ClosePage<0>, ClosePage<1>, ClosePage<2>, ClosePage<3>};
+    for (size_t i = 0; i < std::size(pages); ++i)
     {
-        GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-            reinterpret_cast<LPCWSTR>(&Initialize), &thisModule);
-        gameLanguage = *hook::get_pattern<const unsigned int*>("A1 ? ? ? ? 83 F8 09 77 43 FF 24 85 ? ? ? ? B8 ? ? ? ? C3 B8", 1);
-        auto getText = hook::get_pattern("8B 44 24 04 83 EC 40 56 8B F1 85 C0 75 34 E8 ? ? ? ? C6 44 24 04 00 8D 44 24 04");
-        auto build = hook::get_pattern("83 EC 38 53 55 56 8B F1 57 B9 ? ? ? ? E8 ? ? ? ? 68 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? 8B E8 83 FD FF");
-        auto close = hook::get_pattern("56 57 8B F1 E8 ? ? ? ? 8B 8E 20 01 00 00 33 FF 3B CF 74 12");
-        auto optionsBuild = hook::get_pattern("81 EC 34 01 00 00 53 55 56 8B F1 57 B9 ? ? ? ? E8 ? ? ? ? 8B 0D");
-        auto optionsClose = hook::get_pattern("56 8B F1 8B 8E 18 01 00 00 57 33 FF 3B CF 74 0E 8B 01 8B 10");
-        auto optionsInput = hook::get_pattern("83 EC 0C 55 56 8B F1 B9 ? ? ? ? E8 ? ? ? ? 8B E8 6A 00 6A 60 8B CD E8 ? ? ? ? F3 0F 7E 00 8B 40 08 66 0F D6 44 24 08 89 44 24 10 8B 44 24 08 83 F8 07 0F 84 CC 00 00 00");
-        auto optionsClick = hook::get_pattern("8B 44 24 04 53 56 57 50 8B F9 E8 ? ? ? ? 83 C4 04 8B F0 E8 ? ? ? ? 8B 16 8A D8");
-        auto optionsHover = hook::get_pattern("56 8B F1 8B 8E 10 01 00 00 8B 01 8B 90 00 03 00 00 FF D2 8B 10 8B C8 8B 42 58 FF D0 8B 4C 24 08");
-        inputManager = Field<UI>(optionsInput, 8);
-        GetInput = injector::GetBranchDestination(static_cast<char*>(optionsInput) + 12).get();
-        auto selectSoundCall = hook::get_pattern("FF D0 8B CF 89 87 F0 00 00 00 E8 ? ? ? ? 5F 5E 5B C2 04 00 83 F8 03", 10);
-        PlayMenuSelect = injector::GetBranchDestination(selectSoundCall).get();
-        auto backSoundCall = hook::get_pattern("8B CE C7 86 14 01 00 00 00 00 00 00 E8 ? ? ? ? 80 3D ? ? ? ? 00 74 7A", 12);
-        PlayMenuBack = injector::GetBranchDestination(backSoundCall).get();
-        ReadInput = reinterpret_cast<decltype(ReadInput)>(hook::get_pattern("83 B9 54 01 00 00 00 56 8D B1 54 01 00 00 74 17 80 B9 9C 01 00 00 00 75 0E"));
-        ConsumeInput = reinterpret_cast<decltype(ConsumeInput)>(hook::get_pattern("8A 44 24 04 56 8B F1 88 86 9C 01 00 00 84 C0 74 15"));
-        auto barUpdate = hook::get_pattern("56 8B F1 8B 86 00 01 00 00 8B 8E FC 00 00 00 8B 11 57 8B 38 8B 42 58 FF D0");
-        ConstructBar = reinterpret_cast<decltype(ConstructBar)>(hook::get_pattern("8B 44 24 08 56 6A 00 8B F1 8B 4C 24 0C 50 51 8B CE E8 ? ? ? ? 68 FF 00 00 00 68 FF 00 00 00 68 FF 00 00 00 68 FF 00 00 00 8D 8E F4 00 00 00 C7 06 ? ? ? ? E8 ? ? ? ? 68 FF 00 00 00"));
-        InitializeBar = reinterpret_cast<decltype(InitializeBar)>(hook::get_pattern("83 EC 2C 53 56 8B F1 8B 06 8B 90 74 01 00 00 57 FF D2 84 C0 0F 85"));
-        SetBar = reinterpret_cast<decltype(SetBar)>(hook::get_pattern("F3 0F 10 54 24 04 83 EC 14 56 8B F1 F3 0F 10 86 DC 00 00 00"));
-        void* builds[] = {build,
-            hook::get_pattern("81 EC 04 01 00 00 53 55 56 8B F1 33 DB 57 38 9E 61 01 00 00 74 24"),
-            hook::get_pattern("83 EC 34 55 56 8B F1 57 B9 ? ? ? ? E8 ? ? ? ? 8B 0D ? ? ? ? 6A 00"),
-            hook::get_pattern("83 EC 38 53 55 56 8B F1 57 B9 ? ? ? ? E8 ? ? ? ? 68 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? 8B 0D ? ? ? ? 6A 02 8B E8")};
-        void* closes[] = {close,
-            hook::get_pattern("56 57 8B F1 8B 06 8B 90 34 01 00 00 33 FF 57 FF D2 8B 06 8B 90 E8 01 00 00 8B CE FF D2"),
-            hook::get_pattern("56 8B F1 8B 8E 10 01 00 00 85 C9 74 28 8B 01 8B 90 2C 01 00 00 6A 00"),
-            hook::get_pattern("56 57 8B F1 E8 ? ? ? ? 8B 8E 18 01 00 00 33 FF 3B CF 74 23")};
-        auto displayReset = hook::get_pattern("56 57 8B F1 E8 ? ? ? ? 68 ? ? ? ? E8 ? ? ? ? 8B 0D ? ? ? ? 83 C4 04 68 81 EF 82 94");
-        auto update = hook::get_pattern("83 EC 0C 56 8B F1 80 BE 13 01 00 00 00 74 1C 83 BE 08 01 00 00 00 74 13");
-        auto findCall = hook::get_pattern("E8 ? ? ? ? 8B 10 8B C8 8B 82 00 03 00 00 83 C4 04 FF D0 8B D8 8B 44 24 10 83 F8 07");
-        void* find = injector::GetBranchDestination(findCall).get();
-        Allocate = reinterpret_cast<decltype(Allocate)>(hook::get_pattern("B8 10 00 00 00 8B 4C 24 04 E9 ? ? ? ? CC CC 8B 4C 24 04 8B 44 24 08 3B C8"));
-        ConstructRow = reinterpret_cast<decltype(ConstructRow)>(hook::get_pattern("8B 44 24 08 56 8B F1 8B 4C 24 08 50 51 8B CE E8 ? ? ? ? 33 C0 89 86 2C 01 00 00 89 86 34 01 00 00"));
-        ConstructList = reinterpret_cast<decltype(ConstructList)>(hook::get_pattern("8B 44 24 08 53 56 33 DB 53 8B F1 8B 4C 24 10 50 51 8B CE E8 ? ? ? ? C7 06 ? ? ? ? 33 D2 33 C0 8D 8E 18 01 00 00"));
-        ConstructScroll = reinterpret_cast<decltype(ConstructScroll)>(hook::get_pattern("8B 44 24 08 53 56 33 DB 53 8B F1 8B 4C 24 10 50 51 8B CE E8 ? ? ? ? 8D 8E D8 00 00 00 C7 06 ? ? ? ? E8 ? ? ? ? 8D 8E EC 00 00 00 E8 ? ? ? ? 0F 57 C0 88 9E 0C 01 00 00 88 9E 0D 01 00 00"));
-        InitializeList = reinterpret_cast<decltype(InitializeList)>(hook::get_pattern("83 EC 18 56 57 8B F1 8B 0D ? ? ? ? 6A 04 E8 ? ? ? ? D9 5C 24 08 8A 44 24 2C"));
-        InitializeScroll = reinterpret_cast<decltype(InitializeScroll)>(hook::get_pattern("83 EC 1C 53 55 56 33 DB 57 8B F1 38 1D ? ? ? ? 74 10 39 1D ? ? ? ? 75 0F 39 1D ? ? ? ? 75 07 68 ? ? ? ? EB 05 68 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? 8B E8 83 FD FF"));
-        AddChoice = reinterpret_cast<decltype(AddChoice)>(hook::get_pattern("8B 44 24 0C 83 EC 0C 53 56 8B F1 83 F8 FF 75 0E 8B 86 E8 00 00 00"));
-        SelectChoice = reinterpret_cast<decltype(SelectChoice)>(hook::get_pattern("0F B7 81 E0 00 00 00 66 85 C0 76 1A 0F B7 D0 8B 44 24 04 3B C2"));
-        TuningFloat = reinterpret_cast<decltype(TuningFloat)>(hook::get_pattern("8B 44 24 04 D9 04 85 ? ? ? ? C2 04 00 CC CC"));
-        TuningVector = reinterpret_cast<decltype(TuningVector)>(hook::get_pattern("8B 44 24 04 8D 04 C5 ? ? ? ? C2 04 00 CC CC"));
-        textureDictionary = Field<UI>(build, 25);
-        FindTextureDictionary = injector::GetBranchDestination(static_cast<char*>(build) + 29).get();
-        // Find the required functions before installing hooks. Roll back on failure.
-        gxtHook = safetyhook::create_inline(getText, GetMenuText);
-        findHook = safetyhook::create_inline(find, FindUI);
-        updateHook = safetyhook::create_inline(update, UpdateList);
-        barUpdateHook = safetyhook::create_inline(barUpdate, UpdateBar);
-        optionsBuildHook = safetyhook::create_inline(optionsBuild, BuildOptions);
-        optionsCloseHook = safetyhook::create_inline(optionsClose, CloseOptions);
-        optionsInputHook = safetyhook::create_inline(optionsInput, OptionsInput);
-        optionsClickHook = safetyhook::create_inline(optionsClick, OptionsClick);
-        optionsHoverHook = safetyhook::create_inline(optionsHover, OptionsHover);
-        if (!optionsBuildHook || !optionsCloseHook || !optionsInputHook || !optionsClickHook || !optionsHoverHook)
-            throw std::runtime_error("Could not install Fusion Fix page hooks");
-        void* buildCallbacks[] = {BuildPage<0>, BuildPage<1>, BuildPage<2>, BuildPage<3>};
-        void* closeCallbacks[] = {ClosePage<0>, ClosePage<1>, ClosePage<2>, ClosePage<3>};
-        for (size_t i = 0; i < std::size(pages); ++i)
-        {
-            pages[i].close = safetyhook::create_inline(closes[i], closeCallbacks[i]);
-            pages[i].build = safetyhook::create_inline(builds[i], buildCallbacks[i]);
-            if (!pages[i].close || !pages[i].build) throw std::runtime_error("Could not install page hooks");
-        }
-        displayResetHook = safetyhook::create_inline(displayReset, ResetDisplay);
-        if (!gxtHook || !findHook || !updateHook || !barUpdateHook || !displayResetHook) throw std::runtime_error("Could not install menu hooks");
-        FusionFix::onMenuDrawingEvent() += UpdateHelp;
-        FusionFix::onGameProcessEvent() += UpdateHelp; // title screen is not always reported as paused
+        pages[i].close = safetyhook::create_inline(closes[i], closeCallbacks[i]);
+        pages[i].build = safetyhook::create_inline(builds[i], buildCallbacks[i]);
     }
-    catch (...)
-    {
-        for (auto& page : pages) { page.build.reset(); page.close.reset(); }
-        updateHook.reset(); barUpdateHook.reset(); findHook.reset(); gxtHook.reset(); displayResetHook.reset();
-        optionsBuildHook.reset(); optionsCloseHook.reset(); optionsInputHook.reset();
-        optionsClickHook.reset(); optionsHoverHook.reset();
-        Debug("Fusion Fix: settings menu unavailable for this executable. Settings remain available in the CFG.\n");
-    }
+    displayResetHook = safetyhook::create_inline(displayReset, ResetDisplay);
+    FusionFix::onMenuDrawingEvent() += UpdateHelp;
+    FusionFix::onGameProcessEvent() += UpdateHelp; // title screen is not always reported as paused
 }
 struct Install
 {
