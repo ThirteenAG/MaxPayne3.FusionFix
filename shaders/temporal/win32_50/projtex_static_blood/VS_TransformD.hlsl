@@ -338,7 +338,7 @@ VS_OUT TemporalCurrent(VS_IN i)
 	o.texcoord1.xyz = asfloat(r2.xyz);
 	o.texcoord6.xyz = asfloat(r0.yzw);
 	o.texcoord6.w = 1;
-	o.texcoord2 = gBloodUVBoundsPage[r0.x / 4][0];
+	o.texcoord2 = gBloodUVBoundsPage[r0.x];
 	o.texcoord4 = asfloat(r3.xyz);
 
 	return o;
@@ -561,7 +561,7 @@ VS_OUT TemporalVertexPrevious(VS_IN i)
 	o.texcoord1.xyz = asfloat(r2.xyz);
 	o.texcoord6.xyz = asfloat(r0.yzw);
 	o.texcoord6.w = 1;
-	o.texcoord2 = Temporal_b9_o32_gBloodUVBoundsPage[r0.x / 4][0];
+	o.texcoord2 = Temporal_b9_o32_gBloodUVBoundsPage[r0.x];
 	o.texcoord4 = asfloat(r3.xyz);
 
 	return o;
