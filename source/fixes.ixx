@@ -1,6 +1,7 @@
 module;
 
 #include <common.hxx>
+#include "garagepanel.h"
 #include <format>
 
 export module fixes;
@@ -338,6 +339,8 @@ public:
                     {
                         regs.xmm2.f32[0] = fabs(regs.xmm2.f32[0]);
                     });
+
+                GaragePanels::Init();
             }
         };
 
