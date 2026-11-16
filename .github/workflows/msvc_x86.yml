@@ -74,7 +74,7 @@ jobs:
     # HLSL compile results, keyed by the last commit; a new commit restores the
     # previous cache and only recompiles sources whose content hash changed.
     - name: Cache compiled HLSL
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: build/shadertool/hlsl-cache
         key: hlsl-cache-${{ github.sha }}
