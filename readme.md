@@ -75,6 +75,8 @@ Menu labels and descriptions follow the game language in all ten supported langu
 
 High polling-rate mouse movement uses the full accumulated input each frame, preserving sensitivity without an extra wrapper.
 
+The ending cutscene of chapter 10 (the bus depot) loads all of its characters in time, the garage panel in a cutscene of that chapter slides as on console, and changing graphics settings no longer starts the water over. Options that can't be changed with the current settings are greyed out in the menus.
+
 # Building
 
 Run `premake5.bat` to generate the Visual Studio solution in `build`, then build it.

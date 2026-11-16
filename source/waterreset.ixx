@@ -1,10 +1,19 @@
-#pragma once
+module;
 
-#include <d3d9.h>
+#include <common.hxx>
 #include <d3d11.h>
 #include <wrl/client.h>
 #include <atomic>
+#include <vector>
 
+export module waterreset;
+
+import common;
+
+// Applying graphics settings rebuilds the render targets, which starts the water simulation over: the water surface and
+// its ripples jump back to their first state. Settings that don't change the render target layout are applied without
+// the rebuild, a rebuild that keeps the sizes copies the water maps to the new targets (on DirectX 9 through system
+// memory across the device reset), and the water reflection is drawn again right after.
 namespace WaterRenderTargets
 {
     using Microsoft::WRL::ComPtr;
@@ -24,7 +33,7 @@ namespace WaterRenderTargets
     std::mutex snapshotMutex;
     bool rebuildingWithoutResize = false;
     TextureSet savedTargets;
-    constexpr std::array<size_t, 4> dx9Slots{638, 639, 641, 642};
+    constexpr std::array<size_t, 4> dx9Slots{ 638, 639, 641, 642 };
     using Dx9MipChain = std::vector<ComPtr<IDirect3DSurface9>>;
     std::array<Dx9MipChain, dx9Slots.size() + 1> dx9Maps;
     uintptr_t liveWaterPhase = 0;
@@ -164,7 +173,7 @@ namespace WaterRenderTargets
             if (FAILED(texture->GetSurfaceLevel(level, source.GetAddressOf()))
                 || FAILED(source->GetDesc(&desc)) || !(desc.Usage & D3DUSAGE_RENDERTARGET)
                 || FAILED(device->CreateOffscreenPlainSurface(desc.Width, desc.Height, desc.Format,
-                    D3DPOOL_SYSTEMMEM, copy.GetAddressOf(), nullptr))
+                                                              D3DPOOL_SYSTEMMEM, copy.GetAddressOf(), nullptr))
                 || FAILED(device->GetRenderTargetData(source.Get(), copy.Get())))
                 return false;
             saved.push_back(std::move(copy));
@@ -257,90 +266,6 @@ namespace WaterRenderTargets
         dx9Maps = {};
     }
 
-    void InitReflectionRefresh()
-    {
-        auto applied = hook::pattern("66 39 5C 24 7E 74 0D 8B 54 24 78 52 E8 ? ? ? ? 83 C4 04 66 39 5C 24 76");
-        auto created = hook::pattern("89 A8 F4 09 00 00 89 B8 F8 09 00 00 8B BC 24 80 00 00 00");
-        auto cameraCheck = hook::pattern("F3 0F 11 05 ? ? ? ? 3A C3 75 0D E8 ? ? ? ? 85 C0 0F 84 ? ? ? ? 8B 0D");
-        auto coverageCheck = hook::pattern("69 C0 A0 06 00 00 0F 2F 80 ? ? ? ? 76 0C C7 86 D8 09 00 00 FF FF FF FF");
-        auto mirrorCheck = hook::pattern("39 58 30 74 09 39 58 38 0F 8F ? ? ? ? 83 BE D8 09 00 00 FF 0F 84");
-        auto simulationPause = hook::pattern("E8 91 D2 E8 FF 8A 15 ? ? ? ? 0A 15 ? ? ? ? 75 5C");
-        if (applied.size() != 1 || created.size() != 1 || cameraCheck.size() != 1
-            || coverageCheck.size() != 1 || simulationPause.size() != 1 || mirrorCheck.size() != 1)
-            return;
-
-        static const auto pauseMask = *simulationPause.get_first<const uint16_t*>(7);
-        static const auto coverage = *coverageCheck.get_first<const uintptr_t*>(9);
-        static auto AllowDistantReflection = safetyhook::create_mid(coverageCheck.get_first(6), [](SafetyHookContext& regs)
-        {
-            const auto pending = reflectionRefresh.load(std::memory_order_relaxed);
-            if (pending.attemptsLeft == 0)
-                return;
-
-            const float visible = *reinterpret_cast<const float*>(coverage + regs.eax);
-            if (visible > 0.0f && visible < regs.xmm0.f32[0])
-                regs.xmm0.f32[0] = visible;
-        });
-        static auto AllowWaterWithMirror = safetyhook::create_mid(mirrorCheck.get_first(8), [](SafetyHookContext& regs)
-        {
-            const auto pending = reflectionRefresh.load(std::memory_order_relaxed);
-            if (*pauseMask == 0 || pending.attemptsLeft == 0
-                || static_cast<int32_t>(GetTickCount() - pending.dueAt) < 0)
-                return;
-
-            constexpr auto zeroFlag = 1u << 6;
-            constexpr auto signFlag = 1u << 7;
-            constexpr auto overflowFlag = 1u << 11;
-            const auto flags = regs.eflags;
-            if ((flags & zeroFlag) || ((flags & signFlag) != 0) != ((flags & overflowFlag) != 0))
-                return;
-
-            const auto phase = reinterpret_cast<const uintptr_t*>(regs.esi);
-            if (phase[630] == static_cast<uintptr_t>(-1))
-                return;
-
-            // The mirror pass usually takes priority here. Let this one
-            // settings refresh also submit to the water reflection target.
-            regs.eflags |= zeroFlag;
-
-        });
-        static auto DrawReflection = safetyhook::create_mid(cameraCheck.get_first(), [](SafetyHookContext& regs)
-        {
-            auto pending = reflectionRefresh.load(std::memory_order_relaxed);
-            if (pending.attemptsLeft == 0)
-                return;
-
-            const uint32_t now = GetTickCount();
-            if (static_cast<int32_t>(now - pending.dueAt) < 0)
-                return;
-
-            const uint32_t remaining = pending.attemptsLeft - 1;
-            const ReflectionRefresh next{now + reflectionRetryDelayMs[remaining], remaining};
-            if (!reflectionRefresh.compare_exchange_strong(pending, next, std::memory_order_relaxed))
-                return;
-
-            // A newly created target can be rendered before the rebuilt
-            // view has finished populating. Schedule two later refreshes.
-            regs.eax = (regs.eax & ~0xFFu) | ((regs.ebx ^ 1u) & 0xFFu);
-        });
-        const auto requestRefresh = [](SafetyHookContext&)
-        {
-            reflectionRefresh.store({GetTickCount(), static_cast<uint32_t>(reflectionRetryDelayMs.size())},
-                std::memory_order_relaxed);
-        };
-        static auto AfterApply = DrawReflection && AllowWaterWithMirror
-            ? safetyhook::create_mid(applied.get_first(), requestRefresh) : SafetyHookMid{};
-        static auto AfterCreate = AfterApply
-            ? safetyhook::create_mid(created.get_first(12), requestRefresh) : SafetyHookMid{};
-        if (!AfterCreate)
-        {
-            AllowDistantReflection.reset();
-            AllowWaterWithMirror.reset();
-            AfterApply.reset();
-            DrawReflection.reset();
-        }
-    }
-
     void EndRebuild(SafetyHookContext&)
     {
         const std::lock_guard lock(snapshotMutex);
@@ -358,44 +283,158 @@ namespace WaterRenderTargets
             requestReset();
     }
 
-    void Init(const unsigned* renderer)
+    void RequestReflectionRefresh(SafetyHookContext&)
+    {
+        reflectionRefresh.store({ GetTickCount(), static_cast<uint32_t>(reflectionRetryDelayMs.size()) },
+                                std::memory_order_relaxed);
+    }
+
+    void Init(const unsigned* renderer, const uint16_t* pauseMask, void* simulationPause)
     {
         activeRenderer = renderer;
-        InitReflectionRefresh();
 
+        // The water reflection after applied settings
+        {
+            auto coverageCheck = hook::pattern("69 C0 A0 06 00 00 0F 2F 80 ? ? ? ? 76 0C C7 86 D8 09 00 00 FF FF FF FF");
+            static const auto coverage = *coverageCheck.get_first<const uintptr_t*>(9);
+            static auto AllowDistantReflection = safetyhook::create_mid(coverageCheck.get_first(6), [](SafetyHookContext& regs)
+            {
+                const auto pending = reflectionRefresh.load(std::memory_order_relaxed);
+                if (pending.attemptsLeft == 0)
+                    return;
+
+                const float visible = *reinterpret_cast<const float*>(coverage + regs.eax);
+                if (visible > 0.0f && visible < regs.xmm0.f32[0])
+                    regs.xmm0.f32[0] = visible;
+            });
+
+            static const auto paused = pauseMask;
+            auto mirrorCheck = hook::pattern("39 58 30 74 09 39 58 38 0F 8F ? ? ? ? 83 BE D8 09 00 00 FF 0F 84");
+            static auto AllowWaterWithMirror = safetyhook::create_mid(mirrorCheck.get_first(8), [](SafetyHookContext& regs)
+            {
+                const auto pending = reflectionRefresh.load(std::memory_order_relaxed);
+                if (*paused == 0 || pending.attemptsLeft == 0
+                    || static_cast<int32_t>(GetTickCount() - pending.dueAt) < 0)
+                    return;
+
+                constexpr auto zeroFlag = 1u << 6;
+                constexpr auto signFlag = 1u << 7;
+                constexpr auto overflowFlag = 1u << 11;
+                const auto flags = regs.eflags;
+                if ((flags & zeroFlag) || ((flags & signFlag) != 0) != ((flags & overflowFlag) != 0))
+                    return;
+
+                const auto phase = reinterpret_cast<const uintptr_t*>(regs.esi);
+                if (phase[630] == static_cast<uintptr_t>(-1))
+                    return;
+
+                // The mirror pass usually takes priority here. Let this one
+                // settings refresh also submit to the water reflection target.
+                regs.eflags |= zeroFlag;
+            });
+
+            auto cameraCheck = hook::pattern("F3 0F 11 05 ? ? ? ? 3A C3 75 0D E8 ? ? ? ? 85 C0 0F 84 ? ? ? ? 8B 0D");
+            static auto DrawReflection = safetyhook::create_mid(cameraCheck.get_first(), [](SafetyHookContext& regs)
+            {
+                auto pending = reflectionRefresh.load(std::memory_order_relaxed);
+                if (pending.attemptsLeft == 0)
+                    return;
+
+                const uint32_t now = GetTickCount();
+                if (static_cast<int32_t>(now - pending.dueAt) < 0)
+                    return;
+
+                const uint32_t remaining = pending.attemptsLeft - 1;
+                const ReflectionRefresh next{ now + reflectionRetryDelayMs[remaining], remaining };
+                if (!reflectionRefresh.compare_exchange_strong(pending, next, std::memory_order_relaxed))
+                    return;
+
+                // A newly created target can be rendered before the rebuilt
+                // view has finished populating. Schedule two later refreshes.
+                regs.eax = (regs.eax & ~0xFFu) | ((regs.ebx ^ 1u) & 0xFFu);
+            });
+
+            auto applied = hook::pattern("66 39 5C 24 7E 74 0D 8B 54 24 78 52 E8 ? ? ? ? 83 C4 04 66 39 5C 24 76");
+            static auto AfterApply = safetyhook::create_mid(applied.get_first(), RequestReflectionRefresh);
+            auto targetCreated = hook::pattern("89 A8 F4 09 00 00 89 B8 F8 09 00 00 8B BC 24 80 00 00 00");
+            static auto AfterTargetCreate = safetyhook::create_mid(targetCreated.get_first(12), RequestReflectionRefresh);
+        }
+
+        // The water maps across a render target rebuild
         auto created = hook::pattern("A3 ? ? ? ? E8 ? ? ? ? 89 6C 24 14 F7 C7 00 00 00 10 74 2D 68 00 0A 00 00");
-        auto reset = hook::pattern("C6 05 ? ? ? ? 01 C3 CC CC CC CC CC CC CC CC 56 8B 35 ? ? ? ? 85 F6 74 28 8D 46 08");
-        if (created.size() != 1 || reset.size() != 1)
-            return;
         waterPhase = *created.get_first<const uintptr_t*>(1);
-        requestReset = reinterpret_cast<decltype(requestReset)>(reset.get_first());
-        resetPending = *reset.get_first<uint8_t*>(2);
         static auto AfterCreate = safetyhook::create_mid(created.get_first(10), AfterWaterCreation);
 
-        auto start = hook::pattern("81 EC 98 00 00 00 56 8B F1 8B 06 8B 90 38 01 00 00 57 6A 01 FF D2");
-        auto finish = hook::pattern("E8 6B DB FC FF 8B 16 8B 82 A4 01 00 00 6A 00 8B CE FF D0");
-        auto destroy = hook::pattern("51 53 55 56 57 89 4C 24 10 8D B9 04 0A 00 00 BB 02 00 00 00");
+        auto reset = hook::pattern("C6 05 ? ? ? ? 01 C3 CC CC CC CC CC CC CC CC 56 8B 35 ? ? ? ? 85 F6 74 28 8D 46 08");
+        requestReset = reinterpret_cast<decltype(requestReset)>(reset.get_first());
+        resetPending = *reset.get_first<uint8_t*>(2);
+
         auto normal = hook::pattern("83 EB 01 75 AA 8B 35 ? ? ? ? 3B F5 74 24 8D 4E 08");
-        auto paused = hook::pattern("E8 91 D2 E8 FF 8A 15 ? ? ? ? 0A 15 ? ? ? ? 75 5C");
-        if (!AfterCreate || start.size() != 1 || finish.size() != 1 || destroy.size() != 1
-            || normal.size() != 1 || paused.size() != 1)
-            return;
         normalTarget = *normal.get_first<const uintptr_t*>(7);
+
+        auto start = hook::pattern("81 EC 98 00 00 00 56 8B F1 8B 06 8B 90 38 01 00 00 57 6A 01 FF D2");
         static auto Begin = safetyhook::create_mid(start.get_first(), BeginRebuild);
+        auto finish = hook::pattern("E8 6B DB FC FF 8B 16 8B 82 A4 01 00 00 6A 00 8B CE FF D0");
         static auto End = safetyhook::create_mid(finish.get_first(5), EndRebuild);
+        auto destroy = hook::pattern("51 53 55 56 57 89 4C 24 10 8D B9 04 0A 00 00 BB 02 00 00 00");
         static auto Save = safetyhook::create_mid(destroy.get_first(), SaveWaterTargets);
-        if (Begin && End && Save)
-        {
-            injector::MakeCALL(paused.get_first(), RequestWaterResetWhileInactive, true);
-            auto dx9Reset = hook::pattern("8B 82 68 01 00 00 6A 01 8B CE FF D0 80 BC 24 98 00 00 00 00 8B 16 8B 82 B8 03 00 00");
-            if (dx9Reset.size() == 1)
-                static auto BeforeDx9Reset = safetyhook::create_mid(dx9Reset.get_first(12), SaveDx9BeforeReset);
-        }
-        else
-        {
-            Begin.reset();
-            End.reset();
-            Save.reset();
-        }
+        injector::MakeCALL(simulationPause, RequestWaterResetWhileInactive, true);
+
+        auto dx9Reset = hook::pattern("8B 82 68 01 00 00 6A 01 8B CE FF D0 80 BC 24 98 00 00 00 00 8B 16 8B 82 B8 03 00 00");
+        static auto BeforeDx9Reset = safetyhook::create_mid(dx9Reset.get_first(12), SaveDx9BeforeReset);
     }
 }
+
+class WaterReset
+{
+public:
+    WaterReset()
+    {
+        FusionFix::onInitEvent() += []()
+        {
+            auto waterAndSamples = hook::pattern("8B 86 34 01 00 00 8B 0D ? ? ? ? 33 DB 57 8B 3D ? ? ? ? 88 5C 24 12");
+            auto windowAndRenderer = hook::pattern("8B 96 08 01 00 00 A1 ? ? ? ? 3B 82 E4 00 00 00 0F 85 ? ? ? ? 8B 8E 10 01 00 00 8B 15 ? ? ? ? 3B 91 E4 00 00 00 74 0C 81 3D ? ? ? ? E8 03 00 00");
+            auto shadowsAndReflections = hook::pattern("8B 96 1C 01 00 00 A1 ? ? ? ? 3B 82 E4 00 00 00 75 39 8B 8E 30 01 00 00 8B 15 ? ? ? ? 3B 91 E4 00 00 00");
+            auto fxaaTest = hook::pattern("39 1D ? ? ? ? 0F 94 C2 3B D1 74 0A 83 FF 01 7E 05");
+            auto apply = hook::pattern("38 5C 24 12 75 0A 38 5C 24 10 0F 84 ? ? ? ? 38 5C 24 13 0F 85 ? ? ? ? 8B CE C6 44 24 11 01 E8 ? ? ? ?");
+            auto simulationPause = hook::pattern("E8 91 D2 E8 FF 8A 15 ? ? ? ? 0A 15 ? ? ? ? 75 5C");
+
+            static const auto waterQuality = *waterAndSamples.get_first<const int*>(8);
+            static const auto sampleCount = *waterAndSamples.get_first<const int*>(17);
+            static const auto screenMode = *windowAndRenderer.get_first<const int*>(7);
+            static const auto renderer = *windowAndRenderer.get_first<const unsigned*>(45);
+            static const auto reflectionQuality = *shadowsAndReflections.get_first<const int*>(7);
+            static const auto shadowQuality = *shadowsAndReflections.get_first<const int*>(27);
+            static const auto fxaaQuality = *fxaaTest.get_first<const int*>(2);
+            static const auto commitSettings = reinterpret_cast<void(__thiscall*)(const uintptr_t*)>(
+                injector::GetBranchDestination(apply.get_first(33)).as_int());
+
+            WaterRenderTargets::Init(renderer, *simulationPause.get_first<const uint16_t*>(7), simulationPause.get_first());
+
+            // DirectX 10 and 11: the settings that share the aspect ratio's reset flag are applied without the reset
+            // when the render target layout stays the same.
+            static auto ApplyAspectRatioLive = safetyhook::create_mid(apply.get_first(), [](SafetyHookContext& regs)
+            {
+                auto flags = reinterpret_cast<uint8_t*>(regs.esp + 0x10);
+                if (*renderer < 1000 || flags[0] || !flags[2] || flags[3])
+                    return;
+
+                const auto menu = reinterpret_cast<const uintptr_t*>(regs.esi);
+                const auto selected = [menu](size_t index)
+                {
+                    return *reinterpret_cast<const int*>(menu[index] + 228);
+                };
+
+                // These options share the aspect-ratio reset flag and can change the
+                // render-target layout. Leave their normal allocation path in place.
+                if (*waterQuality != selected(77) || *screenMode != selected(66)
+                    || *reflectionQuality != selected(71) || *shadowQuality != selected(76)
+                    || (*sampleCount > 1 && (*fxaaQuality == 0) != (selected(74) == 0)))
+                    return;
+
+                commitSettings(menu);
+                flags[2] = 0;
+            });
+        };
+    }
+} WaterReset;

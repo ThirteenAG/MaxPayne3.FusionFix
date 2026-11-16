@@ -1,12 +1,18 @@
-#pragma once
+module;
 
+#include <common.hxx>
 #include <algorithm>
-#include <array>
 #include <atomic>
 #include <cmath>
-#include <cstdint>
 #include <cstring>
 
+export module garagepanels;
+
+import common;
+
+// The garage panel of a chapter 10 cutscene slides across the screen (LockSlide from 0,0,1,1 to -0.3,0,1,1). Its slide
+// is drawn from a copy of the composited panel taken early in the slide, the screenshot marker that ends it waits until
+// the slide is done, and the area right of the panel is cleared.
 namespace GaragePanels
 {
     const uint8_t* newPanelFlag = nullptr;
@@ -20,8 +26,7 @@ namespace GaragePanels
     FillRectangle fillRectangle = nullptr;
     using ReleaseReference = int (__cdecl*)(volatile LONG*);
     ReleaseReference releaseReference = nullptr;
-    std::atomic<uintptr_t> slideScratch{0};
-    std::atomic_bool stageProcessedSlide{false};
+    std::atomic<uintptr_t> slideScratch{ 0 };
     struct Point { float x, y; };
     thread_local uintptr_t pendingAtlas = 0;
     thread_local float pendingOffset = 0.0f;
@@ -54,7 +59,7 @@ namespace GaragePanels
         const auto arguments = reinterpret_cast<const uintptr_t*>(regs.esp);
         const auto create = reinterpret_cast<CreateTexture>(regs.edx);
         const auto scratch = create(regs.ecx, "PANEL_GARAGE_SCRATCH", arguments[1], arguments[2],
-            arguments[3], arguments[4], reinterpret_cast<const void*>(arguments[5]));
+                                    arguments[3], arguments[4], reinterpret_cast<const void*>(arguments[5]));
         slideScratch.store(scratch, std::memory_order_release);
     }
 
@@ -103,7 +108,6 @@ namespace GaragePanels
         copyTexture(scratch, atlas);
         capturedOffset = pendingOffset;
         capturedScratch = scratch;
-
     }
 
     void UseSlideSource(SafetyHookContext& regs)
@@ -188,7 +192,6 @@ namespace GaragePanels
         const std::array<float, 4> rectangle{ firstUnusedPixel, 0.0f, width, height };
         constexpr uint32_t black = 0xff000000;
         fillRectangle(rectangle.data(), &black);
-
     }
 
     bool IsGarageSlide(const uint8_t* panel)
@@ -248,10 +251,9 @@ namespace GaragePanels
         std::array<float, 4> viewport{};
         const size_t offsets[] = { 48, 36, 44, 40 };
         for (size_t i = 0; i < viewport.size(); ++i)
-        {
             std::memcpy(&viewport[i], command + offsets[i], sizeof(float));
-        }
-        if (stageProcessedSlide.load(std::memory_order_acquire) && activeSlide && !startingPanel && command[118] && !command[119]
+
+        if (activeSlide && !startingPanel && command[118] && !command[119]
             && viewport[0] == 0.0f && viewport[1] == 0.0f && std::abs(viewport[3] - 0.585f) < 0.001f)
         {
             float cropX{};
@@ -268,88 +270,51 @@ namespace GaragePanels
         maskingGarageSlide = command[slideTextureMode] != 0;
     }
 
-    void Init()
+    export void Init()
     {
-        auto consumePanelFlag = hook::pattern("38 1D ? ? ? ? 74 0D C6 05 ? ? ? ? 01 88 1D");
-        auto submitPanel = hook::pattern("C6 40 03 B6 C7 05 ? ? ? ? 6E 00 00 00 8B 08 81 E1 FF DF 0D FF");
-        if (consumePanelFlag.size() != 1 || submitPanel.size() != 1)
-            return;
+        // A new panel starts this frame
+        auto pattern = hook::pattern("38 1D ? ? ? ? 74 0D C6 05 ? ? ? ? 01 88 1D");
+        newPanelFlag = *pattern.get_first<const uint8_t*>(2);
+        static auto ReadFlag = safetyhook::create_mid(pattern.get_first(), ReadNewPanelFlag);
 
-        newPanelFlag = *consumePanelFlag.get_first<const uint8_t*>(2);
-        static auto ReadFlag = safetyhook::create_mid(consumePanelFlag.get_first(), ReadNewPanelFlag);
-        static auto Preserve = ReadFlag ? safetyhook::create_mid(submitPanel.get_first(), SetPreserveFlag) : SafetyHookMid{};
-        auto slideTo = hook::pattern("E8 DE B3 C7 FF 83 C4 1C 5F 5E 59 C2 18 00");
-        auto slideFrom = hook::pattern("E8 39 B3 C7 FF 83 C4 1C 5F 5E 59 C2 18 00");
-        static auto SlideTo = slideTo.size() == 1 ? safetyhook::create_mid(slideTo.get_first(), ReadSlideSample) : SafetyHookMid{};
-        static auto SlideFrom = slideFrom.size() == 1 ? safetyhook::create_mid(slideFrom.get_first(), ReadSlideSample) : SafetyHookMid{};
-        auto previousMarker = hook::pattern("72 1A 8A D1 FE CA C6 05 ? ? ? ? 01 C6 05 ? ? ? ? 00 88 97 10 06 00 00");
-        auto currentMarker = hook::pattern("72 14 C6 05 ? ? ? ? 01 C6 05 ? ? ? ? 00 88 8F 10 06 00 00");
-        const bool markersFound = Preserve && SlideTo && SlideFrom && previousMarker.size() == 1 && currentMarker.size() == 1;
-        static auto PreviousMarker = markersFound
-            ? safetyhook::create_mid(previousMarker.get_first(), DeferGarageScreenshot) : SafetyHookMid{};
-        static auto CurrentMarker = PreviousMarker
-            ? safetyhook::create_mid(currentMarker.get_first(), DeferGarageScreenshot) : SafetyHookMid{};
-        if (!CurrentMarker)
-            PreviousMarker.reset();
-        auto b5Copy = hook::pattern("E8 73 A5 22 00 83 C4 08 5E C3 CC CC CC CC CC CC");
-        auto b6 = hook::pattern("8B 4C 24 04 E9 57 E0 FF FF CC CC CC CC CC CC CC");
-        auto sourceSelected = hook::pattern("F3 0F 10 77 38 F3 0F 10 3D ? ? ? ? F3 0F 10 6F 34");
-        auto b7 = hook::pattern("8B 4C 24 04 E9 77 F4 FF FF CC CC CC CC CC CC CC");
-        auto panelQuad = hook::pattern("E8 F9 E2 21 00 83 C4 24 8D 4C 24 28 E8 BD E1 21");
-        const bool texturesFound = CurrentMarker && b5Copy.size() == 1 && b6.size() == 1 && b7.size() == 1
-            && sourceSelected.size() == 1 && panelQuad.size() == 1;
-        if (texturesFound)
-        {
-            const auto call = b5Copy.get_first<const uint8_t>();
-            int32_t offset{};
-            std::memcpy(&offset, call + 1, sizeof(offset));
-            copyTexture = reinterpret_cast<CopyTexture>(reinterpret_cast<uintptr_t>(call + 5) + offset);
-        }
-        static auto Begin = texturesFound ? safetyhook::create_mid(b6.get_first(), BeginSlideCommand) : SafetyHookMid{};
-        static auto Capture = Begin ? safetyhook::create_mid(b7.get_first(), CaptureCompositedSlide) : SafetyHookMid{};
-        static auto Reuse = Capture ? safetyhook::create_mid(sourceSelected.get_first(), UseSlideSource) : SafetyHookMid{};
-        static auto Quad = Reuse ? safetyhook::create_mid(panelQuad.get_first(), UseSlideCoordinates) : SafetyHookMid{};
-        static auto Restore = Quad ? safetyhook::create_mid(panelQuad.get_first(5), RestoreSceneSource) : SafetyHookMid{};
-        auto createScratch = hook::pattern("68 ? ? ? ? FF D2 8B 0D ? ? ? ? A3 ? ? ? ? 8B 01 8B 90 20 01 00 00");
-        auto releaseScratch = hook::pattern("56 8B 35 ? ? ? ? 57 85 F6 74 28 8D 46 08 50 E8 ? ? ? ? 83 C4 04");
-        auto fillCall = hook::pattern("E8 F2 E8 21 00 83 C4 08 F3 0F 10 05 ? ? ? ? 68 FF 00 00 00");
-        const bool canFill = Restore && fillCall.size() == 1;
-        if (canFill)
-        {
-            const auto call = fillCall.get_first<const uint8_t>();
-            int32_t offset{};
-            std::memcpy(&offset, call + 1, sizeof(offset));
-            fillRectangle = reinterpret_cast<FillRectangle>(reinterpret_cast<uintptr_t>(call + 5) + offset);
-        }
-        static auto Clear = canFill
-            ? safetyhook::create_mid(fillCall.get_first(8), ClearRightOfSlide) : SafetyHookMid{};
-        const bool resourcesFound = Clear && createScratch.size() == 1 && releaseScratch.size() == 1;
-        if (resourcesFound)
-        {
-            const auto call = releaseScratch.get_first<const uint8_t>(16);
-            int32_t offset{};
-            std::memcpy(&offset, call + 1, sizeof(offset));
-            releaseReference = reinterpret_cast<ReleaseReference>(reinterpret_cast<uintptr_t>(call + 5) + offset);
-        }
-        static auto Release = resourcesFound
-            ? safetyhook::create_mid(releaseScratch.get_first(), ReleaseSlideScratch) : SafetyHookMid{};
-        static auto Allocate = Release
-            ? safetyhook::create_mid(createScratch.get_first(5), CreateSlideScratch) : SafetyHookMid{};
-        if (!Allocate)
-            Release.reset();
-        stageProcessedSlide.store(bool(Allocate), std::memory_order_release);
-        if (!Allocate)
-        {
-            Clear.reset();
-            Restore.reset();
-            Quad.reset();
-            Reuse.reset();
-            Capture.reset();
-            Begin.reset();
-            CurrentMarker.reset();
-            PreviousMarker.reset();
-            SlideFrom.reset();
-            SlideTo.reset();
-        }
+        // The panel's B6 command is submitted
+        pattern = hook::pattern("C6 40 03 B6 C7 05 ? ? ? ? 6E 00 00 00 8B 08 81 E1 FF DF 0D FF");
+        static auto Preserve = safetyhook::create_mid(pattern.get_first(), SetPreserveFlag);
+
+        // LockSlide samples its panel towards and from the target
+        pattern = hook::pattern("E8 DE B3 C7 FF 83 C4 1C 5F 5E 59 C2 18 00");
+        static auto SlideTo = safetyhook::create_mid(pattern.get_first(), ReadSlideSample);
+        pattern = hook::pattern("E8 39 B3 C7 FF 83 C4 1C 5F 5E 59 C2 18 00");
+        static auto SlideFrom = safetyhook::create_mid(pattern.get_first(), ReadSlideSample);
+
+        // The screenshot marker checks of the previous and the current panel
+        pattern = hook::pattern("72 1A 8A D1 FE CA C6 05 ? ? ? ? 01 C6 05 ? ? ? ? 00 88 97 10 06 00 00");
+        static auto PreviousMarker = safetyhook::create_mid(pattern.get_first(), DeferGarageScreenshot);
+        pattern = hook::pattern("72 14 C6 05 ? ? ? ? 01 C6 05 ? ? ? ? 00 88 8F 10 06 00 00");
+        static auto CurrentMarker = safetyhook::create_mid(pattern.get_first(), DeferGarageScreenshot);
+
+        // Render thread: the texture copy of command B5, commands B6 and B7, and the panel quad
+        pattern = hook::pattern("E8 73 A5 22 00 83 C4 08 5E C3 CC CC CC CC CC CC");
+        copyTexture = reinterpret_cast<CopyTexture>(injector::GetBranchDestination(pattern.get_first()).as_int());
+        pattern = hook::pattern("8B 4C 24 04 E9 57 E0 FF FF CC CC CC CC CC CC CC");
+        static auto Begin = safetyhook::create_mid(pattern.get_first(), BeginSlideCommand);
+        pattern = hook::pattern("8B 4C 24 04 E9 77 F4 FF FF CC CC CC CC CC CC CC");
+        static auto Capture = safetyhook::create_mid(pattern.get_first(), CaptureCompositedSlide);
+        pattern = hook::pattern("F3 0F 10 77 38 F3 0F 10 3D ? ? ? ? F3 0F 10 6F 34");
+        static auto Reuse = safetyhook::create_mid(pattern.get_first(), UseSlideSource);
+        pattern = hook::pattern("E8 F9 E2 21 00 83 C4 24 8D 4C 24 28 E8 BD E1 21");
+        static auto Quad = safetyhook::create_mid(pattern.get_first(), UseSlideCoordinates);
+        static auto Restore = safetyhook::create_mid(pattern.get_first(5), RestoreSceneSource);
+
+        pattern = hook::pattern("E8 F2 E8 21 00 83 C4 08 F3 0F 10 05 ? ? ? ? 68 FF 00 00 00");
+        fillRectangle = reinterpret_cast<FillRectangle>(injector::GetBranchDestination(pattern.get_first()).as_int());
+        static auto Clear = safetyhook::create_mid(pattern.get_first(8), ClearRightOfSlide);
+
+        // A scratch texture of the panel texture's size is created and released along with it
+        pattern = hook::pattern("56 8B 35 ? ? ? ? 57 85 F6 74 28 8D 46 08 50 E8 ? ? ? ? 83 C4 04");
+        releaseReference = reinterpret_cast<ReleaseReference>(injector::GetBranchDestination(pattern.get_first(16)).as_int());
+        static auto Release = safetyhook::create_mid(pattern.get_first(), ReleaseSlideScratch);
+        pattern = hook::pattern("68 ? ? ? ? FF D2 8B 0D ? ? ? ? A3 ? ? ? ? 8B 01 8B 90 20 01 00 00");
+        static auto Allocate = safetyhook::create_mid(pattern.get_first(5), CreateSlideScratch);
     }
 }
