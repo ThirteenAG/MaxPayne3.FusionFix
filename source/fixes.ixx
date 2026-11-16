@@ -2,12 +2,63 @@ module;
 
 #include <common.hxx>
 #include "garagepanel.h"
+#include "waterreset.h"
 #include <format>
 
 export module fixes;
 
 import common;
 import settings;
+
+namespace GraphicsSettingsReset
+{
+    void Init()
+    {
+        auto waterAndSamples = hook::pattern("8B 86 34 01 00 00 8B 0D ? ? ? ? 33 DB 57 8B 3D ? ? ? ? 88 5C 24 12");
+        auto windowAndRenderer = hook::pattern("8B 96 08 01 00 00 A1 ? ? ? ? 3B 82 E4 00 00 00 0F 85 ? ? ? ? 8B 8E 10 01 00 00 8B 15 ? ? ? ? 3B 91 E4 00 00 00 74 0C 81 3D ? ? ? ? E8 03 00 00");
+        auto shadowsAndReflections = hook::pattern("8B 96 1C 01 00 00 A1 ? ? ? ? 3B 82 E4 00 00 00 75 39 8B 8E 30 01 00 00 8B 15 ? ? ? ? 3B 91 E4 00 00 00");
+        auto fxaaTest = hook::pattern("39 1D ? ? ? ? 0F 94 C2 3B D1 74 0A 83 FF 01 7E 05");
+        auto apply = hook::pattern("38 5C 24 12 75 0A 38 5C 24 10 0F 84 ? ? ? ? 38 5C 24 13 0F 85 ? ? ? ? 8B CE C6 44 24 11 01 E8 ? ? ? ?");
+        if (waterAndSamples.size() != 1 || windowAndRenderer.size() != 1 || shadowsAndReflections.size() != 1
+            || fxaaTest.size() != 1 || apply.size() != 1)
+            return;
+
+        static const auto waterQuality = *waterAndSamples.get_first<const int*>(8);
+        static const auto sampleCount = *waterAndSamples.get_first<const int*>(17);
+        static const auto screenMode = *windowAndRenderer.get_first<const int*>(7);
+        static const auto renderer = *windowAndRenderer.get_first<const unsigned*>(45);
+        static const auto reflectionQuality = *shadowsAndReflections.get_first<const int*>(7);
+        static const auto shadowQuality = *shadowsAndReflections.get_first<const int*>(27);
+        static const auto fxaaQuality = *fxaaTest.get_first<const int*>(2);
+        static const auto commitSettings = reinterpret_cast<void(__thiscall*)(const uintptr_t*)>(
+            injector::GetBranchDestination(apply.get_first(33)).as_int());
+
+        WaterRenderTargets::Init(renderer);
+
+        static auto ApplyAspectRatioLive = safetyhook::create_mid(apply.get_first(), [](SafetyHookContext& regs)
+        {
+            auto flags = reinterpret_cast<uint8_t*>(regs.esp + 0x10);
+            if (*renderer < 1000 || flags[0] || !flags[2] || flags[3])
+                return;
+
+            const auto menu = reinterpret_cast<const uintptr_t*>(regs.esi);
+            const auto selected = [menu](size_t index)
+            {
+                return *reinterpret_cast<const int*>(menu[index] + 228);
+            };
+
+            // These options share the aspect-ratio reset flag and can change the
+            // render-target layout. Leave their normal allocation path in place.
+            if (*waterQuality != selected(77) || *screenMode != selected(66)
+                || *reflectionQuality != selected(71) || *shadowQuality != selected(76)
+                || (*sampleCount > 1 && (*fxaaQuality == 0) != (selected(74) == 0)))
+                return;
+
+            commitSettings(menu);
+            flags[2] = 0;
+        });
+    }
+}
 
 namespace BusDepotStreaming
 {
@@ -346,6 +397,7 @@ public:
 
         FusionFix::onInitEvent() += []()
         {
+            GraphicsSettingsReset::Init();
             BusDepotStreaming::Init();
 
             // Shader containers of the title update archive take precedence over loose files, so the fix's shaders
