@@ -89,10 +89,11 @@ class RawInput
 {
     static inline SafetyHookMid mouseMotionHook;
     static inline const DIMOUSESTATE2* mouseState = nullptr;
+    static inline ptrdiff_t nMouseEventsOffset = 0;   // the buffered mouse events on the stack
 
     static void ReadMouseMotion(SafetyHookContext& context)
     {
-        MouseMotion::UseImmediateState(context.esp, *mouseState);
+        MouseMotion::UseImmediateState(context.esp, nMouseEventsOffset, *mouseState);
     }
 
     // The camera turns by the frame's mouse movement times its time step, so the same movement turned the camera
@@ -103,6 +104,7 @@ class RawInput
     static inline GameRef<float> fCameraTimeStep;
     static inline SafetyHookMid mouseStepHook;
     static inline SafetyHookMid mouseAccelerationHook;
+    static inline uint8_t nMouseSpeedOffset = 0;   // the mouse speed on the stack, read by the acceleration curve
 
     static bool MouseActive()
     {
@@ -110,18 +112,18 @@ class RawInput
         return state[7658] || state[7656];
     }
 
-    // The turn per frame: step times the camera's own scale (its second argument)
+    // The turn per frame: step times the camera's own scale (its second argument), the multiply follows the hook
     static void MouseStep(SafetyHookContext& context)
     {
         if (MouseActive())
-            context.xmm1.f32[0] = fMouseStep * *reinterpret_cast<float*>(context.esp + 0x3C);
+            context.xmm1.f32[0] = fMouseStep;
     }
 
     // Mouse acceleration curves the movement by its speed: measured per 144 fps frame like the original game
     static void MouseAcceleration(SafetyHookContext& context)
     {
         if (fCameraTimeStep > 0.0f)
-            *reinterpret_cast<float*>(context.esp + 0x08) *= fMouseStep / fCameraTimeStep;
+            *reinterpret_cast<float*>(context.esp + nMouseSpeedOffset) *= fMouseStep / fCameraTimeStep;
     }
 
 public:
@@ -130,35 +132,41 @@ public:
         FusionFix::onInitEventAsync() += []()
         {
             // Use the accumulated axes from the successful state read instead of the 16-event batch.
-            auto mouse = find_pattern("68 ? ? ? ? 6A 14 50 FF D2 85 C0 74 26 89 3D ? ? ? ? 89 3D ? ? ? ? 89 3D ? ? ? ? 89 3D ? ? ? ? 89 3D ? ? ? ? 5F 81 C4 4C 01 00 00 C3 8B 44 24 04 53 55 56 33 ED 33 DB 33 F6");
-            if (mouse.size() == 1)
+            auto mouse = hook::pattern("68 ? ? ? ? 6A 14 50 FF D2 85 C0 74 26 89 3D ? ? ? ? 89 3D ? ? ? ? 89 3D ? ? ? ? 89 3D ? ? ? ? 89 3D ? ? ? ? 5F 81 C4 4C 01 00 00 C3 8B 44 24 04 53 55 56 33 ED 33 DB 33 F6");
+            if (!mouse.empty()) // 1.0.0.255, 1.0.0.276
             {
-                mouseState = *mouse.get_first<DIMOUSESTATE2*>(1);
-                mouseMotionHook = safetyhook::create_mid(mouse.get_first(52), ReadMouseMotion);
-            }
+                nMouseEventsOffset = 0x10;
 
-            auto camera = hook::pattern("8B CE E8 ? ? ? ? 8A 4E 41 F3 0F 10 44 24 08 C0 E0 07 80 E1 7F 0A C1 6A 00 88 46 41 F3 0F 11 44 24 3C E8 ? ? ? ? 83 C4 04 80 B8 EA 1D 00 00 00").get_first<uint8_t>();
+                // Force fetching system cursor position (the same function reads it, after the mouse events)
+                auto cursor = hook::pattern("74 ? 8D 44 24 ? 50 FF 15 ? ? ? ? 83 F8");
+                injector::MakeNOP(cursor.get_first(), 2, true);
+            }
+            else // 1.0.0.216: the function doesn't read the cursor position, its frame is 8 bytes smaller
+            {
+                mouse = hook::pattern("68 ? ? ? ? 6A 14 50 FF D2 85 C0 74 26 89 3D ? ? ? ? 89 3D ? ? ? ? 89 3D ? ? ? ? 89 3D ? ? ? ? 89 3D ? ? ? ? 5F 81 C4 44 01 00 00 C3 8B 44 24 04 53 55 56 33 ED 33 DB 33 F6");
+                nMouseEventsOffset = 0x08;
+            }
+            mouseState = *mouse.get_first<DIMOUSESTATE2*>(1);
+            mouseMotionHook = safetyhook::create_mid(mouse.get_first(52), ReadMouseMotion);
+
+            auto camera = hook::pattern("8B CE E8 ? ? ? ? 8A 4E 41 F3 0F 10 44 24 ? C0 E0 07 80 E1 7F 0A C1 6A 00 88 46 41 F3 0F 11 44 24 ? E8 ? ? ? ? 83 C4 04 80 B8 EA 1D 00 00 00").get_first<uint8_t>();
             GetPlayerControls = reinterpret_cast<decltype(GetPlayerControls)>(injector::GetBranchDestination(camera + 35).as_int());
-            auto step = hook::pattern("F6 06 01 F3 0F 10 0D ? ? ? ? F3 0F 59 4C 24 3C");
+            // At the multiply of the step by the scale (on the stack or, in later builds, a frame argument)
+            auto step = hook::pattern("F6 06 01 F3 0F 10 0D ? ? ? ? F3 0F 59");
             fCameraTimeStep.SetAddress(*step.get_first<float*>(7));
-            mouseStepHook = safetyhook::create_mid(step.get_first(17), MouseStep);
+            mouseStepHook = safetyhook::create_mid(step.get_first(11), MouseStep);
             // Only reached with the mouse and the game's mouse acceleration on
-            mouseAccelerationHook = safetyhook::create_mid(hook::pattern("83 3D ? ? ? ? 00 75 ? F3 0F 5A 44 24 08 F2 0F 10 0D").get_first(9), MouseAcceleration);
+            auto acceleration = hook::pattern("83 3D ? ? ? ? 00 75 ? F3 0F 5A 44 24 ? F2 0F 10 0D");
+            nMouseSpeedOffset = *acceleration.get_first<uint8_t>(14);
+            mouseAccelerationHook = safetyhook::create_mid(acceleration.get_first(9), MouseAcceleration);
 
             // Main menu cursor acceleration, was 1.6
             static float f1 = 1.0f;
             auto pattern = hook::pattern("F3 0F 59 05 ? ? ? ? F3 0F 10 15 ? ? ? ? F3 0F 11 4C 24");
-            if (!pattern.empty())
-                injector::WriteMemory(pattern.get_first(4), &f1, true);
+            injector::WriteMemory(pattern.get_first(4), &f1, true);
 
             pattern = hook::pattern("F3 0F 59 05 ? ? ? ? 0F 57 C9 0F 2F C8 77 ? F3 0F 10 0D ? ? ? ? 0F 2F C1 76 ? F3 0F 11 4C 24");
-            if (!pattern.empty())
-                injector::WriteMemory(pattern.get_first(4), &f1, true);
-
-            // Force fetching system cursor position
-            pattern = hook::pattern("74 ? 8D 44 24 ? 50 FF 15 ? ? ? ? 83 F8");
-            if (!pattern.empty())
-                injector::MakeNOP(pattern.get_first(), 2, true);
+            injector::WriteMemory(pattern.get_first(4), &f1, true);
         };
 
         FusionFix::onInitEvent() += []()

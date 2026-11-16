@@ -8,7 +8,7 @@
 ### New options
 
 > [!NOTE]
-> **MaxPayne3.FusionFix.ini** can be edited at any time, before and after the game is launched
+> Fusion Fix options are under **Settings -> Plugins -> Fusion Fix**. They are saved to `plugins/MaxPayne3.FusionFix.cfg`; older INI files are not read any more. Edit the CFG while the game is closed.
 
 - **SkipIntro**, added an option to skip intro
 - **HideSkipButton**, added an option to hide ![skip](https://i.imgur.com/vwELI93.png) in cutscenes

@@ -49,7 +49,7 @@ Fusion Fix options are available under **Settings -> Plugins -> Fusion Fix**; th
 
 FOV, subtitle size, and outline size use sliders. Blur and the SMAA edge view are not in the menu, set them in the CFG or an editor. Changes save automatically to `plugins/MaxPayne3.FusionFix.cfg`, which is written in full with a comment for every setting when it's missing. Older INI files are not read any more. Edit the CFG while the game is closed.
 
-Menu labels and descriptions follow the game language in all ten supported languages. Settings are described with [ASI Settings](https://github.com/ThirteenAG/FusionFixUtils/tree/main/asi_settings), so editors such as FusionFixHub can change them too, and other plugins with a description, such as Xbox Rain Droplets, get their own pages after Fusion Fix's. See [docs/settings.md](docs/settings.md).
+Menu labels and descriptions follow the game language in all ten supported languages. Settings are described with [ASI Settings](https://github.com/ThirteenAG/FusionFixUtils/tree/main/asi_settings), so editors such as FusionFixHub can change them too, and other plugins with a description, such as Fusion Rain Droplets, get their own pages after Fusion Fix's. See [docs/settings.md](docs/settings.md).
 
 ### New options
 
@@ -89,7 +89,7 @@ The build then copies the built `MaxPayne3.FusionFix.asi` into the `plugins` fol
 
 Shader replacements fix Bink video filtering and chroma alignment, restore the scope mask for chromatic fringing with MSAA, and correct directional motion-blur normalization so it preserves image brightness. The MSAA correction covers DirectX 10.1 and 11 at 2×, 4× and 8×, including stereo, zoom, heat-haze, kill-flash and multiplayer variants.
 
-The complete unmodified Max Payne 3 shader set lives in the separate [MaxPayne3.FusionShaders](https://github.com/ThirteenAG/MaxPayne3.FusionShaders) repository, laid out like [GTA IV FusionShaders](https://github.com/ThirteenAG/GTAIV.EFLC.FusionFix/tree/master/shaders/GTAIV.EFLC.FusionShaders): one `<container>.fxc.xml` per RAGE effect and one HLSL file per shader in a sibling `<container>` folder.
+The complete unmodified Max Payne 3 shader set lives in the separate [MaxPayne3.FusionShaders](https://github.com/ThirteenAG/MaxPayne3.FusionShaders) repository, laid out like [GTA IV FusionShaders](https://github.com/Parallellines0451/GTAIV.EFLC.FusionShaders): one `<container>.fxc.xml` per RAGE effect and one HLSL file per shader in a sibling `<container>` folder.
 
 [shaders/fixedshaders](shaders/fixedshaders) holds only the shaders FusionFix changes, in the same XML + HLSL layout. Copy a container from MaxPayne3.FusionShaders into `fixedshaders`, edit its HLSL, and run:
 

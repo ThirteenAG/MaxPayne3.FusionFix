@@ -199,8 +199,7 @@ public:
     Common()
     {
         auto pattern = hook::pattern("53 8B 59 04 85 DB");
-        if (!pattern.empty())
-            getNativeAddress = pattern.get_one().get<void* (__fastcall)(uintptr_t*, uint32_t, uint32_t)>(0);
+        getNativeAddress = pattern.get_first<void* (__fastcall)(uintptr_t*, uint32_t, uint32_t)>(0);
 
         pattern = hook::pattern("B9 ? ? ? ? E8 ? ? ? ? 85 C0 75 07");
         nativeHandlerPtrAddress = *pattern.get_first<uintptr_t*>(1);

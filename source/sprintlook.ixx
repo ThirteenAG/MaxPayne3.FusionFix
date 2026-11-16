@@ -57,21 +57,16 @@ public:
         {
             // The camera factory (by name hash): the third-person aim cameras read their pitch limits from the metadata
             // in the constructor, radians at +0x180 and +0x184; the name is set after the constructor
-            auto pattern = find_pattern("A1 ? ? ? ? 8B 48 08 2B 48 14 85 C9 7F 03 33 C0 C3 53 8B 5C 24 08 57");
-            if (!pattern.empty())
-                shCreateCamera = safetyhook::create_inline(pattern.get_first(0), CreateCamera);
+            auto pattern = hook::pattern("A1 ? ? ? ? 8B 48 08 2B 48 14 85 C9 7F 03 33 C0 C3 53 8B 5C 24 08 57");
+            shCreateCamera = safetyhook::create_inline(pattern.get_first(0), CreateCamera);
 
             // The pull factor (0.2) is a global only this multiply reads
             static ProtectedGameRef<float> sprintPitchPull([]() -> float*
             {
-                auto pattern = find_pattern("F3 0F 5E E9 F3 0F 59 2D ? ? ? ? F3 0F 10 0D ? ? ? ? F3 0F 5C CD");
-                if (!pattern.empty())
-                    return *pattern.get_first<float*>(8);
-                return nullptr;
+                auto pattern = hook::pattern("F3 0F 5E E9 F3 0F 59 2D ? ? ? ? F3 0F 10 0D ? ? ? ? F3 0F 5C CD");
+                return *pattern.get_first<float*>(8);
             });
 
-            if (!sprintPitchPull.get_ptr())
-                return;
             originalPull = sprintPitchPull;
 
             static auto Apply = []()

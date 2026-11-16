@@ -10,6 +10,8 @@ import xml.etree.ElementTree as ET
 CORRECTIONS = [
     # Plant collision spheres keep their radius in w
     (re.compile(r'(g_vCollisionSpheres\[[^\]]+\])\.x\b'), r'\1.w'),
+    # Static blood (pools) reads a whole row of its UV bounds by page index
+    (re.compile(r'(gBloodUVBoundsPage)\[(\w+\.\w) / 4\]\[0\]'), r'\1[\2]'),
 ]
 
 

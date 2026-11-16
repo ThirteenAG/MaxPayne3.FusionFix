@@ -192,10 +192,8 @@ class UpdateCheck
         static auto ppCurrentThread = []() -> void**
         {
             auto pattern = hook::pattern("A1 ? ? ? ? C3 CC CC CC CC CC CC CC CC CC CC 8B 44 24 04 56 8B F1");
-            return pattern.empty() ? nullptr : *pattern.get_first<void**>(1);
+            return *pattern.get_first<void**>(1);
         }();
-        if (!getNativeAddress || !nativeHandlerPtrAddress || !ppCurrentThread)
-            return;
         struct sncall { int32_t flag; void(__cdecl* fun)(void*); };
         auto handler = static_cast<sncall*>(getNativeAddress(nativeHandlerPtrAddress, 0, std::to_underlying(Natives::NativeHashes::PRINT_HELP)));
         if (!handler || !handler->fun)
