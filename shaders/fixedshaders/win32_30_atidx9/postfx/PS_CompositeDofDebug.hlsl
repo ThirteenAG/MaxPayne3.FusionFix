@@ -1,0 +1,140 @@
+sampler2D AdapLumSampler : register(s1);
+sampler2D BloomSampler : register(s10);
+sampler2D BlurSampler : register(s7);
+float2 BrightnessSetting : register(c130);
+float BurnoutLimit : register(c142);
+sampler2D DeathSampler : register(s15);
+float2 Exposures : register(c137);
+sampler2D GBufferTextureSamplerDepth : register(s3);
+sampler2D HDRPointSampler : register(s6);
+sampler2D RadialBlurSampler : register(s14);
+float4 ToneMapParams : register(c139);
+float ZoomFocusDistance : register(c187);
+float blurIntensity : register(c197);
+float4 deSatContrastGamma : register(c46);
+float4 deSatContrastGammaIFX : register(c75);
+float deathIntensity : register(c198);
+float4 dofDist : register(c133);
+float dofNoBlurBlendRingSize : register(c136);
+float dofNoBlurRadius : register(c135);
+float4 dofProj : register(c132);
+float4 globalScreenSize : register(c41);
+float radialBlurScale : register(c193);
+float2 radialBlurTextureStep : register(c196);
+
+struct PS_IN
+{
+	float2 texcoord : TEXCOORD;
+	float2 texcoord1 : TEXCOORD1;
+};
+
+float4 main(PS_IN i) : COLOR
+{
+	float4 o;
+
+	float4 r0;
+	float4 r1;
+	float4 r2;
+	float4 r3;
+	r0 = tex2D(GBufferTextureSamplerDepth, i.texcoord.xy);
+	r0.y = -dofProj.x + dofProj.y;
+	r0.y = 1 / r0.y;
+	r0.z = r0.y * dofProj.y;
+	r0.z = r0.z * -dofProj.x;
+	r0.x = dofProj.y * -r0.y + r0.x;
+	r0.x = 1 / r0.x;
+	r0.y = 1 / globalScreenSize.y;
+	r0.y = r0.y * globalScreenSize.x;
+	r0.w = r0.y * i.texcoord.x;
+	r1.x = r0.w * 1.75;
+	r2.x = r0.y * 0.875;
+	r2.y = 0.5;
+	r1.y = i.texcoord.y;
+	r0.yw = r1.xy + -r2.xy;
+	r0.y = dot(r0.yw, r0.yw) + 0;
+	r0.y = rsqrt(r0.y);
+	r0.y = 1 / r0.y;
+	r1.x = dofNoBlurRadius.x;
+	r0.w = r1.x + -dofNoBlurBlendRingSize.x;
+	r0.w = (r0.w >= 0) ? -r0.w : -0;
+	r0.y = r0.w + r0.y;
+	r0.w = r0.w + dofNoBlurRadius.x;
+	r0.w = 1 / r0.w;
+	r0.w = saturate(r0.w * r0.y);
+	r0.y = (r0.y >= 0) ? r0.w : 0;
+	r0.y = (-r1.x >= 0) ? 1 : r0.y;
+	r0.w = r0.z * -r0.x + ZoomFocusDistance.x;
+	r0.w = saturate(r0.w * 0.2);
+	r1.x = r0.z * -r0.x + dofDist.x;
+	r1.y = 1 / dofDist.x;
+	r1.x = saturate(r1.y * r1.x);
+	r0.x = r0.z * r0.x + -dofDist.y;
+	r0.z = 1 / dofDist.w;
+	r0.x = saturate(r0.z * r0.x);
+	r2.x = max(r1.x, r0.x);
+	r0.x = r2.x * dofDist.z;
+	r1.x = max(r0.w, r0.x);
+	r0.x = r0.y * r1.x;
+	r1 = tex2D(HDRPointSampler, i.texcoord.xy);
+	r2.xz = float2(1, -1);
+	r0.y = r2.z + radialBlurScale.x;
+	r0.zw = radialBlurTextureStep.xy + i.texcoord.xy;
+	r3 = tex2D(RadialBlurSampler, r0.zw);
+	r2.yzw = r1.xyz * radialBlurScale.xxx + r3.xyz;
+	r0.yzw = (-abs(r0.yyy) >= 0) ? r1.xyz : r2.yzw;
+	if (blurIntensity.x != -blurIntensity.x) {
+		r1 = tex2D(BlurSampler, i.texcoord.xy);
+		r2.yzw = lerp(r0.yzw, r1.xyz, blurIntensity.xxx);
+		r0.yzw = r2.yzw;
+	}
+	r0.y = r0.x * r0.y;
+	r1 = tex2D(DeathSampler, i.texcoord1.xy);
+	r0.x = abs(deathIntensity.x);
+	r1.xy = (-r0.xx >= 0) ? r1.xz : 0;
+	r3 = tex2D(AdapLumSampler, 0);
+	r0.x = r3.x + 1E-06;
+	r0.x = 1 / r0.x;
+	r0.x = r0.x * ToneMapParams.y;
+	r3 = tex2D(BloomSampler, i.texcoord.xy);
+	r2.y = lerp(ToneMapParams.z, ToneMapParams.w, r1.x);
+	r2.yzw = r2.yyy * r3.xyz;
+	r0.yzw = r2.yzw * 0.25 + r0.yzw;
+	r2.y = lerp(Exposures.x, Exposures.y, r1.x);
+	r0.yzw = r0.yzw * r2.yyy;
+	r1.x = dot(r0.yzw, float3(0.2125, 0.7154, 0.0721));
+	r1.z = r0.x * r1.x;
+	r1.w = BurnoutLimit.x * BurnoutLimit.x;
+	r1.w = 1 / r1.w;
+	r1.w = r1.z * r1.w + 1;
+	r1.z = r1.w * r1.z;
+	r0.x = r1.x * r0.x + 1;
+	r0.x = 1 / r0.x;
+	r0.x = r0.x * r1.z;
+	r0.xyz = r0.xxx * r0.yzw;
+	r0.w = saturate(dot(r0.xyz, float3(0.2125, 0.7154, 0.0721)));
+	r0.w = r0.w + 1.01E-05;
+	r1.z = deSatContrastGamma.z;
+	r1.x = -r1.z + deSatContrastGammaIFX.z;
+	r1.x = r1.y * r1.x + deSatContrastGamma.z;
+	r1.x = r1.x + -0.99999;
+	r2.y = pow(r0.w, r1.x);
+	r0.xyz = r0.xyz * r2.yyy;
+	if (deathIntensity.x != -deathIntensity.x) {
+		r0.w = r2.x + -deathIntensity.x;
+		r1.x = r0.w * 1.4142135;
+		r1.yz = i.texcoord.xy * 2 + -1;
+		r2 = tex2D(DeathSampler, i.texcoord.xy);
+		r1.x = dot(r1.yz, r1.yz) + -r1.x;
+		r0.w = r0.w * -1.4142135 + 1.4142135;
+		r0.w = 1 / r0.w;
+		r0.w = saturate(r0.w * r1.x);
+		r1.xyz = r0.xyz * r2.xyz + -r0.xyz;
+		r0.xyz = r0.www * r1.xyz + r0.xyz;
+	}
+	r0.xyz = r0.xyz * BrightnessSetting.xxx + BrightnessSetting.yyy;
+	r1.xyz = saturate(r0.xyz);
+	o.w = dot(r1.xyz, float3(0.299, 0.587, 0.114));
+	o.xyz = r0.xyz;
+
+	return o;
+}

@@ -45,13 +45,11 @@ This projects aims to add new features and fix some issues in Max Payne 3. Also 
 
 ### New menu options
 
-Fusion Fix options are available under **Settings -> Fusion Fix Options**, immediately after Graphics. The page's **Restore Defaults** resets only Fusion Fix settings and saves them to CFG.
+Fusion Fix options are available under **Settings -> Plugins -> Fusion Fix**; the Plugins row comes right after Graphics. The page starts with a **Preset** selector (Vanilla, Recommended, Enhanced) and **Apply Preset**, which asks for a confirmation; **Restore Defaults** resets the page's settings.
 
-FOV, subtitle size, and outline size use sliders. SMAA is an On/Off toggle; blur and diagnostic SMAA modes are CFG-only settings. Changes save automatically to `plugins/MaxPayne3.FusionFix.cfg`. If saving fails, Fusion Fix tries the game folder, `%LOCALAPPDATA%/Rockstar Games/Max Payne 3/`, `%LOCALAPPDATA%/MaxPayne3.FusionFix/`, then `Documents/MaxPayne3.FusionFix/`. Missing folders are created. Startup loads the newest readable CFG across these locations, and subsequent saves keep that location when writable. Existing INI values are imported for settings without a CFG value; the CFG takes precedence afterward. Edit the CFG while the game is closed.
+FOV, subtitle size, and outline size use sliders. Blur and the SMAA edge view are not in the menu, set them in the CFG or an editor. Changes save automatically to `plugins/MaxPayne3.FusionFix.cfg`, which is written in full with a comment for every setting when it's missing. Older INI files are not read any more. Edit the CFG while the game is closed.
 
-Menu labels and descriptions follow the game language in all ten supported languages. Separate UTF-8 GXT-layout files in `text/` are embedded at build time and extend native GXT lookup with English fallback. Plugins can register pages and translations through the [C menu API](docs/menu-api.md).
-
-Xbox Rain Droplets has its own page after Fusion Fix when the updated plugin is installed. Its INI settings save to its own CFG, and its Restore Defaults affects only Rain Droplets.
+Menu labels and descriptions follow the game language in all ten supported languages. Settings are described with [ASI Settings](https://github.com/ThirteenAG/FusionFixUtils/tree/main/asi_settings), so editors such as FusionFixHub can change them too, and other plugins with a description, such as Fusion Rain Droplets, get their own pages after Fusion Fix's. See [docs/settings.md](docs/settings.md).
 
 ### New options
 
@@ -59,8 +57,9 @@ Xbox Rain Droplets has its own page after Fusion Fix when the updated plugin is 
 > Use the settings menus to change options while playing. SkipIntro takes effect on the next launch.
 
 - **SkipIntro**, added an option to skip intro
+- **CutsceneSkip**, the skip button skips every cutscene and video, also the ones the game doesn't let you skip. Their last seconds still play, so the story continues just as after watching them
 - **HideSkipButton**, added an option to hide ![skip](https://i.imgur.com/vwELI93.png) in cutscenes
-- **DisableGlobalLeaderboards**, prevents Hoboken Alleys coop map from crashing the game
+- **UnlockSprintLook**, look up and down while sprinting as far as when walking, instead of the camera staying level
 - **OutlinesSizeMultiplier**, added an option to increase the size of subtitle text outlines
 - **DisableDeviceChangeEvent**, fixes an issue when the game randomly enters pause menu
 - **LightSyncRGB**, only Logitech hardware is supported, requires Logitech G HUB app
@@ -71,6 +70,10 @@ Xbox Rain Droplets has its own page after Fusion Fix when the updated plugin is 
 
 - **ConsoleGamma**, emulates the gamma curve of the console versions, 1 is the Xbox 360 preset, 2 is the PlayStation 3 preset. Works on every renderer the game supports (DirectX 9, 10, 10.1 and 11), the preset can be switched at any time
 - **SMAA**, adds enhanced subpixel morphological antialiasing as a post-processing effect
+- **FPSLimit**, limits the frame rate: Unlimited, the refresh rate of the display or 30 to 1000 FPS, in **SETTINGS -> GRAPHICS** right after VSync
+- **CheckForUpdates**, off by default: when on, looks up the newest version at fusionfix.io when the game starts and tells you in the game; with FusionFixHub in the game folder, its update page opens when you close the game
+
+High polling-rate mouse movement uses the full accumulated input each frame, preserving sensitivity without an extra wrapper.
 
 # Building
 
@@ -81,6 +84,20 @@ To deploy to your game automatically after each build, create a `.env` file in t
     MAX_PAYNE_3_DIR=C:\Program Files (x86)\Steam\steamapps\common\Max Payne 3\Max Payne 3
 
 The build then copies the built `MaxPayne3.FusionFix.asi` into the `plugins` folder of that game folder and debugging launches `MaxPayne3.exe` from there. The `.env` file is ignored by git, only a plugin that is already installed is replaced, and without the file nothing is copied.
+
+## Shaders
+
+Shader replacements fix Bink video filtering and chroma alignment, restore the scope mask for chromatic fringing with MSAA, and correct directional motion-blur normalization so it preserves image brightness. The MSAA correction covers DirectX 10.1 and 11 at 2×, 4× and 8×, including stereo, zoom, heat-haze, kill-flash and multiplayer variants.
+
+The complete unmodified Max Payne 3 shader set lives in the separate [MaxPayne3.FusionShaders](https://github.com/ThirteenAG/MaxPayne3.FusionShaders) repository, laid out like [GTA IV FusionShaders](https://github.com/Parallellines0451/GTAIV.EFLC.FusionShaders): one `<container>.fxc.xml` per RAGE effect and one HLSL file per shader in a sibling `<container>` folder.
+
+[shaders/fixedshaders](shaders/fixedshaders) holds only the shaders FusionFix changes, in the same XML + HLSL layout. Copy a container from MaxPayne3.FusionShaders into `fixedshaders`, edit its HLSL, and run:
+
+```
+buildshaders.bat
+```
+
+The compiler is the separate premake project [tools/ShaderTool](tools/ShaderTool); `buildshaders.bat` compiles only `fixedshaders` into `data/update/common/shaders`, which is generated and git-ignored. CI builds the tool with MSBuild, runs the same script, and packages the resulting shaders. The first build fills `build/shadertool/hlsl-cache`; later builds only recompile shaders whose content changed.
 
 # Contributing
 

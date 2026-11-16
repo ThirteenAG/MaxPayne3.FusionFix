@@ -8,13 +8,13 @@
 ### New options
 
 > [!NOTE]
-> **MaxPayne3.FusionFix.ini** can be edited at any time, before and after the game is launched
+> Fusion Fix options are under **Settings -> Plugins -> Fusion Fix**. They are saved to `plugins/MaxPayne3.FusionFix.cfg`; older INI files are not read any more. Edit the CFG while the game is closed.
 
 - **SkipIntro**, added an option to skip intro
 - **HideSkipButton**, added an option to hide ![skip](https://i.imgur.com/vwELI93.png) in cutscenes
-- **DisableGlobalLeaderboards**, prevents Hoboken Alleys coop map from crashing the game
 - **OutlinesSizeMultiplier**, added an option to increase the size of subtitle text outlines
 - **DisableDeviceChangeEvent**, fixes an issue when the game randomly enters pause menu
+- **FPSLimit**, limits the frame rate: Unlimited, the refresh rate of the display or 30 to 1000 FPS, in **SETTINGS -> GRAPHICS** right after VSync
 - **LightSyncRGB**, only Logitech hardware is supported, requires Logitech G HUB app
 
   ![LightSyncRGB](https://github.com/ThirteenAG/MaxPayne3.FusionFix/assets/4904157/64f8da07-eef0-4410-a412-a0d1c0e0f3e0)

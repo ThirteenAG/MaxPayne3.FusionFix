@@ -1,0 +1,72 @@
+sampler2D AdapLumSampler : register(s1);
+sampler2D BloomSampler : register(s10);
+sampler2D CurLumSampler : register(s0);
+sampler2D DeathSampler : register(s15);
+sampler2D GBufferTextureSamplerSSAODepth : register(s4);
+sampler2D HDRSampler : register(s5);
+float4 SunRaysParams : register(c185);
+float4 TexelSize : register(c88);
+float4 ToneMapParams : register(c139);
+float4 colorScaler : register(c131);
+float4 lightrayParams : register(c184);
+
+float4 main(float2 texcoord : TEXCOORD) : COLOR
+{
+	float4 o;
+
+	float4 r0;
+	float4 r1;
+	float4 r2;
+	float4 r3;
+	r0.yz = float2(-0.5, 0.5);
+	r1 = TexelSize.xyxy * r0.yyyz + texcoord.xyxy;
+	r2 = tex2D(GBufferTextureSamplerSSAODepth, r1.xy);
+	r1 = tex2D(GBufferTextureSamplerSSAODepth, r1.zw);
+	r0.x = abs(TexelSize.x);
+	r0.w = (-r0.x >= 0) ? 0 : r2.w;
+	r1.x = (-r0.x >= 0) ? 0 : r1.w;
+	r0.w = r0.w + r1.x;
+	r1 = TexelSize.xyxy * r0.zzzy + texcoord.xyxy;
+	r2 = tex2D(GBufferTextureSamplerSSAODepth, r1.xy);
+	r1 = tex2D(GBufferTextureSamplerSSAODepth, r1.zw);
+	r1.x = (-r0.x >= 0) ? 0 : r1.w;
+	r0.x = (-r0.x >= 0) ? 0 : r2.w;
+	r0.x = r0.x + r0.w;
+	r0.x = r1.x + r0.x;
+	r1 = tex2D(CurLumSampler, texcoord.xy);
+	r0.w = r1.x * 0.6 + 1;
+	r0.w = r0.w * r0.w;
+	r0.w = 1 / r0.w;
+	r0.x = r0.w * r0.x;
+	r1 = TexelSize.zwzw * r0.yyyz + texcoord.xyxy;
+	r2 = tex2D(HDRSampler, r1.xy);
+	r1 = tex2D(HDRSampler, r1.zw);
+	r1.xyz = r1.xyz + r2.xyz;
+	r2 = TexelSize.zwzw * r0.zzzy + texcoord.xyxy;
+	r3 = tex2D(HDRSampler, r2.xy);
+	r2 = tex2D(HDRSampler, r2.zw);
+	r0.yzw = r1.xyz + r3.xyz;
+	r0.yzw = r2.xyz + r0.yzw;
+	r0.yzw = r0.yzw * SunRaysParams.xyz;
+	r0.yzw = r0.yzw * 4;
+	r0.xyz = lightrayParams.xyz * r0.xxx + r0.yzw;
+	r1 = tex2D(AdapLumSampler, 0);
+	r0.w = 1 / r1.x;
+	r0.w = r0.w * ToneMapParams.y;
+	r0.w = 1 / r0.w;
+	r0.w = r0.w * ToneMapParams.x;
+	r1 = tex2D(BloomSampler, texcoord.xy);
+	r2.xyz = max(r1.xyz, 0);
+	r1.xyz = min(r2.xyz, 11);
+	r1.xyz = r1.xyz * colorScaler.yyy + -r0.www;
+	r2.xyz = max(r1.xyz, 0);
+	r1 = tex2D(DeathSampler, texcoord.xy);
+	r0.w = -r1.x + 1;
+	r1.x = -ToneMapParams.z + ToneMapParams.w;
+	r0.w = r0.w * r1.x + ToneMapParams.z;
+	r0.w = 1 / r0.w;
+	o.xyz = r0.xyz * r0.www + r2.xyz;
+	o.w = 1;
+
+	return o;
+}

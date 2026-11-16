@@ -333,7 +333,8 @@ ASALocalRun/
 data/**/*.img
 shaders/external/**/*.asm
 source/**/*.cso
-#data/update/common/shaders/**/*.fxc
+# fixed shaders are compiled by tools/buildshaders.ps1 into this folder; it is empty in the repo
+data/update/common/shaders/
 data/update/platform/textures/*.wtd
 !source/dxsdk/**
 
@@ -343,3 +344,7 @@ dxwrapper.zip
 
 # the paths of this machine, read by premake5.lua, see the readme
 .env
+
+# Release outputs: the hub
+FusionFixHub.exe
+data/FusionFixHub.exe

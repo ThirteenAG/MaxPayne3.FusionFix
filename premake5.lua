@@ -36,6 +36,11 @@ workspace "MaxPayne3.FusionFix"
    configurations { "Release", "Debug" }
    architecture "x86"
    location "build"
+   -- BuildTimeUtc (Versioninfo.rc): the build's own time in UTC, written before every build; the in-game update
+   -- check compares it with the release asset's time (FileVersion is only shown)
+   includedirs { "build/generated" }
+   resincludedirs { "build/generated" }
+   prebuildcommands { 'powershell -NoProfile -ExecutionPolicy Bypass -File "../tools/buildtime.ps1" -Out "../build/generated/BuildTime.h"' }
    cppdialect "C++latest"
    kind "SharedLib"
    language "C++"
@@ -90,7 +95,16 @@ workspace "MaxPayne3.FusionFix"
    defines { "_CRT_SECURE_NO_WARNINGS" }
 
    includedirs { "source" }
-   includedirs { "source/includes" }
+   -- Shared headers, ASI Settings, overlay, automation and the upscaler bridge's protocol and client (upscaler/, shared
+   -- with FusionFixHub): FusionFixUtils, a submodule (change them there)
+   includedirs { "external/FusionFixUtils/include", "external/FusionFixUtils" }
+   files { "external/FusionFixUtils/include/gameref.hpp", "external/FusionFixUtils/include/ModuleList.hpp" }
+   -- The overlay of FusionFixUtils; ImGui is the imgui submodule of FusionFixUtils.
+   includedirs { "external/FusionFixUtils/imgui" }
+   files { "external/FusionFixUtils/overlay/*.hpp", "external/FusionFixUtils/imgui/*.h" }
+   files { "external/FusionFixUtils/imgui/imgui.cpp", "external/FusionFixUtils/imgui/imgui_draw.cpp", "external/FusionFixUtils/imgui/imgui_tables.cpp", "external/FusionFixUtils/imgui/imgui_widgets.cpp" }
+   files { "external/FusionFixUtils/imgui/backends/imgui_impl_win32.cpp", "external/FusionFixUtils/imgui/backends/imgui_impl_dx11.cpp" }
+   links { "d3d11", "dxgi", "dxguid" }
    includedirs { "source/ledsdk" }
    includedirs { "source/dxsdk" }
    libdirs { "source/ledsdk" }
@@ -98,7 +112,10 @@ workspace "MaxPayne3.FusionFix"
    files { "source/**.h", "source/*.hpp", "source/*.cpp", "source/*.hxx", "source/**.ixx" }
    files { "source/resources/Versioninfo.rc" }
    files { "source/resources/Shaders.rc" }
-   files { "text/*FF.txt" }
+   -- ASI Settings: the description and translations of the settings, embedded by
+   -- source/resources/Settings.rc (see docs/settings.md)
+   files { "source/resources/Settings.rc" }
+   files { "settings/*.json" }
    links { "LogitechLEDLib.lib" }
 
    includedirs { "external/hooking" }
@@ -167,7 +184,11 @@ workspace "MaxPayne3.FusionFix"
    end
 
 
-   prebuildcommands (prebuildShaderCommands)
+   -- Temporal motion vectors and resolve, with DLAA/FSR through the upscaler bridge.
+   files { "source/aa/*.hpp", "source/aa/*.inl" }
+   files { "source/resources/temporal/Temporal.rc" }
+   files { "source/upscaler/*.hpp" }
+   table.insert(prebuildShaderCommands, 'powershell -NoProfile -ExecutionPolicy Bypass -File "../tools/compileshaders.ps1"')
 
    -- Deploys the built .asi into the folder that `key` names in the .env file, and
    -- starts the game from there when debugging. Only a plugin that is already installed
@@ -205,4 +226,27 @@ workspace "MaxPayne3.FusionFix"
       staticruntime "On"
 
 project "MaxPayne3.FusionFix"
+   prebuildcommands (prebuildShaderCommands)
    setpaths("MAX_PAYNE_3_DIR", "MaxPayne3.exe", "plugins/")
+
+-- The dev-only automation adapters (zz_Automation.asi) live in FusionFixHelpers, next to this checkout; they use the
+-- frame-stage export of this plugin (asi_automation_frames.h), which is inert without them.
+
+-- The shader compiler is a separate console project. It parses the RAGE
+-- containers under shaders/, compiles the HLSL with fxc/D3DCompile, and writes
+-- data/update/common/shaders (see tools/buildshaders.ps1).
+project "ShaderTool"
+   kind "ConsoleApp"
+   language "C++"
+   cppdialect "C++20"
+   targetdir "bin/tools"
+   targetname "mp3shadertool"
+   targetextension ".exe"
+   -- The workspace-level file list belongs to the plugin; drop it here.
+   removefiles { "source/**", "external/**", "settings/**", "data/**" }
+   files {
+      "tools/ShaderTool/src/*.h",
+      "tools/ShaderTool/src/*.cpp",
+   }
+   includedirs { "source/dxsdk" }
+   defines { "_CRT_SECURE_NO_WARNINGS" }

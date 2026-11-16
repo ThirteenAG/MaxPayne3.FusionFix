@@ -1,13 +1,51 @@
 module;
 
 #include <common.hxx>
+#include <format>
 
 export module fixes;
 
 import common;
 import settings;
 
-bool bSkipIntelVendorChecks = true;
+namespace TextNumbers
+{
+    int __cdecl Substitute(const wchar_t* text, int first, int second, int third, int fourth,
+        int fifth, int sixth, float value, int precision, wchar_t* output)
+    {
+        if (!text)
+        {
+            *output = L'\0';
+            return 0;
+        }
+
+        // The original uses wchar_t[10], including its terminator. A ten-digit
+        // leaderboard score overwrites the return address with that terminator.
+        const std::array numbers = { first, second, third, fourth, fifth, sixth };
+        auto number = precision < 0 ? std::to_wstring(first)
+            : std::format(L"{:.{}f}", static_cast<double>(value), precision);
+        const std::wstring_view input(text);
+        unsigned char substitutions = 0;
+        for (size_t i = 0; i < input.size();)
+        {
+            if (i + 2 < input.size() &&
+                ((input[i] == L'~' && input[i + 1] == L'1' && input[i + 2] == L'~') ||
+                 (input[i] == L'|' && input[i + 1] == L'0' && input[i + 2] == L'\\')))
+            {
+                for (auto character : number) *output++ = character;
+                i += 3;
+                // Preserve the game's six arguments, including its behavior for
+                // additional placeholders and the byte-sized substitution counter.
+                if (++substitutions >= 1 && substitutions <= 5)
+                    number = std::to_wstring(numbers[substitutions]);
+            }
+            else
+                *output++ = input[i++];
+        }
+        *output = L'\0';
+        return 0;
+    }
+}
 
 class Fixes
 {
@@ -16,25 +54,24 @@ public:
     {
         FusionFix::onInitEventAsync() += []()
         {
-            // Disable global leaderboards, fixes a crash while playing on the Hoboken Alleys coop map
+            // Keep leaderboards usable when a record needs ten or more digits.
             {
-                auto pattern = hook::pattern("8B 81 ? ? ? ? 83 F8 ? 77 ? FF 24 85 ? ? ? ? B8");
-                static raw_mem fnLeaderboards(pattern.get_first(0), { 0xC3 }); // ret
+                auto pattern = hook::pattern("83 EC 30 57 8B 7C 24 38 85 FF 75 ? 8B 4C 24 5C 33 C0 66 89 01");
+                static auto TextNumbersFix = safetyhook::create_inline(pattern.get_first(), TextNumbers::Substitute);
+            }
 
-                static auto LeaderboardsCB = []()
+            // The title screen is built again when the opening of a new game ends. For a profile that is signed in
+            // but offline its update then sets the help text of the Store row before the row exists, the one
+            // case it doesn't check, and the game crashes.
+            {
+                auto pattern = hook::pattern("8B 8E ? ? ? ? 68 ? ? ? ? E9 ? ? ? ? 80 BE ? ? ? ? 00 8D BE");
+                static auto nStoreRowOffset = *pattern.get_first<uint32_t>(2);
+                static auto pAfterStoreText = (uintptr_t)hook::get_pattern("8B 8E ? ? ? ? 85 C9 74 ? 84 DB 75 ? 38 1D");
+                static auto OfflineStoreTextFix = safetyhook::create_mid(pattern.get_first(), [](SafetyHookContext& regs)
                 {
-                    if (FusionFixSettings.GetInt(PREF_DISABLELEADERBOARDS))
-                        fnLeaderboards.Write();
-                    else
-                        fnLeaderboards.Restore();
-                };
-
-                LeaderboardsCB();
-
-                FusionFix::onIniFileChange() += []()
-                {
-                    LeaderboardsCB();
-                };
+                    if (!*(void**)(regs.esi + nStoreRowOffset))
+                        regs.eip = pAfterStoreText;
+                });
             }
 
             // Disable WM_DEVICECHANGE message handler, since it pauses the game randomly for some reason
@@ -87,16 +124,29 @@ public:
 
         FusionFix::onInitEvent() += []()
         {
-            CIniReader iniReader("");
-
-            // [MAIN]
-            bSkipIntelVendorChecks = iniReader.ReadInteger("MAIN", "SkipIntelVendorChecks", 1) != 0;
+            // Shader containers of the title update archive take precedence over loose files, so the fix's shaders
+            // in update/common/shaders are opened by their full path.
+            {
+                static std::string root = (std::filesystem::path(GetExeModulePath()) / "update" / "common" / "shaders").string();
+                static thread_local std::string path;
+                auto pattern = hook::pattern("8B 87 B8 00 00 00 6A 01 50 E8");
+                static auto ShaderPath = safetyhook::create_mid(pattern.count(2).get(0).get<void>(6), [](SafetyHookContext& regs)
+                {
+                    constexpr std::string_view device = "common:/shaders/";
+                    std::string_view name = reinterpret_cast<const char*>(regs.eax);
+                    if (!name.starts_with(device))
+                        return;
+                    path = root + "\\" + std::string(name.substr(device.size()));
+                    if (GetFileAttributesA(path.c_str()) != INVALID_FILE_ATTRIBUTES)
+                        regs.eax = reinterpret_cast<uintptr_t>(path.c_str());
+                });
+            }
 
             // Intel GPU vendor checks fix
             // Some Intel GPUs are blocked from switching to anything else than DX9, probably meant for old iGPUs which usually didn't support certain features at the time.
             // Nowadays this is not usually the case anymore, and it kills the potential of more modern integrated chips (e.g. Iris XE) or perhaps even Intel ARC cards (Not tested) to brute force this game due to outdated DX9 drivers.
-            // In case some older iGPUs have problems as a result of this change (Unlikely?!), it is gated around a hidden option which can be added in the .ini to disable it.
-            if (bSkipIntelVendorChecks)
+            // In case some older iGPUs have problems as a result of this change (Unlikely?!), it is gated around a hidden option, SkipIntelVendorChecks in the .cfg, to disable it.
+            if (FusionFixSettings.GetInt(PREF_SKIPINTELVENDORCHECKS))
             {
                 auto pattern = hook::pattern("0F 85 ? ? ? ? 81 BC 24");
                 injector::WriteMemory<uint16_t>(pattern.get_first(0), 0xE990, true);

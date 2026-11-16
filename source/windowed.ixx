@@ -1,12 +1,14 @@
 module;
 
 #include <common.hxx>
+#include "OverlayInput.hpp"
 
 export module windowed;
 
 import common;
 import comvars;
 import settings;
+import rawinput;
 
 BOOL WINAPI SetRect_Hook(LPRECT lprc, int xLeft, int yTop, int xRight, int yBottom)
 {
@@ -87,6 +89,8 @@ void SwitchWindowStyle(bool bForce = true)
 HWND WINAPI CreateWindowExA_Hook(DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
     gWnd = CreateWindowExA(dwExStyle, lpClassName, lpWindowName, 0, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+    MP3Overlay::AttachWindow(gWnd);
+    CursorClip::AttachWindow(gWnd);
     SwitchWindowStyle();
     return gWnd;
 }
@@ -94,6 +98,8 @@ HWND WINAPI CreateWindowExA_Hook(DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpW
 HWND WINAPI CreateWindowExW_Hook(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
     gWnd = CreateWindowExW(dwExStyle, lpClassName, lpWindowName, 0, X, Y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+    MP3Overlay::AttachWindow(gWnd);
+    CursorClip::AttachWindow(gWnd);
     SwitchWindowStyle();
     return gWnd;
 }

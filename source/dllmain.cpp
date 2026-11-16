@@ -4,6 +4,11 @@
 #pragma comment(lib,"Comctl32.lib")
 #pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
+// Frame stages for the dev-only automation plugin (FusionFixHub docs/automation-capture.md); postfx fires them. Does
+// nothing unless that plugin registers, which it only does on a developer's machine.
+#include <automation/asi_automation_frames.h>
+ASI_AUTOMATION_FRAMES_EXPORT()
+
 import common;
 import comvars;
 import settings;
@@ -44,7 +49,7 @@ void __cdecl CGameProcessHook()
 
 void Init()
 {
-    FusionFixSettings.ReadIniSettings();
+    FusionFixSettings.Load();
 
     auto pattern = hook::pattern("E8 ? ? ? ? E8 ? ? ? ? 8B 0D ? ? ? ? 8B 15 ? ? ? ? 89 0D");
     hbCGameProcess.fun = injector::MakeCALL(pattern.get_first(0), CGameProcessHook, true).get();

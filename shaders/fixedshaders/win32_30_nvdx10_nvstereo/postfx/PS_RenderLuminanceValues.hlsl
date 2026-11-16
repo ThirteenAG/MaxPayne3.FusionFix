@@ -1,0 +1,75 @@
+sampler2D AdapLumSampler : register(s1);
+sampler2D CurLumSampler : register(s0);
+float4 globalScreenSize : register(c41);
+
+float4 main(float2 texcoord : TEXCOORD) : COLOR
+{
+	float4 o;
+
+	float4 r0;
+	float4 r1;
+	float4 r2;
+	float3 r3;
+	r0.xyz = float3(0.03125, 0.1, 0);
+	r0.xy = r0.xy * globalScreenSize.xy;
+	r1.xy = frac(r0.xy);
+	r0.xy = r0.xy + -r1.xy;
+	r1.xy = (-r1.xy >= 0) ? 0 : 1;
+	r0.zw = (globalScreenSize.xy >= 0) ? r0.zz : r1.xy;
+	r0.xy = r0.zw + r0.xy;
+	r1.x = 1 / r0.x;
+	r1.y = 1 / r0.y;
+	r0.xy = globalScreenSize.xy * texcoord.xy;
+	r0.zw = frac(r0.xy);
+	r1.zw = (-r0.zw >= 0) ? 0 : 1;
+	r0.zw = r0.xy + -r0.zw;
+	r0.xy = (r0.xy >= 0) ? 0 : r1.zw;
+	r0.xy = r0.xy + r0.zw;
+	r0.zw = r0.xy * float2(0.03125, 0.1);
+	r1.zw = frac(r0.zw);
+	r0.zw = r0.zw + -r1.zw;
+	r1.zw = (-r1.zw >= 0) ? 0 : 1;
+	r1.zw = (r0.xy >= 0) ? 0 : r1.zw;
+	r0.zw = r0.zw + r1.zw;
+	r1.xy = r1.xy * r0.zw;
+	r1 = tex2D(CurLumSampler, r1.xy);
+	r1.y = r1.x * 0.1;
+	r1.zw = frac(r1.yx);
+	r1.y = r1.y + -r1.z;
+	r1.z = (-r1.z >= 0) ? 0 : 1;
+	r1.z = (r1.x >= 0) ? 0 : r1.z;
+	r1.y = r1.z + r1.y;
+	r1.z = r1.y * -10 + r1.x;
+	r2.x = (-r1.w >= 0) ? 0 : 1;
+	r2.x = (r1.z >= 0) ? 0 : r2.x;
+	r1.z = r1.z + -r1.w;
+	r1.w = r1.w * 10;
+	r1.z = r2.x + r1.z;
+	r2.x = frac(r1.w);
+	r1.w = r1.w + -r2.x;
+	r2.yz = r0.zw * float2(-32, -10) + r0.xy;
+	r0.x = r0.w + r0.z;
+	r0.x = r0.x * 0.5;
+	r0.x = frac(r0.x);
+	r0.y = r2.y * 0.125;
+	r0.z = frac(r0.y);
+	r0.y = r0.y + -r0.z;
+	r0.z = (-r0.z >= 0) ? 0 : 1;
+	r0.z = (r2.y >= 0) ? 0 : r0.z;
+	r0.xy = r0.xz + r0.xy;
+	r3 = r0.yyy + float3(-1, -2, -3);
+	r0.z = (-abs(r3.z) >= 0) ? r1.w : 0;
+	r0.z = (-abs(r3.y) >= 0) ? 10 : r0.z;
+	r0.z = (-abs(r3.x) >= 0) ? r1.z : r0.z;
+	r0.z = (-abs(r0.y) >= 0) ? r1.y : r0.z;
+	r0.y = r0.y * -8 + r2.y;
+	r2.x = r0.z * 8 + r0.y;
+	r0.yz = r2.xz * float2(0.007874016, 0.06666667);
+	r2 = tex2D(AdapLumSampler, r0.yz);
+	r0.yzw = r1.xxx * float3(0.5, 0.05, 0.005) + -r2.xxx;
+	r0.yzw = r2.yyy * r0.yzw + r2.xxx;
+	o.xyz = r0.xxx * -r0.yzw + r0.yzw;
+	o.w = r0.x;
+
+	return o;
+}

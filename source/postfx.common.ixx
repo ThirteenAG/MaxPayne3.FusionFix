@@ -5,7 +5,7 @@ module;
 export module postfxcommon;
 
 // ---------------------------------------------------------------------------
-// Options are re-read from MaxPayne3.FusionFix.ini once per frame, so toggling
+// Options are re-read from the settings once per frame, so toggling
 // any of them, including the console gamma preset, never needs a shader reload.
 // The right shader is simply picked while rendering.
 // ---------------------------------------------------------------------------
@@ -32,7 +32,7 @@ export enum PostFXStage
 };
 
 // One entry per console gamma curve the build embeds, in the order of the
-// preset numbers in MaxPayne3.FusionFix.ini: 1 Xenon (Xbox 360), 2 Cell
+// preset numbers of ConsoleGamma in MaxPayne3.FusionFix.cfg: 1 Xenon (Xbox 360), 2 Cell
 // (PlayStation 3). A new curve is compiled from the same shader source with
 // another POSTFX_GAMMA_PRESET, see the shader table in premake5.lua.
 export inline constexpr int POSTFX_GAMMA_PRESETS = 2;

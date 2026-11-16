@@ -1,0 +1,14 @@
+// ASI Settings (see docs/settings.md): the description of the settings and one
+// translation per BCP 47 language tag, read by menu hosts and editors
+SETTINGS ASISETTINGS "../../settings/MaxPayne3.FusionFix.json"
+
+en    ASISETTINGS_TEXT "../../settings/MaxPayne3.FusionFix.en.json"
+fr    ASISETTINGS_TEXT "../../settings/MaxPayne3.FusionFix.fr.json"
+de    ASISETTINGS_TEXT "../../settings/MaxPayne3.FusionFix.de.json"
+it    ASISETTINGS_TEXT "../../settings/MaxPayne3.FusionFix.it.json"
+es    ASISETTINGS_TEXT "../../settings/MaxPayne3.FusionFix.es.json"
+ja    ASISETTINGS_TEXT "../../settings/MaxPayne3.FusionFix.ja.json"
+ru    ASISETTINGS_TEXT "../../settings/MaxPayne3.FusionFix.ru.json"
+pt-BR ASISETTINGS_TEXT "../../settings/MaxPayne3.FusionFix.pt-BR.json"
+pl    ASISETTINGS_TEXT "../../settings/MaxPayne3.FusionFix.pl.json"
+ko    ASISETTINGS_TEXT "../../settings/MaxPayne3.FusionFix.ko.json"

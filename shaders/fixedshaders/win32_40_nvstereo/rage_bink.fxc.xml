@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Effect Format="modern" VertexType="81">
+  <ShaderGroups>
+    <Group Stage="Vertex" RawCount="1" OffsetBy1="false" Name="" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+        <Shader Name="VS_Bink" OffsetBy1="false" File="rage_bink/VS_Bink.hlsl" DataType="hlsl" Model="4.0" Length="1084">
+          <Variables>
+            <Variable>gWorld</Variable>
+            <Variable>gWorldView</Variable>
+            <Variable>gWorldViewProj</Variable>
+            <Variable>gViewInverse</Variable>
+            <Variable>gConverengeDepth</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="rage_matrices" Slot="0"/>
+          </Buffers>
+        </Shader>
+      </Shaders>
+    </Group>
+    <Group Stage="Pixel" RawCount="5" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+        <Shader Name="PS_BinkInGame" OffsetBy1="false" File="rage_bink/PS_BinkInGame.hlsl" DataType="hlsl" Model="4.0" Length="1632">
+          <Variables>
+            <Variable>YUVtoRGB</Variable>
+            <Variable>GrayScaleValue</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>YPlaneSamplerInGame</Variable>
+            <Variable>cRPlaneSamplerInGame</Variable>
+            <Variable>cBPlaneSamplerInGame</Variable>
+            <Variable>APlaneSamplerInGame</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="$Globals" Slot="4"/>
+          </Buffers>
+        </Shader>
+        <Shader Name="PS_Bink" OffsetBy1="false" File="rage_bink/PS_Bink.hlsl" DataType="hlsl" Model="4.0" Length="1608">
+          <Variables>
+            <Variable>YUVtoRGB</Variable>
+            <Variable>GrayScaleValue</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>YPlaneSampler</Variable>
+            <Variable>cRPlaneSampler</Variable>
+            <Variable>cBPlaneSampler</Variable>
+            <Variable>APlaneSampler</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="$Globals" Slot="4"/>
+          </Buffers>
+        </Shader>
+        <Shader Name="PS_BinkNoAlphaInGame" OffsetBy1="false" File="rage_bink/PS_BinkNoAlphaInGame.hlsl" DataType="hlsl" Model="4.0" Length="1528">
+          <Variables>
+            <Variable>YUVtoRGB</Variable>
+            <Variable>GrayScaleValue</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>YPlaneSamplerInGame</Variable>
+            <Variable>cRPlaneSamplerInGame</Variable>
+            <Variable>cBPlaneSamplerInGame</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="$Globals" Slot="4"/>
+          </Buffers>
+        </Shader>
+        <Shader Name="PS_BinkNoAlpha" OffsetBy1="false" File="rage_bink/PS_BinkNoAlpha.hlsl" DataType="hlsl" Model="4.0" Length="1588">
+          <Variables>
+            <Variable>YUVtoRGB</Variable>
+            <Variable>GrayScaleValue</Variable>
+            <Variable>BrightnessSetting</Variable>
+            <Variable>YPlaneSampler</Variable>
+            <Variable>cRPlaneSampler</Variable>
+            <Variable>cBPlaneSampler</Variable>
+          </Variables>
+          <Buffers>
+            <Buffer Name="$Globals" Slot="4"/>
+          </Buffers>
+        </Shader>
+      </Shaders>
+    </Group>
+    <Group Stage="Compute" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+    <Group Stage="Domain" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+    <Group Stage="Geometry" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+    <Group Stage="Hull" RawCount="1" OffsetBy1="false" Name="NULL" Unk1="0" Unk2="0" Unk3="0">
+      <Shaders>
+      </Shaders>
+    </Group>
+  </ShaderGroups>
+  <CBuffers1>
+    <CBuffer Name="rage_matrices" Size="272" VS="0" PS="0" CS="0" DS="0" GS="0" HS="0"/>
+  </CBuffers1>
+  <Variables1>
+    <Variable Type="Float4x4" Count="0" Slot="0" Group="1" FirstName="gWorld" SecondName="World" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1032736383"/>
+    <Variable Type="Float4x4" Count="0" Slot="4" Group="1" FirstName="gWorldView" SecondName="WorldView" Offset="64" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1032736383"/>
+    <Variable Type="Float4x4" Count="0" Slot="8" Group="1" FirstName="gWorldViewProj" SecondName="WorldViewProjection" Offset="128" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1032736383"/>
+    <Variable Type="Float4x4" Count="0" Slot="12" Group="1" FirstName="gViewInverse" SecondName="ViewInverse" Offset="192" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="1032736383"/>
+    <Variable Type="Float4" Count="0" Slot="59" Group="1" FirstName="gConverengeDepth" SecondName="ConverengeDepth" Offset="0" Variant="1" Unused0="0" Unused1="0" CBufferNameHash="1032736383"/>
+  </Variables1>
+  <CBuffers2>
+    <CBuffer Name="$Globals" Size="1696" VS="0" PS="4" CS="0" DS="0" GS="0" HS="0"/>
+  </CBuffers2>
+  <Variables2>
+    <Variable Type="Texture" Count="0" Slot="0" Group="2" FirstName="YPlaneSamplerInGame" SecondName="YPlaneInGame" Offset="0" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>4;2;5;2;6;0;0;3;1;3;2;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="1" Group="2" FirstName="cRPlaneSamplerInGame" SecondName="cRPlaneInGame" Offset="1" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>4;2;5;2;0;3;1;3;2;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="2" Group="2" FirstName="cBPlaneSamplerInGame" SecondName="cBPlaneInGame" Offset="2" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>4;2;5;2;0;3;1;3;2;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="3" Group="2" FirstName="APlaneSamplerInGame" SecondName="APlaneInGame" Offset="3" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>4;2;5;2;0;3;1;3;2;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="4" Group="2" FirstName="YPlaneSampler" SecondName="YPlane" Offset="4" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>4;2;5;2;6;0;0;3;1;3;2;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="5" Group="2" FirstName="cRPlaneSampler" SecondName="cRPlane" Offset="5" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>4;2;5;2;0;3;1;3;2;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="6" Group="2" FirstName="cBPlaneSampler" SecondName="cBPlane" Offset="6" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>4;2;5;2;0;3;1;3;2;3</Values>
+    </Variable>
+    <Variable Type="Texture" Count="0" Slot="7" Group="2" FirstName="APlaneSampler" SecondName="APlane" Offset="7" Variant="0" Unused0="0" Unused1="0" CBufferNameHash="0">
+      <Values>4;2;5;2;0;3;1;3;2;3</Values>
+    </Variable>
+    <Variable Type="Float4x4" Count="0" Slot="100" Group="2" FirstName="YUVtoRGB" SecondName="YUVtoRGB" Offset="64" Variant="6" Unused0="0" Unused1="0" CBufferNameHash="1866965008">
+      <Values>1.16412354;1.59579468;0;-0.87065506;1.16412354;-0.813476562;-0.391448975;0.529705048;1.16412354;0;2.01782227;-1.08166885;1;0;0;1</Values>
+    </Variable>
+    <Variable Type="Float" Count="0" Slot="104" Group="2" FirstName="GrayScaleValue" SecondName="GrayScaleValue" Offset="128" Variant="6" Unused0="0" Unused1="0" CBufferNameHash="1866965008">
+      <Values>0</Values>
+    </Variable>
+    <Variable Type="Float2" Count="0" Slot="105" Group="2" FirstName="BrightnessSetting" SecondName="Brightness_Setting" Offset="144" Variant="6" Unused0="0" Unused1="0" CBufferNameHash="1866965008">
+      <Values>1;0</Values>
+    </Variable>
+  </Variables2>
+  <Techniques>
+    <Technique Name="bink_alpha">
+      <Pass VS="0" PS="1" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+      <Pass VS="0" PS="2" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+    <Technique Name="bink_opaque">
+      <Pass VS="0" PS="3" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+      <Pass VS="0" PS="4" CS="0" DS="0" GS="0" HS="0">
+      </Pass>
+    </Technique>
+  </Techniques>
+</Effect>
