@@ -166,7 +166,12 @@ public:
                 CPostFX::Render(POSTFX_STAGE_GAMMA);
                 asi_automation_frames::Fire(ASI_AUTOMATION_STAGE_AFTER_UI, CPostFX::GetCommonSwapChain());
                 MP3Overlay::Present(static_cast<IDXGISwapChain*>(CPostFX::GetCommonSwapChain()));
+                HDR::BeforePresent(static_cast<IDXGISwapChain*>(CPostFX::GetCommonSwapChain()), regs.ebx);
                 FrameLimit::BeforePresent();
+            });
+            static auto DX11PresentEndHook = safetyhook::create_mid(pattern.get_first(21), [](SafetyHookContext& regs)
+            {
+                HDR::AfterPresent(static_cast<HRESULT>(regs.eax));
             });
 
             pattern = hook::pattern("8B 07 F7 D9 1B C9 F7 D1 23 0D ? ? ? ? 51 52 FF D0 8B F8 81 FF ? ? ? ? 74");
@@ -182,6 +187,7 @@ public:
             static auto DX11ResizeBuffersHook = safetyhook::create_mid(pattern.get_first(0), [](SafetyHookContext& regs)
             {
                 CPostFX::OnResize();
+                // ResizeBuffers(edi, edx buffers, ebx width, ebp height, ecx format, 2)
                 if (HDR::BeforeResize(reinterpret_cast<IDXGISwapChain*>(regs.edi)))
                 {
                     regs.ecx = DXGI_FORMAT_R16G16B16A16_FLOAT;

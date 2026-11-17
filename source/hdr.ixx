@@ -20,12 +20,14 @@ namespace
     using Microsoft::WRL::ComPtr;
     IDXGISwapChain* Chain{};
     HWND Window{};
-    std::atomic<bool> RendererSupportsHDR{}, DisplayHDR{};
+    std::atomic<bool> Direct3D11{}, DisplayHDR{}, Unavailable{};
     std::atomic<float> SdrWhite{ 80.0f };
     uint64_t LastDisplayCheck{};
     HMONITOR DisplayMonitor{};
     ComPtr<IDXGIFactory1> DisplayFactory;
-    SafetyHookMid PresentHook;
+    ComPtr<ID3D11RenderTargetView> PresentTargets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT];
+    ComPtr<ID3D11DepthStencilView> PresentDepth;
+    bool Presenting{};
     ComPtr<ID3D11Device> Device;
     ComPtr<ID3D11DeviceContext1> Context;
     ComPtr<ID3DDeviceContextState> State;
@@ -112,12 +114,19 @@ namespace
         return 80.0f;
     }
 
-    // Availability follows the game swap chain. DirectX 9 never calls Prepare.
+    // HDR can be chosen on the DirectX 11 renderer with the game window on an HDR display, when the game started with
+    // the scRGB swap chain
+    bool Supported()
+    {
+        return Direct3D11 && DisplayHDR && !Unavailable;
+    }
+
+    // The choice stays in effect until the renderer is known: Prepare reads it, and DirectX 9 never calls Prepare
     void ApplyAvailability()
     {
         static std::atomic<bool> registered{};
         if (!registered.exchange(true))
-            SettingsPlugin().Availability("MAIN.HDR", [](std::string_view value) { return value == "0" || RendererSupportsHDR; });
+            SettingsPlugin().Availability("MAIN.HDR", [](std::string_view value) { return value == "0" || Supported(); });
         else
             SettingsPlugin().Refresh("MAIN.HDR");
     }
@@ -139,15 +148,15 @@ namespace
         // The factory goes stale when the displays change, Windows HDR included
         if (MonitorFromWindow(Window, MONITOR_DEFAULTTONEAREST) == DisplayMonitor && DisplayFactory && DisplayFactory->IsCurrent())
             return;
-        DisplayHDR = ReadDisplays(Window).Window;
+        const bool hdr = ReadDisplays(Window).Window;
+        if (DisplayHDR.exchange(hdr) != hdr)
+            SettingsPlugin().Refresh("MAIN.HDR");
     }
 
     bool Initialize(IDXGISwapChain* chain, ID3D11Texture2D* output)
     {
         D3D11_TEXTURE2D_DESC description{}, existing{};
         output->GetDesc(&description);
-        if (description.Format != DXGI_FORMAT_R16G16B16A16_FLOAT)
-            return false;
         if (Copy)
             Copy->GetDesc(&existing);
         ComPtr<ID3D11Device> device;
@@ -390,49 +399,6 @@ namespace
         saved.Restore(Context.Get());
         return true;
     }
-
-    bool IsGameSwapChain(IDXGISwapChain* chain)
-    {
-        return chain && ppPostFXSwapChain && *ppPostFXSwapChain == chain;
-    }
-
-    void BeforeNativePresent(SafetyHookContext& regs)
-    {
-        auto chain = reinterpret_cast<IDXGISwapChain*>(regs.esi);
-        const auto flags = *reinterpret_cast<const UINT*>(regs.ebp + 0x10);
-        if ((flags & DXGI_PRESENT_TEST) || !IsGameSwapChain(chain))
-            return;
-        if (chain != Chain)
-        {
-            DXGI_SWAP_CHAIN_DESC description{};
-            if (FAILED(chain->GetDesc(&description)) || description.BufferDesc.Format != DXGI_FORMAT_R16G16B16A16_FLOAT)
-                return;
-            Release();
-            Chain = chain;
-            Window = description.OutputWindow;
-            DisplayHDR = ReadDisplays(Window).Window;
-            SdrWhite = ReadSdrWhite(Window);
-        }
-        Render(chain);
-    }
-
-    bool InstallPresentHook()
-    {
-        if (PresentHook)
-            return true;
-        auto dxgi = GetModuleHandleW(L"dxgi.dll");
-        if (!dxgi)
-            return false;
-
-        // This x86 DXGI Present prologue sets up EBP and loads the swap chain into ESI.
-        // Hook past the entry detours, before DXGI starts the present operation.
-        auto present = hook::module_pattern(dxgi,
-            "83 E4 F8 83 EC 38 A1 ? ? ? ? 33 C4 89 44 24 34 56 8B 75 08 8D 4C 24 08 57 FF 75 10 FF 75 0C 56 E8 ? ? ? ? 33 FF");
-        if (present.size() != 1)
-            return false;
-        PresentHook = safetyhook::create_mid(present.get_first(21), BeforeNativePresent);
-        return static_cast<bool>(PresentHook);
-    }
 }
 
 export namespace HDR
@@ -454,27 +420,71 @@ export namespace HDR
 
     void Shutdown()
     {
-        PresentHook.reset();
         Chain = nullptr;
         Release();
         DisplayFactory.Reset();
     }
 
+    // From the game's own Present call, so the picture is converted before any overlay or wrapper that hooks DXGI
+    // draws on it
+    void BeforePresent(IDXGISwapChain* chain, UINT flags)
+    {
+        if (chain != Chain || (flags & DXGI_PRESENT_TEST))
+            return;
+        Render(chain);
+        if (!Context)
+            return;
+        // A flip-model Present unbinds the back buffer, the game expects its targets to stay bound
+        ID3D11RenderTargetView* views[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT]{};
+        Context->OMGetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, views, &PresentDepth);
+        for (UINT i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+            PresentTargets[i].Attach(views[i]);
+        Presenting = true;
+    }
+
+    void AfterPresent(HRESULT result)
+    {
+        if (!Presenting)
+            return;
+        Presenting = false;
+        if (Context && SUCCEEDED(result))
+        {
+            ID3D11RenderTargetView* views[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT]{};
+            for (UINT i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+                views[i] = PresentTargets[i].Get();
+            Context->OMSetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, views, PresentDepth.Get());
+        }
+        for (auto& target : PresentTargets)
+            target.Reset();
+        PresentDepth.Reset();
+    }
+
+    // From the game's own ResizeBuffers call: whether the chain keeps the scRGB format
+    bool BeforeResize(IDXGISwapChain* chain)
+    {
+        if (!chain || chain != Chain)
+            return false;
+        Release();
+        return true;
+    }
+
     bool Prepare(const D3D_FEATURE_LEVEL* levels, UINT count, DXGI_SWAP_CHAIN_DESC& description)
     {
-        // Leave swap chains for other windows in their requested format.
-        if (!description.OutputWindow || (gWnd && description.OutputWindow != gWnd))
+        // Only the game's window: overlays make their own devices and chains to find the functions they hook
+        if (!gWnd || description.OutputWindow != gWnd)
             return false;
         Window = description.OutputWindow;
-        RendererSupportsHDR = false;
+        Direct3D11 = !count || levels[0] >= D3D_FEATURE_LEVEL_11_0;
         const auto displays = ReadDisplays(Window);
         DisplayHDR = displays.Window;
         LastDisplayCheck = GetTickCount64();
+        // Any HDR display: the window can start on another display and move, the output follows it. The scRGB chain
+        // is made whatever the setting, so that switching HDR applies at once.
+        Unavailable = !Direct3D11 || !displays.Any || description.SampleDesc.Count != 1;
         ApplyAvailability();
-        // Keep scRGB available for live switching, with SDR as the fallback on an unknown DXGI implementation.
-        if ((count && levels[0] < D3D_FEATURE_LEVEL_11_0) || description.SampleDesc.Count != 1 ||
-            !displays.Any || !InstallPresentHook())
+        if (Unavailable)
             return false;
+        SdrWhite = ReadSdrWhite(Window);
         description.BufferDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
         description.BufferCount = std::max(2u, description.BufferCount);
         description.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
@@ -484,22 +494,29 @@ export namespace HDR
     bool Attach(IDXGISwapChain* chain)
     {
         ComPtr<ID3D11Device> device;
-        if (!chain || FAILED(chain->GetDevice(IID_PPV_ARGS(&device))) || device->GetFeatureLevel() < D3D_FEATURE_LEVEL_11_0)
+        if (FAILED(chain->GetDevice(IID_PPV_ARGS(&device))) || device->GetFeatureLevel() < D3D_FEATURE_LEVEL_11_0)
+        {
+            Unavailable = true;
+            ApplyAvailability();
             return false;
-        // DXGI presents floating-point swap chains as linear scRGB by default.
-        RendererSupportsHDR = true;
-        ApplyAvailability();
-        return true;
-    }
-
-    bool BeforeResize(IDXGISwapChain* chain)
-    {
+        }
+        // A floating-point chain is presented as linear scRGB by default; a chain that tells its color spaces has to
+        // support it
+        ComPtr<IDXGISwapChain3> modern;
+        UINT support{};
+        if (SUCCEEDED(chain->QueryInterface(IID_PPV_ARGS(&modern))) &&
+            (FAILED(modern->CheckColorSpaceSupport(DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709, &support)) ||
+             !(support & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT) ||
+             FAILED(modern->SetColorSpace1(DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709))))
+        {
+            Unavailable = true;
+            ApplyAvailability();
+            return false;
+        }
+        Chain = chain;
         DXGI_SWAP_CHAIN_DESC description{};
-        if (!IsGameSwapChain(chain) || FAILED(chain->GetDesc(&description)) ||
-            description.BufferDesc.Format != DXGI_FORMAT_R16G16B16A16_FLOAT)
-            return false;
-        if (Chain == chain)
-            Release();
+        chain->GetDesc(&description);
+        Window = description.OutputWindow;
         return true;
     }
 }
