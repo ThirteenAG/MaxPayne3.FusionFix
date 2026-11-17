@@ -22,6 +22,7 @@ import settings;
 namespace FusionMenu
 {
     enum class Control { Choices, Slider };
+    enum class Availability { Enabled, ValueUnavailable, Disabled };
     // value is the setting's value as text in the settings file's syntax, number the same value for numeric settings
     struct Choice { std::string value; std::string text; float number = 0; };
     inline int DecimalPlaces(float value)
@@ -62,6 +63,7 @@ namespace FusionMenu
         std::function<std::string()> get;
         std::function<void(const std::string&)> set;
         std::function<bool()> enabled;  // enabledIf of the setting, none when always enabled
+        std::function<Availability()> choiceAvailability;
         std::function<std::string()> reason; // why values can't be chosen now, empty when they can
         bool numeric = true;
         Control control = Control::Choices;
@@ -463,6 +465,22 @@ bool BuildOption(const Snapshot& snap, const asi_settings::LoadedPlugin& plugin,
             break;
     }
     if (option.choices.empty()) return false;
+    if (option.control == FusionMenu::Control::Choices && HasFunction(api, offsetof(AsiSettingsApi, GetChoices)) && api->GetChoices)
+        option.choiceAvailability = [api, id, numeric = option.numeric]
+        {
+            using FusionMenu::Availability;
+            const auto usable = UsableValues(api, id);
+            if (!usable) return Availability::Enabled;
+            if (usable->empty()) return Availability::Disabled;
+
+            const auto current = GetValue(api, id);
+            const bool currentUsable = std::any_of(usable->begin(), usable->end(), [&](const auto& item)
+            {
+                return asi_settings::detail::JsonEquals(item.value, current, numeric);
+            });
+            if (!currentUsable) return Availability::ValueUnavailable;
+            return usable->size() == 1 ? Availability::Disabled : Availability::Enabled;
+        };
 
     // A value outside the list shows as Custom, or as the label of a special value
     option.other = snap.Host("menu.custom");
@@ -695,7 +713,14 @@ PageAdapter pages[] = {
     {NativePage::Controls, 272, 264, 268}, {NativePage::Audio, 280, 272, 276}
 };
 
-struct Binding { const FusionMenu::Option* option; int shown; UI row; };
+struct Binding
+{
+    const FusionMenu::Option* option;
+    int shown;
+    UI row;
+    FusionMenu::Availability availability = FusionMenu::Availability::Enabled;
+    uint8_t barValuePalette = 0;
+};
 // Help text grows upward from the title. Text too long for the space above is drawn
 // smaller, down to MinHelpScale, and only then shortened.
 constexpr float MinHelpScale = 0.8f;
@@ -722,6 +747,8 @@ struct Screen
     HelpFit fit;
     UI msaa = nullptr;    // the Graphics page's MSAA list and its row
     UI msaaRow = nullptr;
+    bool msaaEnabledByGame = false;
+    bool msaaGreyed = false;
 };
 std::unordered_map<UI, Screen> screens;
 
@@ -729,6 +756,43 @@ std::unordered_map<UI, Screen> screens;
 bool MSAALocked()
 {
     return FusionFixSettings.GetInt(PREF_ANTIALIASING) >= 3;
+}
+
+constexpr int DisabledPalette = 8; // the palette of stock MSAA on DX9 and DX10
+
+void RefreshAvailability(Screen& state)
+{
+    using FusionMenu::Availability;
+    for (auto& [list, binding] : state.lists)
+    {
+        const auto& option = *binding.option;
+        const auto availability = !option.Enabled() ? Availability::Disabled
+            : option.choiceAvailability ? option.choiceAvailability() : Availability::Enabled;
+        if (availability == binding.availability) continue;
+
+        const bool enabled = availability != Availability::Disabled;
+        Virtual(binding.row, 56, enabled ? 1 : 0);
+        if (option.control == FusionMenu::Control::Slider)
+        {
+            Virtual(Field<UI>(list, 256), 348, enabled ? 13 : DisabledPalette);
+            Virtual(Field<UI>(list, 252), 348, enabled ? 14 : DisabledPalette);
+            Virtual(Field<UI>(list, 264), 348, enabled ? binding.barValuePalette : DisabledPalette);
+        }
+        else if (availability != Availability::Enabled)
+            Virtual(list, 348, DisabledPalette);
+        binding.availability = availability;
+    }
+
+    if (state.msaaEnabledByGame)
+    {
+        const bool locked = MSAALocked();
+        if (locked != state.msaaGreyed)
+        {
+            Virtual(state.msaaRow, 56, locked ? 0 : 1);
+            if (locked) Virtual(state.msaa, 348, DisabledPalette);
+            state.msaaGreyed = locked;
+        }
+    }
 }
 
 void ScaleHelp(Screen& state, float scale)
@@ -886,7 +950,8 @@ void AddRow(UI screen, Screen& state, const FusionMenu::Option& option, size_t i
         SelectChoice(list, position);
     }
     Virtual(list, 56, 0);
-    state.lists.emplace(list, Binding{&option, position, row});
+    const uint8_t barValuePalette = slider ? Field<uint8_t>(Field<UI>(list, 264), 208) : 0;
+    state.lists.emplace(list, Binding{&option, position, row, FusionMenu::Availability::Enabled, barValuePalette});
 }
 
 UI AddAction(UI screen, UI parent, const std::string& name, const std::string& label, int id)
@@ -974,6 +1039,7 @@ void OpenFusionPage(UI screen, size_t page, bool sound = true)
     Virtual(scroll, 308, 1);
     Virtual(scroll, 488);
     Virtual(scroll, 60, 1);
+    RefreshAvailability(state);
     if (sound) PlayMenuSelect();
 }
 
@@ -1271,6 +1337,8 @@ template<size_t P> int __fastcall BuildPage(UI screen, void*, UI previous)
         state.msaa = Field<UI>(screen, 300);
         for (auto row : stockRows)
             if (std::string_view(Virtual<const char*>(row, 84)).ends_with(".MSAAQualityText")) state.msaaRow = row;
+        // Keep the renderer's native MSAA lock even after our temporal lock ends.
+        state.msaaEnabledByGame = state.msaa && state.msaaRow && (Field<uint8_t>(state.msaaRow, 165) & 0x40) != 0;
         auto memoryTitle = Field<UI>(screen, 364);
         Virtual(memoryTitle, 296);
         Anchor(memoryTitle, 6, scroll, 18, 4.0f, 20.0f);
@@ -1280,6 +1348,7 @@ template<size_t P> int __fastcall BuildPage(UI screen, void*, UI previous)
     Virtual(scroll, 308, 1);
     Virtual(scroll, 488);
     Virtual(scroll, 60, 1);
+    RefreshAvailability(state);
     return result;
 }
 
@@ -1373,6 +1442,8 @@ void __fastcall UpdateList(UI list, void*)
             SelectChoice(list, desired);
             binding.shown = desired;
         }
+        if (binding.availability == FusionMenu::Availability::ValueUnavailable)
+            Virtual(list, 348, DisabledPalette);
         break;
     }
 }
@@ -1394,6 +1465,7 @@ void HandleChanges()
             rebuild.push_back(owner);
     }
     for (auto owner : rebuild) RebuildFusionPage(owner);
+    for (auto& [owner, state] : screens) RefreshAvailability(state);
 }
 
 // The help of the game's MSAA row while it's locked: the game's own text and why

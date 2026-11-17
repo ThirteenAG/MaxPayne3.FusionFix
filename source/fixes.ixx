@@ -7,6 +7,7 @@ export module fixes;
 
 import common;
 import settings;
+import garagepanels;
 
 namespace TextNumbers
 {
@@ -119,6 +120,9 @@ public:
                     {
                         regs.xmm2.f32[0] = fabs(regs.xmm2.f32[0]);
                     });
+
+                // The garage panel slide of a chapter 10 cutscene
+                GaragePanels::Init();
             }
         };
 
