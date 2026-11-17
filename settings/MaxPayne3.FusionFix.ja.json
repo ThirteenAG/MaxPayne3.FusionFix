@@ -45,6 +45,8 @@
   "antialiasing.description": "TAA、DLAA、FSRにはDirectX 11が必要です。ゲームのMSAAはオフにしてください。DLAAとFSRにはFusionFixHubのアップスケーラーも必要です。",
   "aasharpness": "アンチエイリアスのシャープネス",
   "aasharpness.description": "TAA、DLAA、FSRの後に画像をシャープにします。0でオフになります。",
+  "drawdistance": "描画距離",
+  "drawdistance.description": "モデルが表示される距離と、詳細度が切り替わる距離を調整します。1x は元の距離です。",
   "intelchecks": "Intel GPUのチェックを省略",
   "intelchecks.description": "IntelグラフィックスでDirectX 10と11を使えるようにします。通常、ゲームはIntelグラフィックスにはDirectX 9しか許可しません。",
   "menu.restoredefaults": "初期設定に戻す",
