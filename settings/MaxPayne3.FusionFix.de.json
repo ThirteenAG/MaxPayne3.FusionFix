@@ -45,6 +45,8 @@
   "antialiasing.description": "TAA, DLAA und FSR benötigen DirectX 11 mit ausgeschaltetem MSAA des Spiels. DLAA und FSR benötigen außerdem die Upscaler von FusionFixHub.",
   "aasharpness": "Schärfe der Kantenglättung",
   "aasharpness.description": "Schärft das Bild nach TAA, DLAA oder FSR. 0 schaltet es aus.",
+  "drawdistance": "Sichtweite",
+  "drawdistance.description": "Skaliert die Sichtweite von Modellen und die Entfernungen für Detailstufen. 1x verwendet die ursprünglichen Entfernungen.",
   "intelchecks": "Intel-Grafikprüfungen überspringen",
   "intelchecks.description": "Erlaubt Intel-Grafik DirectX 10 und 11; sonst lässt das Spiel dort nur DirectX 9 zu.",
   "menu.restoredefaults": "STANDARD WIEDERHERSTELLEN",

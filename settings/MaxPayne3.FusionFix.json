@@ -156,6 +156,12 @@
       "enabledIf": { "setting": "MAIN.AntiAliasing", "in": [ 3, 4, 5 ] }
     },
     {
+      "id": "MAIN.DrawDistance", "type": "float", "default": 1.0, "min": 1.0, "max": 2.0, "step": 0.1, "decimals": 1, "unit": "x",
+      "label": "@drawdistance", "description": "@drawdistance.description",
+      "page": "graphics", "control": [ "slider" ],
+      "presets": { "vanilla": 1.0, "recommended": 1.0, "enhanced": 1.0 }
+    },
+    {
       "id": "MAIN.SkipIntelVendorChecks", "type": "bool", "default": 1,
       "label": "@intelchecks", "description": "@intelchecks.description",
       "page": "compatibility", "visibility": "file", "apply": "restart"
