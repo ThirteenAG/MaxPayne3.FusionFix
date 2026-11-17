@@ -17,6 +17,8 @@
   "checkupdates.description": "Al iniciar el juego busca una versión más reciente en fusionfix.io y te avisa en el juego.",
   "update.hub": "Fusion Fix {} está disponible. FusionFixHub se abrirá al cerrar el juego.",
   "update.site": "Fusion Fix {} está disponible en fusionfix.io.",
+  "consolesubtitles": "Subtítulos de consola",
+  "consolesubtitles.description": "Usa el tamaño y los saltos de línea de los subtítulos de Xbox 360 en HD. El control de tamaño ajusta el diseño seleccionado.",
   "subtitlesize": "Tamaño de subtítulos",
   "subtitlesize.description": "Escala de subtítulos. 1 es el tamaño original.",
   "outlinesize": "Grosor del contorno",

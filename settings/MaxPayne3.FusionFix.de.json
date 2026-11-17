@@ -17,6 +17,8 @@
   "checkupdates.description": "Sucht beim Spielstart auf fusionfix.io nach einer neueren Version und zeigt sie im Spiel an.",
   "update.hub": "Fusion Fix {} ist verfügbar. FusionFixHub öffnet sich, wenn du das Spiel beendest.",
   "update.site": "Fusion Fix {} ist auf fusionfix.io verfügbar.",
+  "consolesubtitles": "Konsolenuntertitel",
+  "consolesubtitles.description": "Verwendet Untertitelgröße und Zeilenumbruch der Xbox 360 im HD-Modus. Der Größenregler skaliert das gewählte Layout.",
   "subtitlesize": "Untertitelgröße",
   "subtitlesize.description": "Untertitelskalierung. 1 entspricht der Originalgröße.",
   "outlinesize": "Umrissstärke",

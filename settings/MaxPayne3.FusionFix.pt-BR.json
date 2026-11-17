@@ -17,6 +17,8 @@
   "checkupdates.description": "Ao iniciar o jogo, procura uma versão mais nova em fusionfix.io e avisa você no jogo.",
   "update.hub": "Fusion Fix {} está disponível. O FusionFixHub abrirá quando você fechar o jogo.",
   "update.site": "Fusion Fix {} está disponível em fusionfix.io.",
+  "consolesubtitles": "Legendas de console",
+  "consolesubtitles.description": "Usa o tamanho e a quebra de linha das legendas do Xbox 360 em HD. O controle de tamanho ajusta o layout selecionado.",
   "subtitlesize": "Tamanho das legendas",
   "subtitlesize.description": "Escala das legendas. 1 é o tamanho original.",
   "outlinesize": "Espessura do contorno",
