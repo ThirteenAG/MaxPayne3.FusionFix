@@ -182,6 +182,11 @@ public:
             static auto DX11ResizeBuffersHook = safetyhook::create_mid(pattern.get_first(0), [](SafetyHookContext& regs)
             {
                 CPostFX::OnResize();
+                if (HDR::BeforeResize(reinterpret_cast<IDXGISwapChain*>(regs.edi)))
+                {
+                    regs.ecx = DXGI_FORMAT_R16G16B16A16_FLOAT;
+                    regs.edx = std::max(regs.edx, uintptr_t{ 2 });
+                }
             });
 
             // Direct3D 9
