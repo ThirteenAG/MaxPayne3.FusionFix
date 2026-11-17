@@ -140,7 +140,7 @@ public:
                 OnListOpened(path, reinterpret_cast<const uint8_t*>(regs.ecx));
             });
 
-            pattern = hook::pattern("83 C4 08 6A 20 50 B9 ? ? ? ? E8 19 AB F8 FF 47 3B FB 7C ? 5E 5F 5B C2 04 00");
+            pattern = hook::pattern("83 C4 08 6A 20 50 B9 ? ? ? ? E8 ? ? ? ? 47 3B FB 7C C4 5E 5F 5B C2 04 00 CC CC CC CC CC CC CC CC CC CC CC CC CC CC 83 21 FD");
             catalog = *pattern.get_first<StreamCatalog*>(7);
             requestAsset = reinterpret_cast<RequestAsset>(injector::GetBranchDestination(pattern.get_first(11)).as_int());
 
@@ -193,10 +193,10 @@ public:
 
             // The preload, from the streaming update while it holds the engine lock
             {
-                auto releaseSite = hook::pattern("83 C4 08 6A 20 50 B9 ? ? ? ? E8 39 AA F8 FF 47 3B FB 7C ? 5E 5F 5B C2 04 00");
+                auto releaseSite = hook::pattern("83 C4 08 6A 20 50 B9 ? ? ? ? E8 ? ? ? ? 47 3B FB 7C C4 5E 5F 5B C2 04 00 CC CC CC CC CC CC CC CC CC CC CC CC CC CC A1");
                 releaseAsset = reinterpret_cast<ReleaseAsset>(injector::GetBranchDestination(releaseSite.get_first(11)).as_int());
 
-                auto pump = hook::pattern("E8 36 A7 05 00 B9 ? ? ? ? E8 AC B4 05 00 6A 73 B9 ? ? ? ? E8 40 27 00 00");
+                auto pump = hook::pattern("E8 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? 6A 73");
                 static auto Preload = safetyhook::create_mid(pump.get_first(5), [](SafetyHookContext&)
                 {
                     UpdatePreload();
