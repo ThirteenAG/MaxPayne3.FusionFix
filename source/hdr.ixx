@@ -11,6 +11,7 @@ module;
 export module hdr;
 
 import common;
+import comvars;
 import settings;
 import postfxcommon;
 
@@ -24,7 +25,9 @@ namespace
     uint64_t LastDisplayCheck{};
     HMONITOR DisplayMonitor{};
     ComPtr<IDXGIFactory1> DisplayFactory;
-    SafetyHookInline PresentHook, ResizeHook;
+    ComPtr<ID3D11RenderTargetView> PresentTargets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT];
+    ComPtr<ID3D11DepthStencilView> PresentDepth;
+    bool Presenting{};
     ComPtr<ID3D11Device> Device;
     ComPtr<ID3D11DeviceContext1> Context;
     ComPtr<ID3DDeviceContextState> State;
@@ -396,39 +399,6 @@ namespace
         saved.Restore(Context.Get());
         return true;
     }
-
-    HRESULT STDMETHODCALLTYPE Present(IDXGISwapChain* chain, UINT interval, UINT flags)
-    {
-        ComPtr<ID3D11RenderTargetView> targets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT];
-        ID3D11RenderTargetView* views[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT]{};
-        ComPtr<ID3D11DepthStencilView> depth;
-        const bool render = chain == Chain && !(flags & DXGI_PRESENT_TEST);
-        if (render)
-        {
-            Render(chain);
-            if (Context)
-            {
-                Context->OMGetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, views, &depth);
-                for (UINT i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
-                    targets[i].Attach(views[i]);
-            }
-        }
-        auto result = PresentHook.stdcall<HRESULT>(chain, interval, flags);
-        if (render && Context && SUCCEEDED(result))
-            Context->OMSetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, views, depth.Get());
-        return result;
-    }
-
-    HRESULT STDMETHODCALLTYPE Resize(IDXGISwapChain* chain, UINT count, UINT width, UINT height, DXGI_FORMAT format, UINT flags)
-    {
-        if (chain == Chain)
-        {
-            Release();
-            format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-            count = std::max(count, 2u);
-        }
-        return ResizeHook.stdcall<HRESULT>(chain, count, width, height, format, flags);
-    }
 }
 
 export namespace HDR
@@ -455,8 +425,54 @@ export namespace HDR
         DisplayFactory.Reset();
     }
 
+    // From the game's own Present call, so the picture is converted before any overlay or wrapper that hooks DXGI
+    // draws on it
+    void BeforePresent(IDXGISwapChain* chain, UINT flags)
+    {
+        if (chain != Chain || (flags & DXGI_PRESENT_TEST))
+            return;
+        Render(chain);
+        if (!Context)
+            return;
+        // A flip-model Present unbinds the back buffer, the game expects its targets to stay bound
+        ID3D11RenderTargetView* views[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT]{};
+        Context->OMGetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, views, &PresentDepth);
+        for (UINT i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+            PresentTargets[i].Attach(views[i]);
+        Presenting = true;
+    }
+
+    void AfterPresent(HRESULT result)
+    {
+        if (!Presenting)
+            return;
+        Presenting = false;
+        if (Context && SUCCEEDED(result))
+        {
+            ID3D11RenderTargetView* views[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT]{};
+            for (UINT i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+                views[i] = PresentTargets[i].Get();
+            Context->OMSetRenderTargets(D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, views, PresentDepth.Get());
+        }
+        for (auto& target : PresentTargets)
+            target.Reset();
+        PresentDepth.Reset();
+    }
+
+    // From the game's own ResizeBuffers call: whether the chain keeps the scRGB format
+    bool BeforeResize(IDXGISwapChain* chain)
+    {
+        if (!chain || chain != Chain)
+            return false;
+        Release();
+        return true;
+    }
+
     bool Prepare(const D3D_FEATURE_LEVEL* levels, UINT count, DXGI_SWAP_CHAIN_DESC& description)
     {
+        // Only the game's window: overlays make their own devices and chains to find the functions they hook
+        if (!gWnd || description.OutputWindow != gWnd)
+            return false;
         Window = description.OutputWindow;
         Direct3D11 = !count || levels[0] >= D3D_FEATURE_LEVEL_11_0;
         const auto displays = ReadDisplays(Window);
@@ -484,12 +500,14 @@ export namespace HDR
             ApplyAvailability();
             return false;
         }
+        // A floating-point chain is presented as linear scRGB by default; a chain that tells its color spaces has to
+        // support it
         ComPtr<IDXGISwapChain3> modern;
         UINT support{};
-        if (FAILED(chain->QueryInterface(IID_PPV_ARGS(&modern))) ||
-            FAILED(modern->CheckColorSpaceSupport(DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709, &support)) ||
-            !(support & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT) ||
-            FAILED(modern->SetColorSpace1(DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709)))
+        if (SUCCEEDED(chain->QueryInterface(IID_PPV_ARGS(&modern))) &&
+            (FAILED(modern->CheckColorSpaceSupport(DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709, &support)) ||
+             !(support & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT) ||
+             FAILED(modern->SetColorSpace1(DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709))))
         {
             Unavailable = true;
             ApplyAvailability();
@@ -499,12 +517,6 @@ export namespace HDR
         DXGI_SWAP_CHAIN_DESC description{};
         chain->GetDesc(&description);
         Window = description.OutputWindow;
-        if (!PresentHook)
-        {
-            auto table = *reinterpret_cast<void***>(chain);
-            PresentHook = safetyhook::create_inline(table[8], Present);
-            ResizeHook = safetyhook::create_inline(table[13], Resize);
-        }
         return true;
     }
 }

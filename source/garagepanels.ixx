@@ -282,9 +282,9 @@ namespace GaragePanels
         static auto Preserve = safetyhook::create_mid(pattern.get_first(), SetPreserveFlag);
 
         // LockSlide samples its panel towards and from the target
-        pattern = hook::pattern("E8 DE B3 C7 FF 83 C4 1C 5F 5E 59 C2 18 00");
+        pattern = hook::pattern("E8 ? ? ? ? 83 C4 1C 5F 5E 59 C2 18 00 80 BE");
         static auto SlideTo = safetyhook::create_mid(pattern.get_first(), ReadSlideSample);
-        pattern = hook::pattern("E8 39 B3 C7 FF 83 C4 1C 5F 5E 59 C2 18 00");
+        pattern = hook::pattern("E8 ? ? ? ? 83 C4 1C 5F 5E 59 C2 18 00 F3 0F 11 AF");
         static auto SlideFrom = safetyhook::create_mid(pattern.get_first(), ReadSlideSample);
 
         // The screenshot marker checks of the previous and the current panel
@@ -294,7 +294,7 @@ namespace GaragePanels
         static auto CurrentMarker = safetyhook::create_mid(pattern.get_first(), DeferGarageScreenshot);
 
         // Render thread: the texture copy of command B5, commands B6 and B7, and the panel quad
-        pattern = hook::pattern("E8 73 A5 22 00 83 C4 08 5E C3 CC CC CC CC CC CC");
+        pattern = hook::pattern("E8 ? ? ? ? 83 C4 08 5E C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC 8B 0D");
         copyTexture = reinterpret_cast<CopyTexture>(injector::GetBranchDestination(pattern.get_first()).as_int());
         pattern = hook::pattern("8B 4C 24 04 E9 57 E0 FF FF CC CC CC CC CC CC CC");
         static auto Begin = safetyhook::create_mid(pattern.get_first(), BeginSlideCommand);
@@ -302,11 +302,11 @@ namespace GaragePanels
         static auto Capture = safetyhook::create_mid(pattern.get_first(), CaptureCompositedSlide);
         pattern = hook::pattern("F3 0F 10 77 38 F3 0F 10 3D ? ? ? ? F3 0F 10 6F 34");
         static auto Reuse = safetyhook::create_mid(pattern.get_first(), UseSlideSource);
-        pattern = hook::pattern("E8 F9 E2 21 00 83 C4 24 8D 4C 24 28 E8 BD E1 21");
+        pattern = hook::pattern("E8 ? ? ? ? 83 C4 24 8D 4C 24 28 E8 ? ? ? ? 8D 44 24 74");
         static auto Quad = safetyhook::create_mid(pattern.get_first(), UseSlideCoordinates);
         static auto Restore = safetyhook::create_mid(pattern.get_first(5), RestoreSceneSource);
 
-        pattern = hook::pattern("E8 F2 E8 21 00 83 C4 08 F3 0F 10 05 ? ? ? ? 68 FF 00 00 00");
+        pattern = hook::pattern("E8 ? ? ? ? 83 C4 08 F3 0F 10 05 ? ? ? ? 68");
         fillRectangle = reinterpret_cast<FillRectangle>(injector::GetBranchDestination(pattern.get_first()).as_int());
         static auto Clear = safetyhook::create_mid(pattern.get_first(8), ClearRightOfSlide);
 

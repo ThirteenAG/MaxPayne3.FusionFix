@@ -47,6 +47,8 @@
   "antialiasing.description": "TAA, DLAA, FSR은 DirectX 11이 필요하며 게임의 MSAA를 꺼야 합니다. DLAA와 FSR에는 FusionFixHub의 업스케일러도 필요합니다.",
   "aasharpness": "안티앨리어싱 선명도",
   "aasharpness.description": "TAA, DLAA 또는 FSR 이후 이미지를 선명하게 합니다. 0이면 꺼집니다.",
+  "drawdistance": "표시 거리",
+  "drawdistance.description": "모델이 표시되는 거리와 세부 묘사 수준이 바뀌는 거리를 조정합니다. 1x는 기본 거리입니다.",
   "intelchecks": "Intel GPU 검사 건너뛰기",
   "intelchecks.description": "Intel 그래픽에서 DirectX 10 및 11을 사용할 수 있게 합니다. 그렇지 않으면 게임은 DirectX 9만 허용합니다.",
   "menu.restoredefaults": "기본값 복원",

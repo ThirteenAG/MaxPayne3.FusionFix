@@ -47,6 +47,8 @@
   "antialiasing.description": "Для TAA, DLAA и FSR нужен DirectX 11 с выключенным MSAA игры. Для DLAA и FSR также нужны апскейлеры FusionFixHub.",
   "aasharpness": "Резкость сглаживания",
   "aasharpness.description": "Повышает резкость изображения после TAA, DLAA или FSR. 0 — выключено.",
+  "drawdistance": "Дальность прорисовки",
+  "drawdistance.description": "Изменяет дальность видимости моделей и расстояния переключения уровней детализации. 1x соответствует исходным расстояниям.",
   "intelchecks": "Пропустить проверки GPU Intel",
   "intelchecks.description": "Позволяет использовать DirectX 10 и 11 на графике Intel; иначе игра разрешает на ней только DirectX 9.",
   "menu.restoredefaults": "СБРОСИТЬ НАСТРОЙКИ",

@@ -374,7 +374,7 @@ namespace WaterRenderTargets
 
         auto start = hook::pattern("81 EC 98 00 00 00 56 8B F1 8B 06 8B 90 38 01 00 00 57 6A 01 FF D2");
         static auto Begin = safetyhook::create_mid(start.get_first(), BeginRebuild);
-        auto finish = hook::pattern("E8 6B DB FC FF 8B 16 8B 82 A4 01 00 00 6A 00 8B CE FF D0");
+        auto finish = hook::pattern("E8 ? ? ? ? ? ? 8B 82 ? ? ? ? 6A 00 8B CE FF D0 ? ? 8B 82 ? ? ? ? 6A 00 8B CE FF D0 ? ? 8B 82 ? ? ? ? 6A 00 8B CE FF D0 80 BC 24");
         static auto End = safetyhook::create_mid(finish.get_first(5), EndRebuild);
         auto destroy = hook::pattern("51 53 55 56 57 89 4C 24 10 8D B9 04 0A 00 00 BB 02 00 00 00");
         static auto Save = safetyhook::create_mid(destroy.get_first(), SaveWaterTargets);
@@ -397,7 +397,7 @@ public:
             auto shadowsAndReflections = hook::pattern("8B 96 1C 01 00 00 A1 ? ? ? ? 3B 82 E4 00 00 00 75 39 8B 8E 30 01 00 00 8B 15 ? ? ? ? 3B 91 E4 00 00 00");
             auto fxaaTest = hook::pattern("39 1D ? ? ? ? 0F 94 C2 3B D1 74 0A 83 FF 01 7E 05");
             auto apply = hook::pattern("38 5C 24 12 75 0A 38 5C 24 10 0F 84 ? ? ? ? 38 5C 24 13 0F 85 ? ? ? ? 8B CE C6 44 24 11 01 E8 ? ? ? ?");
-            auto simulationPause = hook::pattern("E8 91 D2 E8 FF 8A 15 ? ? ? ? 0A 15 ? ? ? ? 75 5C");
+            auto simulationPause = hook::pattern("E8 ? ? ? ? 8A 15 ? ? ? ? 0A 15 ? ? ? ? 75 ? 8B 0D");
 
             static const auto waterQuality = *waterAndSamples.get_first<const int*>(8);
             static const auto sampleCount = *waterAndSamples.get_first<const int*>(17);
