@@ -1,6 +1,7 @@
 module;
 
 #include <common.hxx>
+#include <algorithm>
 #include "ConsoleSubtitleKerning.hpp"
 
 export module outlines;
@@ -20,6 +21,7 @@ namespace
     char (__thiscall* GetFontKerning)(void*, uint16_t, uint16_t);
     int (__thiscall* MeasureSubtitle)(void*, float*, float, float, const wchar_t*);
     int (__thiscall* DrawSubtitle)(void*, const float*, const wchar_t*, int, int);
+    void (__thiscall* SetFontOutline)(void*, float);
 
     struct SubtitleLayoutScope
     {
@@ -128,8 +130,6 @@ namespace
         return thickness * FusionFixSettings.GetFloat(PREF_OUTLINESIZE) *
             FusionFixSettings.GetFloat(PREF_SUBTITLESIZE);
     }
-
-    void (__thiscall* SetFontOutline)(void*, float);
 
     void __fastcall SetSubtitleOutline(void* textFormat, void*, float thickness)
     {

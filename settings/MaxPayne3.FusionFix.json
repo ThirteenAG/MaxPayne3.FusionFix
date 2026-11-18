@@ -55,7 +55,8 @@
     {
       "id": "MAIN.ConsoleSubtitles", "type": "bool", "default": 0,
       "label": "@consolesubtitles", "description": "@consolesubtitles.description",
-      "page": "display", "control": [ "switch", "cycler" ]
+      "page": "display", "control": [ "switch", "cycler" ],
+      "presets": { "vanilla": 0, "recommended": 0, "enhanced": 1 }
     },
     {
       "id": "MAIN.SubtitlesSizeMultiplier", "type": "float", "default": 1.0, "min": 0, "max": 2, "step": 0.1, "decimals": 1,
