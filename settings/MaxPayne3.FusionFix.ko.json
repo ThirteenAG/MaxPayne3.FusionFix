@@ -17,6 +17,8 @@
   "checkupdates.description": "게임을 시작할 때 fusionfix.io에서 새 버전을 확인하고 게임 안에서 알려 줍니다.",
   "update.hub": "Fusion Fix {}을(를) 사용할 수 있습니다. 게임을 종료하면 FusionFixHub가 열립니다.",
   "update.site": "fusionfix.io에서 Fusion Fix {}을(를) 사용할 수 있습니다.",
+  "consolesubtitles": "콘솔 자막",
+  "consolesubtitles.description": "Xbox 360 HD 모드의 자막 크기와 줄바꿈을 사용합니다. 자막 크기 슬라이더로 선택한 레이아웃의 크기를 조절합니다.",
   "subtitlesize": "자막 크기",
   "subtitlesize.description": "자막 배율입니다. 1은 원래 크기입니다.",
   "outlinesize": "외곽선 크기",
