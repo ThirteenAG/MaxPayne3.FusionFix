@@ -1,11 +1,41 @@
 module;
 
 #include <common.hxx>
+#include <cmath>
 
 export module frameratevigilante;
 
 import common;
 import comvars;
+
+namespace LandingCamera
+{
+    static const float* cameraTimeStep = nullptr;
+    static int32_t blendRateOffset = 0;
+
+    // The ragdoll camera transition used a metadata blend once per rendered frame.
+    // Preserve its 30 Hz response: the remaining distance after dt seconds is
+    // (1 - blend)^(30 * dt), including when bullet time changes the camera clock.
+    static void UpdateBlend(SafetyHookContext& regs)
+    {
+        const float step = *cameraTimeStep;
+        const float blend = *reinterpret_cast<const float*>(regs.ecx + blendRateOffset);
+        if (!std::isfinite(step) || !std::isfinite(blend) || blend < 0.0f || blend > 1.0f)
+            return;
+
+        float weight = 0.0f;
+        if (step > 0.0f)
+        {
+            if (blend > 0.0f && blend < 1.0f)
+                weight = -std::expm1(std::log1p(-blend) * (30.0f * step));
+            else
+                weight = blend;
+        }
+
+        // After the original multiply, before adding the current blend (xmm3).
+        regs.xmm0.f32[0] = (1.0f - regs.xmm3.f32[0]) * weight;
+    }
+}
 
 namespace CWater
 {
@@ -29,6 +59,19 @@ public:
 	{
 		FusionFix::onInitEventAsync() += []()
 		{
+            // Camera transition into/out of NM physics, including shootdodge landings.
+            // Use the same camera clock as the position smoothing immediately after it.
+            {
+                auto step = hook::pattern("F3 0F 10 05 ? ? ? ? 0F 57 DB F3 0F 59 C1 F3 0F 59 05 ? ? ? ? 0F 2F D8 77 ? F3 0F 10 1D");
+                auto blend = hook::pattern("F3 0F 5C C3 F3 0F 59 81 ? ? ? ? 5F F3 0F 58 C3 F3 0F 11 05 ? ? ? ? 5E 8B E5 5D C2 04 00");
+                if (step.size() == 1 && blend.size() == 1)
+                {
+                    LandingCamera::cameraTimeStep = *step.get_first<const float*>(4);
+                    LandingCamera::blendRateOffset = *blend.get_first<int32_t>(8);
+                    static auto landingBlendHook = safetyhook::create_mid(blend.get_first(12), LandingCamera::UpdateBlend);
+                }
+            }
+
             // Fix water physics and effects
             {
                 // Helicopter downwash force
