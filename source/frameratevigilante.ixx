@@ -1,11 +1,30 @@
 module;
 
 #include <common.hxx>
+#include <cmath>
 
 export module frameratevigilante;
 
 import common;
 import comvars;
+
+// The camera's blend into and out of ragdoll (shootdodge landings) moves a fixed share of the remaining distance per
+// frame, tuned for 30 fps. Scaled to the camera time step, the remaining distance after dt seconds is
+// (1 - blend)^(30 * dt) at any frame rate and in bullet time.
+namespace LandingCamera
+{
+    float* fCameraTimeStep = nullptr;
+    int32_t nBlendRateOffset = 0;
+
+    void UpdateBlend(SafetyHookContext& regs)
+    {
+        auto blend = *reinterpret_cast<float*>(regs.ecx + nBlendRateOffset);
+        auto weight = 1.0f - std::pow(1.0f - blend, 30.0f * *fCameraTimeStep);
+
+        // xmm0 = (1.0 - current) * blend, xmm3 = current
+        regs.xmm0.f32[0] = (1.0f - regs.xmm3.f32[0]) * weight;
+    }
+}
 
 namespace CWater
 {
@@ -29,6 +48,16 @@ public:
 	{
 		FusionFix::onInitEventAsync() += []()
 		{
+            // Ragdoll camera blend
+            {
+                auto pattern = hook::pattern("F3 0F 10 05 ? ? ? ? 0F 57 DB F3 0F 59 C1 F3 0F 59 05 ? ? ? ? 0F 2F D8 77 ? F3 0F 10 1D");
+                LandingCamera::fCameraTimeStep = *pattern.get_first<float*>(4);
+
+                pattern = hook::pattern("F3 0F 5C C3 F3 0F 59 81 ? ? ? ? 5F F3 0F 58 C3 F3 0F 11 05 ? ? ? ? 5E 8B E5 5D C2 04 00");
+                LandingCamera::nBlendRateOffset = *pattern.get_first<int32_t>(8);
+                static auto LandingBlendHook = safetyhook::create_mid(pattern.get_first(12), LandingCamera::UpdateBlend);
+            }
+
             // Fix water physics and effects
             {
                 // Helicopter downwash force
