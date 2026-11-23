@@ -16,7 +16,7 @@
   "checkupdates": "アップデートを確認",
   "checkupdates.description": "ゲーム起動時にfusionfix.ioで新しいバージョンを確認し、ゲーム内でお知らせします。",
   "update.hub": "Fusion Fix {} が利用可能です。ゲーム終了時にFusionFixHubが開きます。",
-  "update.site": "Fusion Fix {} がfusionfix.ioで利用可能です。",
+  "update.site": "Fusion Fix {} が利用可能です: fusionfix.io/games/maxpayne3",
   "consolesubtitles": "コンソール版の字幕",
   "consolesubtitles.description": "Xbox 360 の HD モードと同じ字幕サイズと折り返しを使用します。字幕サイズのスライダーで選択中のレイアウトを調整できます。",
   "subtitlesize": "字幕サイズ",

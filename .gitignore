@@ -344,7 +344,3 @@ dxwrapper.zip
 
 # the paths of this machine, read by premake5.lua, see the readme
 .env
-
-# Release outputs: the hub
-FusionFixHub.exe
-data/FusionFixHub.exe
