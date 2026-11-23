@@ -16,7 +16,7 @@
   "checkupdates": "Sprawdzaj aktualizacje",
   "checkupdates.description": "Przy starcie gry sprawdza na fusionfix.io, czy jest nowsza wersja, i informuje o niej w grze.",
   "update.hub": "Dostępny jest Fusion Fix {}. FusionFixHub otworzy się po zamknięciu gry.",
-  "update.site": "Fusion Fix {} jest dostępny na fusionfix.io.",
+  "update.site": "Fusion Fix {} jest dostępny na fusionfix.io/games/maxpayne3",
   "consolesubtitles": "Napisy konsolowe",
   "consolesubtitles.description": "Używa rozmiaru i zawijania napisów z trybu HD na Xbox 360. Suwak rozmiaru skaluje wybrany układ.",
   "subtitlesize": "Rozmiar napisów",

@@ -21,7 +21,7 @@ import menu;
 // - on (at the start, or when turned on while playing): one request to https://fusionfix.io/api/versions on a thread of
 //   its own; when its MaxPayne3.FusionFix version is newer than this build, a help text once the game is playable:
 //   "Fusion Fix x.y.z is available, FusionFixHub opens when you close the game" when FusionFixHub.exe is in the game's
-//   folder, else a pointer to fusionfix.io;
+//   folder, else the fix's page at fusionfix.io/games/maxpayne3;
 // - with the hub, when the game exits: FusionFixHub.exe --show-update MaxPayne3.FusionFix --wait-pid <pid>, which opens
 //   on this game's update page (the player updates there). Never while the game runs; turning the option off cancels it.
 class UpdateCheck
