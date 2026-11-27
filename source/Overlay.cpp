@@ -1,4 +1,5 @@
 #include <common.hxx>
+#ifdef ASI_OVERLAY
 #include <Commctrl.h>
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
@@ -9,8 +10,8 @@
 import common;
 import settings;
 
-// The native Fusion Fix menu remains the game's menu. This independent adapter
-// owns the hotkey alternative and blocks the game's input at its API boundaries.
+// In-game settings overlay (Ctrl+F10 / Back + Start), Debug builds only. The native Fusion Fix menu remains the
+// game's menu. This independent adapter owns the hotkey and blocks the game's input at its API boundaries.
 namespace MP3Overlay
 {
     namespace
@@ -191,7 +192,6 @@ namespace MP3Overlay
     void Present(IDXGISwapChain* swapchain)
     {
         if (!swapchain) return;
-        overlay.hotkey = SettingsPlugin().Int("MAIN.OverlayHotkey");
         overlay.fallbackLanguage = languages[gameLanguage && *gameLanguage < std::size(languages) ? *gameLanguage : 0];
         // D3D10 swapchains are intentionally unsupported. Release any previous
         // DX11 context when switching away so its input cannot remain captured.
@@ -253,3 +253,4 @@ namespace MP3Overlay
         }
     } adapter;
 }
+#endif

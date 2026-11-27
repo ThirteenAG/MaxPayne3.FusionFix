@@ -15,18 +15,12 @@
   ],
   "settings": [
     {
-      "id": "MAIN.OverlayHotkey", "type": "choice", "default": 121,
-      "choices": [ { "value": 112, "label": "Ctrl+F1" }, { "value": 113, "label": "Ctrl+F2" }, { "value": 114, "label": "Ctrl+F3" }, { "value": 115, "label": "Ctrl+F4" }, { "value": 116, "label": "Ctrl+F5" }, { "value": 117, "label": "Ctrl+F6" }, { "value": 118, "label": "Ctrl+F7" }, { "value": 119, "label": "Ctrl+F8" }, { "value": 120, "label": "Ctrl+F9" }, { "value": 121, "label": "Ctrl+F10" }, { "value": 122, "label": "Ctrl+F11" }, { "value": 123, "label": "Ctrl+F12" }, { "value": 45, "label": "Ctrl+Insert" }, { "value": 36, "label": "Ctrl+Home" }, { "value": 33, "label": "Ctrl+Page Up" }, { "value": 34, "label": "Ctrl+Page Down" }, { "value": 35, "label": "Ctrl+End" }, { "value": 46, "label": "Ctrl+Delete" }, { "value": 19, "label": "Ctrl+Pause" }, { "value": 145, "label": "Ctrl+Scroll Lock" }, { "value": 192, "label": "Ctrl+` (grave)" } ],
-      "label": "Overlay hotkey", "description": "Opens the in-game settings overlay (Ctrl held with the key). Back + Start on a controller also opens it.",
-      "page": "fusionfix", "control": [ "dropdown" ], "visibility": "editor"
-    },
-    {
       "id": "MAIN.TextLanguage", "type": "choice", "default": "auto",
       "choices": [ { "value": "auto", "label": "Game language" }, { "value": "en", "label": "English" },
         { "value": "fr", "label": "Français" }, { "value": "de", "label": "Deutsch" }, { "value": "it", "label": "Italiano" },
         { "value": "es", "label": "Español" }, { "value": "ja", "label": "日本語" }, { "value": "ru", "label": "Русский" },
         { "value": "pt-BR", "label": "Português (Brasil)" }, { "value": "pl", "label": "Polski" }, { "value": "ko", "label": "한국어" } ],
-      "label": "Overlay text language", "description": "Language used for plugin texts in the overlay; Auto follows the game.",
+      "label": "Text language", "description": "Language of the plugins' texts in FusionFixHub; Auto follows the game.",
       "page": "compatibility", "visibility": "editor"
     },
     {
