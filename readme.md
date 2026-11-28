@@ -77,6 +77,33 @@ High polling-rate mouse movement uses the full accumulated input each frame, pre
 
 The ending cutscene of chapter 10 (the bus depot) loads all of its characters in time, the garage panel in a cutscene of that chapter slides as on console, and changing graphics settings no longer starts the water over. Options that can't be changed with the current settings are greyed out in the menus.
 
+DX10, DX10.1 and DX11 blood sprites reject nearly transparent pixels so their invisible areas no longer hide overlapping blood spray. The shader fix covers standard, low-quality, stereo and supported displacement/MSAA variants.
+
+### Selective texture mip skipping
+
+For textures whose highest-resolution mip looks blocky, add their exact texture names
+to `plugins/MaxPayne3.FusionFix.TextureMipSkip.txt`, one per line, without `.dds` or
+a dictionary path. The game's `pack:/` prefix and `.dds` suffix are stripped when
+matching. Names are case-insensitive; `#` and `;` start comments. Restart
+the game after editing the list.
+
+At Very High texture quality, listed 2D textures use mip 1 as their highest-resolution
+level (half the width and height). Other textures and lower texture-quality settings
+keep their original behavior. DirectX 9, 10, 10.1 and 11 use the game's own mip-upload
+path. Textures without another usable mip are left alone. The list includes
+`brick_cinder_41b_dm`, its companion normal map `brick_cinder_41_nm`,
+`d_blood_impacts_med_d` and `d_blood_impacts_med_n`;
+an empty or missing list disables the hooks.
+This uses the texture's existing lower
+mips; it does not generate filtered replacements for a poorly authored mip chain.
+For a material to resemble the game's High texture setting, list its normal and
+specular maps as well as its diffuse map. A diffuse-only entry leaves surface
+lighting detail at Very High quality.
+
+The optional [DDS candidate scanner](tools/TextureMipScanner/README.md) compares
+nearest-half-size mip 0 with the actual mip 1, groups duplicate copies, previews
+the comparison and exports reviewed names for this list.
+
 # Building
 
 Run `premake5.bat` to generate the Visual Studio solution in `build`, then build it.
