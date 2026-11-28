@@ -1,0 +1,6 @@
+# Skip the highest-resolution mip for these textures at Very High texture quality.
+# One exact texture name per line, without a .dds extension or dictionary path.
+# Names are case-insensitive. Blank lines and # or ; comments are ignored.
+# Restart the game after editing. An empty list disables the feature.
+brick_cinder_41b_dm
+brick_cinder_41_nm

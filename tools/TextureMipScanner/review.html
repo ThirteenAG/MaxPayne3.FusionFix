@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DDS texture review</title>
+<style>
+*{box-sizing:border-box}body{font:15px system-ui;background:#171b22;color:#e6edf5;max-width:1500px;margin:24px auto;padding:0 20px}
+h1{margin-bottom:8px}p{line-height:1.5}header{position:sticky;top:0;background:#171b22f5;padding:14px 0;z-index:2;border-bottom:1px solid #485463}
+.controls,.paging{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px}button,input,select{font:inherit;padding:7px;border:1px solid #586675;border-radius:4px;background:#29333f;color:#fff}
+button{cursor:pointer}button:disabled{opacity:.4;cursor:default}input[type=checkbox]{accent-color:#83dac4;width:18px;height:18px;vertical-align:middle}
+#search{min-width:260px;flex:1}input[type=number]{width:76px}#summary,#selection,.muted{color:#b9c8d8}.note{color:#edcc92;font-size:13px;margin:0}
+#grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:18px;margin-top:18px}article{background:#242c37;padding:16px;border-radius:7px;overflow-wrap:anywhere}
+h2{font-size:17px;margin:0 0 10px}h2 label{display:flex;gap:9px;align-items:flex-start}h2 input{flex:none;margin-top:3px}.badge{color:#8de0c8;font-size:13px;font-weight:500}
+article p,details{font-size:13px;color:#c5d1de}article img{width:100%;height:auto;background:repeating-conic-gradient(#505762 0% 25%,#727c88 0% 50%) 0/16px 16px;image-rendering:pixelated;border-radius:3px}
+.labels{display:flex;font-size:11px;margin:14px 0 5px}.labels span{text-align:center;width:25%}.error{color:#ffb2a7}details{margin-top:12px}li{margin:5px 0}a{color:#8de0c8}#empty{padding:30px;text-align:center}
+</style>
+<h1>All distinct DDS textures</h1>
+<p id="summary"></p>
+<p>Ranks how closely mip 0, shrunk to half size with nearest-neighbor sampling, matches the actual mip 1. Every RGBA pixel is compared. Identical source copies are grouped; different versions of a name remain separate.</p>
+<p>Close matches can identify redundant top mips. Flat textures can match naturally, so compare the previews before selecting a name.</p>
+<header>
+<div class="controls">
+<input id="search" type="search" placeholder="Search texture names, source WTD/WDR paths, related maps" aria-label="Search textures">
+<select id="view" aria-label="View"><option value="all">All textures</option><option value="variants">Names with different versions</option><option value="candidates">Close matches only</option><option value="exact">Exact matches only</option><option value="selected">Selected versions</option><option value="ineligible">No usable lower mip</option><option value="error">Decode errors / unsupported</option></select>
+<label>Min match % <input id="score" type="number" min="0" max="100" value="0"></label>
+<select id="size" aria-label="Minimum texture size"><option value="128" selected>128×128 minimum</option><option value="0">All resolutions (include smaller)</option><option value="512">512+ longest side</option><option value="1024">1024+ longest side</option><option value="2048">2048+ longest side</option></select>
+<select id="sort" aria-label="Sort"><option value="score">Best mip match</option><option value="size">Largest, then best match</option><option value="name">Sort by name</option><option value="copies">Most copies</option></select>
+</div>
+<div class="controls"><button id="select">Select this page</button><button id="clear">Clear selection</button><button id="export">Export selected names</button><span id="selection"></span></div>
+<div class="paging"><button id="previous">Previous</button><label>Page <input id="page" type="number" min="1" value="1"></label><span id="pages"></span><button id="next">Next</button>
+<select id="page-size" aria-label="Textures per page"><option value="30">30 per page</option><option value="60" selected>60 per page</option><option value="120">120 per page</option></select><span id="range"></span></div>
+<p class="note">FusionFix matches texture names: exporting one variant affects every version of that name in the game. Review its other versions before approving.</p>
+</header>
+<main id="grid"></main><p id="empty" hidden>No textures match these filters.</p>
+<script id="texture-data" type="application/json">__TEXTURE_DATA__</script>
+<script src="review.js"></script>
+</html>
